@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+tcr_config.json
+*server.log
+*.npz
+tcr_results/smoke/
+*.zip
