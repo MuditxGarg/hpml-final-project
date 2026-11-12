@@ -41,7 +41,7 @@
 ## Task 3: integration
 
 - [x] Run full applicable test discovery, CLI smoke checks and fresh code review.
-- [ ] Document actual results, remaining resources and commands. Commit the reviewable local work without pushing or merging shared branches.
+- [x] Document actual results, remaining resources and commands. Commit the reviewable local work without pushing or merging shared branches.
 
 ## Progress / rulings
 
@@ -52,8 +52,13 @@
 ### Verified checkpoint
 
 - Task1 complete: nested full 500-question probe run, cap2048; corrected fold-feasibility report.
-- Task2 code/fake tests complete; real T4 experiment pending. Free T4 recovered 500x8x2048 features; Mac locked during vLLM install, preventing browser continuation or runtime disconnect. User notified to unlock; approved session deadline2026-11-12 21:40UTC.
-- Verification: 17 tests passed; source compile/diff checks passed. Fresh reviewer found fold failures hidden by pooling, fixed with regression test; B core no blocker.
+- Task2 complete as bounded E1 pilot: two matched real-T4 blocks, eight cells, one seed. Full features recovered. Runtime released2026-11-12 21:28:45UTC, verified Reconnect T4 UI; about49minutes, within60minute authorization. No paid compute. Raw archives and notebook downloaded.
+- Verification: 20 tests passed; source compile/diff checks passed. Fresh reviewer found fold failures hidden by pooling, fixed with regression test; B core no blocker.
 - Ruling: original probe template and rollout template differ by appended think token; preserve labels, document pre-existing difference.
 - Ruling: no strict oracle upper-bound claim; finite-grid empirical hindsight reference separately labeled.
 - GPU pilot is E1 synthetic externality only; E2 actual answer quality/online p95 controller not implemented or claimed.
+
+- Final GPU analysis: all background cohorts meet92s heuristic SLO; high-load(4,2048) single target93.72s misses. One target per action/load,9/13 background jobs, no measured waiting queue. Pilot only.
+- Corrective run preserves initial calibration, raises timeout/drain60→97s beyond92s SLO, reduces action matrix prospectively, and records omitted(1,0). Initial interrupted run retained.
+- Code review of final driver/report found missing corrective metadata; report now preserves protocol and partial-block status.
+- Local commits use user-approved Peiyan Sun <ps3558@columbia.edu> per command; no global identity change, remote push or team messages.

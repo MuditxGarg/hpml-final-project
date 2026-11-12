@@ -88,10 +88,21 @@ Both streams report scheduled counts, outcome counts, SLO attainment and finite 
 python3 -m unittest discover -s tcr_pipeline_full/tcr_pipeline/tests -p test_matched_serving.py -v
 ```
 
-The fake HTTP integration checks trace matching, late completion, parallel sample requests, identical background traffic and absent target HTTP calls in the control, overload/censor accounting, live queue telemetry, the full control/action CLI artifact path, and stale-output refusal. It requires loopback binding permission. A fake server validates plumbing only; real GPU measurements remain pending an explicitly supplied vLLM endpoint and runtime budget.
+The fake HTTP integration checks trace matching, late completion, parallel sample requests, identical background traffic and absent target HTTP calls in the control, overload/censor accounting, live queue telemetry, the full control/action CLI artifact path, and stale-output refusal. It requires loopback binding permission. A fake server validates plumbing only; GPU evidence is reported separately under `docs/results/`.
 
 ## Bounded free-T4 driver
 
 `colab_run_replay.py` consumes `matched_serving.py`, empirical `lengths.json` and `prompts.json` in the same directory, with an already-running server. Set `LATTE_GPU_DEADLINE` to an explicit UTC timestamp. It recalibrates capacity and SLO on T4, uses target fraction0.10 (not the original0.05), two seeds, loads0.5/0.8, and shuffled candidate order. Control remains first in each block; temporal drift is a limitation. It archives partial results on failure and skips blocks that cannot fit the conservative deadline bound.
 
 Start vLLM with explicit `--no-enable-prefix-caching` and check its startup configuration; omitting an enable flag may not disable caching. The driver does not disconnect Colab or stop the server: those lifecycle actions belong to the session operator and must respect the approved runtime budget.
+
+`--seeds`, `--loads` and `--actions` can prospectively reduce the matrix to fit a session. `--reuse-calibration PATH` freezes a previous calibration and records its hash; it does not retune capacity or SLO to the new outcomes. Request timeout and drain are at least five seconds beyond the calibrated SLO (and at least 60 seconds). The November 12 corrected pilot uses a 92-second SLO and 97-second timeout/drain. Its earlier interrupted run is retained as calibration/diagnostic evidence, not a completed comparison.
+
+After downloading an archive, summarize its completed and partial blocks with:
+
+```sh
+python3 tcr_pipeline_full/tcr_pipeline/11_report_matched.py \
+  --run /absolute/path/extracted-run --output /absolute/path/new-report
+```
+
+The report keeps failures alongside completed-only p95, reports empty target cohorts and skipped blocks, and limits queue telemetry to the measured arrival window. It does not infer statistical significance or answer quality from the replay.

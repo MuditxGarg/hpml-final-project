@@ -29,5 +29,7 @@
   "median_prefill_ms": 49.058093000041936,
   "extraction_seconds": 28.940887312999962,
   "provenance": "Regenerated on free T4; differs in precision/backend from original RTX4080 features",
-  "hidden_sha256": "3c233d694110d23989ce9fc301ca8953d35e74fd412cbb4b0a5dd7de2fdb614f"
+  "hidden_sha256": "3c233d694110d23989ce9fc301ca8953d35e74fd412cbb4b0a5dd7de2fdb614f",
+  "resolved_snapshot_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "revision_evidence": "Colab Hugging Face model cache snapshot observed after feature extraction"
 }

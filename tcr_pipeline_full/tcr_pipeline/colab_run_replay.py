@@ -14,6 +14,8 @@ import os
 from pathlib import Path
 import random
 import shutil
+import sys
+import hashlib
 import subprocess
 import threading
 import time
@@ -39,6 +41,26 @@ def choose_calibration(idle_latencies, trials):
 def can_start_block(now, deadline, cells=5, warmup=10, duration=45, drain=60, idle_timeout=15):
     # Two idle waits per cell; extra five seconds cover telemetry/thread/file overhead.
     return now + cells*(warmup+duration+drain+2*idle_timeout+5) + ARCHIVE_MARGIN_S < deadline
+
+
+def request_horizon(slo_s):
+    """Never terminate requests before the frozen service objective can be observed."""
+    if not math.isfinite(slo_s) or slo_s <= 0:
+        raise ValueError('SLO must be finite and positive')
+    return max(60, math.ceil(slo_s)+5)
+
+
+def load_reused_calibration(path):
+    source = Path(path).resolve()
+    raw = source.read_bytes()
+    record = json.loads(raw)
+    selected = record['selected']
+    request_horizon(selected['slo_s'])
+    if selected['reference_capacity_jobs_s'] <= 0 or selected['target_rate'] <= 0:
+        raise ValueError('reused calibration requires positive capacity and target rate')
+    record['reused_source'] = dict(path=str(source), sha256=hashlib.sha256(raw).hexdigest(),
+                                 reused_epoch=time.time(), selected_values_frozen=True)
+    return record
 
 
 def deadline_value(value):
@@ -93,16 +115,16 @@ def calibrate(url, model, prompts, lengths, out, deadline):
     trials = []
     replay.wait_idle(url, timeout_s=15)
     for index in range(5):
-        if deadline-time.time() < ARCHIVE_MARGIN_S+90:
+        if deadline-time.time() < ARCHIVE_MARGIN_S+150:
             raise TimeoutError('deadline reserve reached during idle calibration')
-        row = request_reference(url, model, prompts, lengths, 'idle-'+str(index), timeout=60)
+        row = request_reference(url, model, prompts, lengths, 'idle-'+str(index), timeout=120)
         idle.append(row)
         write_json(out/'calibration.json', dict(idle=idle,trials=trials))
         if row['status'] != 'completed':
             raise RuntimeError('isolated calibration failed: '+str(row))
         log(f'Idle reference {index+1}/5: {row["latency_s"]:.2f}s, {row["completion_tokens"]} tokens')
     for concurrency in (4,16,32):
-        if deadline-time.time() < ARCHIVE_MARGIN_S+105:
+        if deadline-time.time() < ARCHIVE_MARGIN_S+165:
             raise TimeoutError('deadline reserve reached before capacity calibration')
         replay.wait_idle(url, timeout_s=15)
         began = time.monotonic()
@@ -111,7 +133,7 @@ def calibrate(url, model, prompts, lengths, out, deadline):
             rows = []
             seq = 0
             while time.monotonic() < stop_at:
-                row = request_reference(url,model,prompts,lengths,f'c{concurrency}-w{worker_index}-{seq}',timeout=60)
+                row = request_reference(url,model,prompts,lengths,f'c{concurrency}-w{worker_index}-{seq}',timeout=120)
                 row['finished_at_s'] = time.monotonic()-began
                 rows.append(row); seq += 1
                 if row['status'] != 'completed': break
@@ -143,12 +165,28 @@ def main(argv=None):
     parser.add_argument('--lengths',default='lengths.json')
     parser.add_argument('--prompts',default='prompts.json')
     parser.add_argument('--output',default=None)
+    parser.add_argument('--reuse-calibration',default=None,help='freeze selected calibration from a prior pilot calibration.json')
+    parser.add_argument('--seeds',type=int,nargs='+',default=[731,947])
+    parser.add_argument('--loads',type=float,nargs='+',default=[.5,.8])
+    parser.add_argument('--actions',nargs='+',default=[f'{n}:{b}' for n,b in ACTIONS],help='subset of default full grid; background-only control automatically added')
     args = parser.parse_args(argv)
+    try:
+        selected_actions = list(dict.fromkeys(tuple(map(int,action.split(':'))) for action in args.actions))
+    except ValueError:
+        parser.error('actions require N:B syntax')
+    if any(action not in ACTIONS for action in selected_actions): parser.error('actions must be selected from 1:0 4:0 1:2048 4:2048')
+    if any(not 0 < rho <= 1 for rho in args.loads): parser.error('loads must be in (0,1]')
     deadline = deadline_value(os.environ['LATTE_GPU_DEADLINE'])
     out = Path(args.output or ('t4-pilot-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ'))).resolve()
     out.mkdir(parents=True,exist_ok=False)
     state = dict(experiment='pilot real-T4 synthetic token-count externality; not quality/routing proof',
                  deadline_epoch=deadline, started_epoch=time.time(), status='running', completed_blocks=[], skipped_blocks=[],
+                 command_argv=list(sys.argv if argv is None else [__file__,*argv]), configuration=vars(args),
+                 driver_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                 selected_actions=selected_actions, omitted_default_actions=[a for a in ACTIONS if a not in selected_actions],
+                 action_scope_note='reduced grid omits N1B0 reference when 1:0 is not requested; no substituted result',
+                 protocol_phase='phase2_corrective_timeout_horizon' if args.reuse_calibration else 'fresh_local_calibration',
+                 corrective_reason='timeout/drain must exceed frozen SLO; prior phase retained, not best-result selection' if args.reuse_calibration else None,
                  note='capacity/SLO calibrated locally; no RTX4080 rates or latency reused; target fraction .10 rather than old .05')
     write_json(out/'pilot-summary.json',state)
     monitor_stop = threading.Event()
@@ -165,8 +203,8 @@ def main(argv=None):
         prompts = json.loads(Path(args.prompts).read_text())
         if not all(str(b) in lengths for b in (0,1024,2048)):
             raise ValueError('lengths.json must include corrected B0 and budgets1024/2048')
-        if deadline-time.time() < 360:
-            raise TimeoutError('less than six minutes remain; refusing calibration')
+        if not args.reuse_calibration and deadline-time.time() < 420:
+            raise TimeoutError('less than seven minutes remain; refusing fresh calibration')
         versions = {}
         for name in ('vllm','torch','transformers','numpy'):
             try: versions[name]=importlib.metadata.version(name)
@@ -181,19 +219,30 @@ def main(argv=None):
             raise RuntimeError('this pilot is explicitly T4; nvidia-smi did not identify a T4')
         shutil.copy2(args.lengths,out/'lengths.json')
         shutil.copy2(args.prompts,out/'prompts.json')
-        calibration = calibrate(args.url.rstrip('/'),args.model,prompts,lengths,out,deadline)
+        if args.reuse_calibration:
+            record = load_reused_calibration(args.reuse_calibration)
+            write_json(out/'calibration.json',record)
+            calibration = record['selected']
+            state['reused_source'] = record['reused_source']
+            log(f'PHASE2 corrective experiment: frozen capacity={calibration["reference_capacity_jobs_s"]:.3f}, SLO={calibration["slo_s"]}; no calibration rerun or result selection')
+        else:
+            calibration = calibrate(args.url.rstrip('/'),args.model,prompts,lengths,out,deadline)
+        horizon = request_horizon(calibration['slo_s'])
+        state['request_timeout_s'] = horizon
+        state['drain_s'] = horizon
+        log(f'Request timeout={horizon}s; drain={horizon}s; block guard uses this horizon')
         state['calibration']=calibration
         write_json(out/'pilot-summary.json',state)
         # Interleave loads: each seed uses both loads, with the second seed reversed.
-        blocks = [(731,.5),(731,.8),(947,.8),(947,.5)]
+        blocks = [(seed,rho) for i,seed in enumerate(args.seeds) for rho in (args.loads if i%2==0 else list(reversed(args.loads)))]
         for seed,rho in blocks:
             key = f'seed{seed}-rho{rho:.1f}'
-            if not can_start_block(time.time(),deadline):
+            if not can_start_block(time.time(),deadline,cells=len(selected_actions)+1,drain=horizon):
                 state['skipped_blocks'].append(dict(block=key,reason='conservative block bound plus archive margin exceeds deadline'))
                 write_json(out/'pilot-summary.json',state)
                 log(f'SKIP {key}: insufficient deadline reserve')
                 continue
-            actions = list(ACTIONS)
+            actions = list(selected_actions)
             random.Random(f't4-order:{seed}:{rho}').shuffle(actions)
             trace = replay.generate_trace(lengths,prompts,seed,rho*calibration['reference_capacity_jobs_s'],
                 calibration['target_rate'],warmup=10,duration=45,max_n=4)
@@ -207,7 +256,7 @@ def main(argv=None):
                 '--output',str(out/key),'--hardware-json',str(out/'hardware.json'),
                 '--actions',*[f'{n}:{b}' for n,b in actions],'--reference-budget','1024',
                 '--cache-policy','disabled','--slo',str(calibration['slo_s']),'--attainment','.95',
-                '--timeout','60','--drain','60','--idle-timeout','15','--max-inflight','128','--metrics-interval','1'])
+                '--timeout',str(horizon),'--drain',str(horizon),'--idle-timeout','15','--max-inflight','128','--metrics-interval','1'])
             state['completed_blocks'].append(dict(block=key,seed=seed,rho=rho,summary=json.loads((out/key/'summary.json').read_text())))
             state.pop('active_block',None)
             write_json(out/'pilot-summary.json',state)
