@@ -169,3 +169,18 @@ def test_randomized_order_preserves_one_control_and_all_actions():
     assert r.cell_order(original, 11) == r.cell_order(original, 11)
     assert r.cell_order(original, None) == [(0,0)]+original
     assert original == [(4,0),(1,2048),(4,2048)]
+
+
+def test_fixed_target_cohort_preserves_matching_across_background_loads():
+    import matched_serving as r
+    lengths = {'0':[2,3], '1024':[5,6], '2048':[8,9]}
+    prompts = [{'thinking':'think','nothinking':'answer'}]
+    low = r.generate_trace(lengths,prompts,20261113,.15,.03,30,120,4,target_count=6)
+    high = r.generate_trace(lengths,prompts,20261113,.24,.03,30,120,4,target_count=6)
+    lt = [e for e in low['events'] if e['stream']=='target' and e['measured']]
+    ht = [e for e in high['events'] if e['stream']=='target' and e['measured']]
+    assert len(lt) == 6
+    assert lt == ht
+    assert all(30 <= e['at_s'] < 150 for e in lt)
+    assert low['target_count'] == 6
+    assert 'conditional' in low['target_arrival_definition']

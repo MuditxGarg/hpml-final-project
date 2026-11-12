@@ -25,9 +25,11 @@ def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
 
 
-def generate_trace(lengths, prompts, seed, background_rate, target_rate, warmup, duration, max_n):
+def generate_trace(lengths, prompts, seed, background_rate, target_rate, warmup, duration, max_n, target_count=None):
     if duration <= 0 or warmup < 0 or max_n < 1 or min(background_rate, target_rate) < 0:
         raise ValueError('duration/max_n must be positive; warmup/rates nonnegative')
+    if target_count is not None and (not isinstance(target_count, int) or target_count < 1):
+        raise ValueError('target_count must be a positive integer')
     if not prompts or not lengths or any(not v or any(int(x) != x or x < 1 for x in v) for v in lengths.values()):
         raise ValueError('nonempty prompts and positive integer empirical lengths required')
     for prompt in prompts:
@@ -42,18 +44,24 @@ def generate_trace(lengths, prompts, seed, background_rate, target_rate, warmup,
         arrival = random.Random(f'{seed}:{stream}:arrival')
         prompt_rng = random.Random(f'{seed}:{stream}:prompt')
         length_rng = {str(b): random.Random(f'{seed}:{stream}:length:{b}') for b in lengths}
-        at, index = 0., 0
+        at, times = 0., []
         while rate > 0:
             at += arrival.expovariate(rate)
             if at >= warmup + duration:
                 break
+            times.append(at)
+        if stream == 'target' and target_count is not None:
+            fixed_rng = random.Random(f'{seed}:target:conditional-arrival')
+            times = [t for t in times if t < warmup] + sorted(warmup + fixed_rng.random()*duration for _ in range(target_count))
+        for index, at in enumerate(times):
             events.append(dict(id=f'{stream}-{index}', stream=stream, at_s=at, measured=at >= warmup,
                                prompt_index=prompt_rng.randrange(len(prompts)),
                                lengths={str(b): [length_rng[str(b)].choice(v) for _ in range(max_n)] for b, v in sorted(lengths.items())}))
-            index += 1
     return dict(version=1, experiment='E1 synthetic token-count externality; no answer-quality claim', seed=seed,
                 background_rate=background_rate, target_rate=target_rate, warmup_s=warmup, duration_s=duration,
-                max_n=max_n, lengths_sha256=digest(lengths), prompts=prompts,
+                max_n=max_n, target_count=target_count,
+                target_arrival_definition='conditional Poisson: fixed measured count with uniform arrival times; warmup Poisson' if target_count is not None else 'Poisson',
+                lengths_sha256=digest(lengths), prompts=prompts,
                 events=sorted(events, key=lambda e: (e['at_s'], e['id'])))
 
 
@@ -241,6 +249,7 @@ def main(argv=None):
     gen.add_argument('--target-rate', type=float, required=True)
     gen.add_argument('--warmup', type=float, default=30)
     gen.add_argument('--duration', type=float, default=120)
+    gen.add_argument('--target-count',type=int,default=None,help='fixed measured target cohort; conditional Poisson arrivals')
     gen.add_argument('--max-n', type=int, default=4)
     run = subs.add_parser('run')
     for name in ('trace','url','model','output','hardware-json'): run.add_argument('--'+name, required=True)
@@ -258,7 +267,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.command == 'generate':
         trace = generate_trace(json.loads(Path(args.lengths).read_text()), json.loads(Path(args.prompts).read_text()), args.seed,
-                               args.background_rate,args.target_rate,args.warmup,args.duration,args.max_n)
+                               args.background_rate,args.target_rate,args.warmup,args.duration,args.max_n,args.target_count)
         trace['sources'] = {'lengths':str(Path(args.lengths).resolve()), 'prompts':str(Path(args.prompts).resolve())}
         with open(args.output, 'x') as f: json.dump(trace, f, indent=2)
         print(json.dumps({'trace':args.output, 'events':len(trace['events']), 'sha256':digest(trace)}))

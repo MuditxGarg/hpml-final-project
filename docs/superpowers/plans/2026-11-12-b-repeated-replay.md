@@ -22,3 +22,5 @@ Ruling before GPU allocation: budget preflight gave4164s excluding setup for180s
 
 Verification:24 full-suite tests passed, originalpilot rendered with newreport successfully. Independent reviewer found no substantive defect; countmatching remains a consistency check, not independent trajectory audit.
 Session2 conservative start2026-11-12 22:11:32UTC; driver deadline23:07:32UTC; unassign watchdog23:09:32UTC. FreshT4UUID GPU-6785bd65-1459-86ba-55fb-581941b8ff74. Installation in progress.
+
+Prospective design correction before comparisons: firstfixedseed had0 measuredtargets inoldcalibration preflight. Use --target-count6 conditionalPoissonuniform arrival times per120s; retainseeds/background/warmup. Measuredtargetrate0.05 differsfromcalibrationwarmup rate. All25tests pass; no comparisonoutcomes were observed/selected. OriginalPoissonpilot not pooled.

@@ -95,7 +95,7 @@ def main(argv=None):
                   error=state.get('error'), rows=rows)
     protocol = {key: state.get(key) for key in (
         'protocol_phase', 'corrective_reason', 'request_timeout_s', 'drain_s',
-        'reused_source', 'selected_actions', 'omitted_default_actions')}
+        'reused_source', 'selected_actions', 'omitted_default_actions', 'measured_target_arrivals')}
     protocol['configuration'] = state.get('configuration')
     protocol['planned_schedule'] = state.get('planned_schedule')
     result['protocol'] = protocol
