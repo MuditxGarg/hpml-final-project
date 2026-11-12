@@ -2,7 +2,7 @@
 
 `10_matched_serving.py` generates persisted Poisson traffic, then sends the same arrival/prompt/empirical-length trace to an existing vLLM server for a background-only control and an action grid. It never launches a GPU process or provisions infrastructure. Python's standard library is sufficient.
 
-This is **E1 synthetic token-count externality**, not answer-quality or end-to-end routing validation. Every completion forces the sampled length with `ignore_eos=true`. Real answers, correctness, reasoning behavior and dynamic routing are not evaluated. The HTTP response must report the requested completion token count; a mismatch is an error, not a successful replay.
+This is **E1 synthetic token-count externality**, not answer-quality or end-to-end routing validation. Every completion forces the sampled length with `ignore_eos=true`. Real answers, correctness, reasoning behavior and dynamic routing are not evaluated. Prompts and completion lengths are sampled independently from their empirical pools: this preserves marginal length distributions, not their question-level correlation. The HTTP response must report the requested completion token count; a mismatch is an error, not a successful replay.
 
 ## Inputs and commands
 
@@ -38,6 +38,8 @@ python3 tcr_pipeline_full/tcr_pipeline/10_matched_serving.py run \
 Budgets must exist in the supplied lengths file. Its schema is `{"0": [length, ...], "1024": [length, ...], ...}`. `N` must not exceed `--max-n`. The control is `(N=0, B=0)`, automatically first: it offers **background traffic only**. Its target events remain in the raw shared trace with status `not_offered_control`, but trigger no HTTP request and are excluded from its target cohort denominator. The background stream always uses `(N=1, B=reference-budget)`. Action cells add their target traffic to the identical scheduled background trace; every action cell uses the same target schedule. Control background SLO is checked alone, while action feasibility checks both streams.
 
 The committed `lengths.json` reflects its original measurement provenance; notably its B=0 sample is capped at 1024, rather than the corrected 2048-cap labels used by the new evaluation path. Do not silently conflate these datasets. For a corrected-cap live run, supply a separately derived empirical length JSON and identify that provenance in the hardware/config record. The trace records the exact length-source hash and pathname. To use corrected lengths, substitute `--lengths /absolute/path/lengths_v2.json` in the generate command and choose a fresh trace output; the replay command then consumes that trace unchanged. This CLI consumes empirical per-sample lengths, not mean-only tables. Rates are independent Poisson job rates, not HTTP request rates; a target action with N samples issues N simultaneous HTTP requests per job.
+
+Reconstruct the corrected pools with `python3 tcr_pipeline_full/tcr_pipeline/12_prepare_replay_lengths.py --output /path/to/new-length-directory`. Its manifest records source hashes, cap and ordering. The default2048-cap output was checked against all24000 ordered lengths used in the November12 pilots. Obtain prompts with the feature recovery script; keep the model/tokenizer revision and prompt provenance alongside them.
 
 Hardware JSON is user-supplied evidence, for example:
 
