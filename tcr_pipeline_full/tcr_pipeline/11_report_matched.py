@@ -8,23 +8,56 @@ def table_rows(blocks):
     rows = []
     for block in blocks:
         cells = block['summary']['cells']
-        control = next(c for c in cells if c['control'])['metrics']['background']
+        control_cell = next((c for c in cells if c['control']), None)
+        control = control_cell['metrics']['background'] if control_cell else None
         for c in cells:
             bg, tg = c['metrics']['background'], c['metrics']['target']
             failures = bg['scheduled']-bg['statuses'].get('completed', 0)
-            control_failures = control['scheduled']-control['statuses'].get('completed', 0)
-            p95, cp95 = bg['completed_p95_s'], control['completed_p95_s']
+            control_failures = control['scheduled']-control['statuses'].get('completed', 0) if control else None
+            p95, cp95 = bg['completed_p95_s'], control['completed_p95_s'] if control else None
             rows.append(dict(block=block['block'], partial_block=block.get('partial', False), seed=block['seed'], load=block['rho'],
                              n=c['n'], budget=c['budget'], control=c['control'],
                              background_scheduled=bg['scheduled'], background_failures=failures,
                              background_slo_attainment=bg['slo_attainment'], completed_p95_s=p95,
                              completed_p95_delta_s=p95-cp95 if p95 is not None and cp95 is not None else None,
-                             matched_background_count=bg['scheduled']==control['scheduled'],
+                             matched_background_count=control is not None and bg['scheduled']==control['scheduled'],
+                             control_background_failures=control_failures,
+                             background_slo_delta=(bg['slo_attainment']-control['slo_attainment'])
+                                 if control and bg['slo_attainment'] is not None and control['slo_attainment'] is not None else None,
                              target_scheduled=tg['scheduled'], target_slo_attainment=tg['slo_attainment'],
                              target_completed_p95_s=tg.get('completed_p95_s'),
-                             latency_comparison='completed-only; failures/censoring present' if failures or control_failures
+                             latency_comparison='no control available' if control is None else 'completed-only; failures/censoring present' if failures or control_failures
                              else 'all background requests completed'))
     return rows
+
+
+def repeat_summary(rows):
+    """Descriptive seed-level paired effects; requests are not independent replicates."""
+    groups = {}
+    for row in rows:
+        if row['control'] or row['partial_block'] or not row['matched_background_count']:
+            continue
+        key = (row['load'], row['n'], row['budget'])
+        groups.setdefault(key, []).append(row)
+    output = []
+    for (load, n, budget), group in sorted(groups.items()):
+        if len({r['seed'] for r in group}) != len(group):
+            raise ValueError('duplicate seed in repeated comparison; do not count reruns as independent')
+        # Failed/censored cohorts do not support an unconditional p95 difference.
+        deltas = [r['completed_p95_delta_s'] for r in group
+                  if r['background_failures'] == 0 and r['control_background_failures'] == 0
+                  and r['completed_p95_delta_s'] is not None]
+        slo = [r['background_slo_delta'] for r in group if r['background_slo_delta'] is not None]
+        output.append(dict(load=load,n=n,budget=budget,independent_seeds=len(group),
+                           background_jobs=sum(r['background_scheduled'] for r in group),
+                           target_jobs=sum(r['target_scheduled'] for r in group),
+                           uncensored_p95_pairs=len(deltas),
+                           mean_p95_delta_s=sum(deltas)/len(deltas) if deltas else None,
+                           p95_delta_range_s=[min(deltas),max(deltas)] if deltas else None,
+                           p95_delta_ci95=None,
+                           mean_background_slo_delta=sum(slo)/len(slo) if slo else None,
+                           inference='descriptive paired block effects only; no population CI or routing claim'))
+    return output
 
 
 def main(argv=None):
@@ -63,7 +96,10 @@ def main(argv=None):
     protocol = {key: state.get(key) for key in (
         'protocol_phase', 'corrective_reason', 'request_timeout_s', 'drain_s',
         'reused_source', 'selected_actions', 'omitted_default_actions')}
+    protocol['configuration'] = state.get('configuration')
+    protocol['planned_schedule'] = state.get('planned_schedule')
     result['protocol'] = protocol
+    result['repeated_comparisons'] = repeat_summary(rows)
     def fmt(x):
         return '—' if x is None else f'{x:.3f}'
     lines = ['# Real T4 matched externality pilot', '', f"Run status: {state['status']}.",
@@ -80,13 +116,15 @@ def main(argv=None):
         lines.append(f"| {r['seed']} | {r['load']} | {r['n']} | {r['budget']} | {r['background_scheduled']} | "
                      f"{r['background_failures']} | {fmt(r['completed_p95_s'])} | {fmt(r['completed_p95_delta_s'])} | "
                      f"{fmt(r['background_slo_attainment'])} | {r['target_scheduled']} | {fmt(r['target_slo_attainment'])} | {fmt(r['target_completed_p95_s'])} | {fmt(r['waiting_max_measured'])} |")
-    lines += ['', 'N=0 is a background-only control. Candidate order is randomized, but control runs first. '
+    order_note = ('All cells, including control, were randomized within blocks. ' if state.get('configuration', {}).get('randomize_control') else 'Candidate order is randomized, but control runs first. ')
+    lines += ['', 'N=0 is a background-only control. ' + order_note +
               'These short runs and few seeds do not establish statistical significance; empty target cohorts '
               'provide no target-performance evidence. Capacity and SLO are local pilot heuristics, not imported '
               'RTX4080 values or a user SLA. Corrected B=0 cap2048 and single chat-template prefixes differ from '
               'the historical sweep. Compare actions within each paired block before comparing across loads.', '',
               'Raw cohort events, telemetry and manifests remain in the downloaded run directory. '
               'An unavailable or skipped condition is not counted as a passing condition.']
+    lines += ['', '## Repeated paired comparisons', '', 'Independent repetitions are seeds, not individual HTTP requests. Partial blocks are excluded here. P95 differences exclude pairs with failed/censored background requests; SLO attainment still counts those misses. No confidence interval is inferred from the short pilot.', '', '```json', json.dumps(result['repeated_comparisons'], indent=2), '```']
     if any(not r['matched_background_count'] for r in rows):
         lines += ['', '**Background counts differ from control in at least one cell; investigate matching before interpreting differences.**']
     args.output.mkdir(parents=True, exist_ok=False)

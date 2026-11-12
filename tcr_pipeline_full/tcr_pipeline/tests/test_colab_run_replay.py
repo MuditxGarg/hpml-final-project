@@ -48,3 +48,14 @@ class DriverTests(unittest.TestCase):
             self.assertEqual(record['idle'],[20,23])
 
 if __name__ == '__main__': unittest.main()
+
+
+def test_plan_accounts_for_longer_windows_and_expected_cohorts():
+    assert hasattr(m, 'plan_blocks')
+    plan = m.plan_blocks([11,12], [.5,.8], [(4,0),(4,2048)],
+                         dict(reference_capacity_jobs_s=.3,target_rate=.03,slo_s=92),
+                         warmup=30,duration=180,idle_timeout=15)
+    assert [(b['seed'],b['rho']) for b in plan['blocks']] == [(11,.5),(11,.8),(12,.8),(12,.5)]
+    assert abs(plan['blocks'][0]['expected_target_jobs'] - 5.4) < 1e-12
+    assert plan['blocks'][0]['expected_background_jobs'] == 27
+    assert plan['conservative_total_s'] > 4*3*(30+180+97)

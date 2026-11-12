@@ -43,6 +43,20 @@ def can_start_block(now, deadline, cells=5, warmup=10, duration=45, drain=60, id
     return now + cells*(warmup+duration+drain+2*idle_timeout+5) + ARCHIVE_MARGIN_S < deadline
 
 
+def plan_blocks(seeds, loads, actions, calibration, warmup=30, duration=180, idle_timeout=15):
+    horizon = request_horizon(calibration['slo_s'])
+    per_block = (len(actions)+1)*(warmup+duration+horizon+2*idle_timeout+5)
+    blocks = []
+    for i, seed in enumerate(seeds):
+        for rho in (loads if i % 2 == 0 else list(reversed(loads))):
+            blocks.append(dict(seed=seed, rho=rho, conservative_block_s=per_block,
+                               expected_target_jobs=duration*calibration['target_rate'],
+                               expected_background_jobs=duration*rho*calibration['reference_capacity_jobs_s']))
+    return dict(blocks=blocks, conservative_total_s=len(blocks)*per_block+ARCHIVE_MARGIN_S,
+                warmup_s=warmup, duration_s=duration, horizon_s=horizon,
+                note='expected counts are not guarantees; calibration/setup time excluded')
+
+
 def request_horizon(slo_s):
     """Never terminate requests before the frozen service objective can be observed."""
     if not math.isfinite(slo_s) or slo_s <= 0:
@@ -169,13 +183,25 @@ def main(argv=None):
     parser.add_argument('--seeds',type=int,nargs='+',default=[731,947])
     parser.add_argument('--loads',type=float,nargs='+',default=[.5,.8])
     parser.add_argument('--actions',nargs='+',default=[f'{n}:{b}' for n,b in ACTIONS],help='subset of default full grid; background-only control automatically added')
+    parser.add_argument('--warmup',type=float,default=10)
+    parser.add_argument('--duration',type=float,default=45)
+    parser.add_argument('--idle-timeout',type=float,default=15)
+    parser.add_argument('--randomize-control',action='store_true')
+    parser.add_argument('--plan-only',action='store_true',help='print schedule using supplied calibration; no server/GPU/network calls')
     args = parser.parse_args(argv)
+    if args.warmup < 0 or args.duration <= 0 or args.idle_timeout <= 0:
+        parser.error('warmup must be nonnegative; duration/idle-timeout positive')
     try:
         selected_actions = list(dict.fromkeys(tuple(map(int,action.split(':'))) for action in args.actions))
     except ValueError:
         parser.error('actions require N:B syntax')
     if any(action not in ACTIONS for action in selected_actions): parser.error('actions must be selected from 1:0 4:0 1:2048 4:2048')
     if any(not 0 < rho <= 1 for rho in args.loads): parser.error('loads must be in (0,1]')
+    if args.plan_only:
+        if not args.reuse_calibration: parser.error('--plan-only requires --reuse-calibration as a planning estimate')
+        calibration = load_reused_calibration(args.reuse_calibration)['selected']
+        print(json.dumps(plan_blocks(args.seeds,args.loads,selected_actions,calibration,args.warmup,args.duration,args.idle_timeout),indent=2))
+        return
     deadline = deadline_value(os.environ['LATTE_GPU_DEADLINE'])
     out = Path(args.output or ('t4-pilot-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ'))).resolve()
     out.mkdir(parents=True,exist_ok=False)
@@ -233,11 +259,13 @@ def main(argv=None):
         log(f'Request timeout={horizon}s; drain={horizon}s; block guard uses this horizon')
         state['calibration']=calibration
         write_json(out/'pilot-summary.json',state)
+        state['planned_schedule'] = plan_blocks(args.seeds,args.loads,selected_actions,calibration,args.warmup,args.duration,args.idle_timeout)
+        write_json(out/'pilot-summary.json',state)
         # Interleave loads: each seed uses both loads, with the second seed reversed.
         blocks = [(seed,rho) for i,seed in enumerate(args.seeds) for rho in (args.loads if i%2==0 else list(reversed(args.loads)))]
         for seed,rho in blocks:
             key = f'seed{seed}-rho{rho:.1f}'
-            if not can_start_block(time.time(),deadline,cells=len(selected_actions)+1,drain=horizon):
+            if not can_start_block(time.time(),deadline,cells=len(selected_actions)+1,drain=horizon,warmup=args.warmup,duration=args.duration,idle_timeout=args.idle_timeout):
                 state['skipped_blocks'].append(dict(block=key,reason='conservative block bound plus archive margin exceeds deadline'))
                 write_json(out/'pilot-summary.json',state)
                 log(f'SKIP {key}: insufficient deadline reserve')
@@ -245,18 +273,19 @@ def main(argv=None):
             actions = list(selected_actions)
             random.Random(f't4-order:{seed}:{rho}').shuffle(actions)
             trace = replay.generate_trace(lengths,prompts,seed,rho*calibration['reference_capacity_jobs_s'],
-                calibration['target_rate'],warmup=10,duration=45,max_n=4)
+                calibration['target_rate'],warmup=args.warmup,duration=args.duration,max_n=4)
             trace['sources'] = dict(lengths=str(Path(args.lengths).resolve()), prompts=str(Path(args.prompts).resolve()))
             trace_path = out/f'{key}-trace.json'
             write_json(trace_path,trace)
             log(f'START {key}: background={trace["background_rate"]:.3f} jobs/s; order={actions}; {len(trace["events"])} scheduled events')
             state['active_block']=key
             write_json(out/'pilot-summary.json',state)
+            order_args = ['--order-seed',str(seed+round(rho*10000))] if args.randomize_control else []
             replay.main(['run','--trace',str(trace_path),'--url',args.url,'--model',args.model,
                 '--output',str(out/key),'--hardware-json',str(out/'hardware.json'),
                 '--actions',*[f'{n}:{b}' for n,b in actions],'--reference-budget','1024',
                 '--cache-policy','disabled','--slo',str(calibration['slo_s']),'--attainment','.95',
-                '--timeout',str(horizon),'--drain',str(horizon),'--idle-timeout','15','--max-inflight','128','--metrics-interval','1'])
+                '--timeout',str(horizon),'--drain',str(horizon),'--idle-timeout',str(args.idle_timeout),'--max-inflight','128','--metrics-interval','1',*order_args])
             state['completed_blocks'].append(dict(block=key,seed=seed,rho=rho,summary=json.loads((out/key/'summary.json').read_text())))
             state.pop('active_block',None)
             write_json(out/'pilot-summary.json',state)

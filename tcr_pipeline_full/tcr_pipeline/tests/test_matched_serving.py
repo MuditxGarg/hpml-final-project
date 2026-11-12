@@ -157,3 +157,15 @@ class ReplayTests(unittest.TestCase):
             server.shutdown(); server.server_close()
 
 if __name__ == '__main__': unittest.main()
+
+
+def test_randomized_order_preserves_one_control_and_all_actions():
+    import matched_serving as r
+    assert hasattr(r, 'cell_order')
+    original = [(4,0),(1,2048),(4,2048)]
+    orders = [r.cell_order(original, seed) for seed in range(12)]
+    assert all(sorted(x) == sorted([(0,0)]+original) for x in orders)
+    assert any(x[0] != (0,0) for x in orders)
+    assert r.cell_order(original, 11) == r.cell_order(original, 11)
+    assert r.cell_order(original, None) == [(0,0)]+original
+    assert original == [(4,0),(1,2048),(4,2048)]

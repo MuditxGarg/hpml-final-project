@@ -70,6 +70,8 @@ Cache policy is mandatory and recorded:
 
 Every cell uses the same configured warmup duration. The control runs first, then supplied actions in order (duplicates removed); randomize the supplied action order across independent repetitions when studying ordering effects. This runner does not claim full thermal/cache isolation. All output directories and generated trace files must be new: existing paths fail rather than resuming or overwriting stale experiments. A failed run retains a failed manifest and any finished cells. Use a fresh directory for retry.
 
+For repeated experiments, pass `--order-seed INTEGER` to the `run` command to shuffle **all** cells, including the control, without changing the persisted request trace. The realized cell order is recorded in the manifest. The default remains control-first for compatibility with the original pilot.
+
 Outputs include `manifest.json` (arguments, user-supplied hardware, client platform, hashes, order, cache policy and completion status), a copy of `trace.json`, raw `cell-*-N*-B*.jsonl` jobs with per-sample HTTP timing/results, `cell-*-metrics.jsonl` telemetry, and `summary.json`. The metrics sampler runs during the arrival window and draining, every `--metrics-interval` seconds (default 1). It records running/waiting request gauges, available KV-cache usage and token counters, timestamps and sampling duration; failed scrapes appear as error records. Gauges/counters are summed across labeled replicas, so cache fractions are not a normalized cluster utilization measure. Sampling is diagnostic and may miss short bursts; a missing sample is not zero load. Inspect a failed manifest before consuming its partial summaries. Credentials in server URLs should be avoided because the supplied URL is recorded.
 
 ## Cohort and metrics
@@ -106,3 +108,18 @@ python3 tcr_pipeline_full/tcr_pipeline/11_report_matched.py \
 ```
 
 The report keeps failures alongside completed-only p95, reports empty target cohorts and skipped blocks, and limits queue telemetry to the measured arrival window. It does not infer statistical significance or answer quality from the replay.
+
+## Repeated B continuation
+
+The bounded driver accepts `--warmup`, `--duration`, `--idle-timeout` and `--randomize-control`. These change both the actual trace and the deadline guard. `--plan-only --reuse-calibration PATH` prints expected cohort sizes and a conservative schedule estimate without accessing a server or GPU. Planning with an earlier calibration is only an estimate: a new GPU allocation must be calibrated again for the actual run.
+
+```sh
+python3 tcr_pipeline_full/tcr_pipeline/colab_run_replay.py \
+  --plan-only --reuse-calibration /path/to/previous/calibration.json \
+  --seeds 20261113 20261114 --loads .5 .8 --actions 4:0 4:2048 \
+  --warmup 30 --duration 120 --randomize-control
+```
+
+For execution, remove `--plan-only` and `--reuse-calibration`, supply the existing server, lengths/prompts and fresh output directory, and set the authorized `LATTE_GPU_DEADLINE`. This creates a fresh local calibration before comparisons. Never infer permission for a new GPU allocation from a prior expired session.
+
+The repeated report uses complete paired blocks only. It reports the number of independent seeds, total cohorts, mean/range of within-block p95 differences and mean SLO-attainment difference. Failed/censored background pairs are excluded from p95 differences, but remain misses for SLO attainment. Partial cells remain in the raw table even when their randomized control was not reached. No request-level bootstrap is performed: jobs sharing a traffic run are not independent experimental repetitions. The small repeat pilot remains descriptive, not a stable tail estimate or a routing-gain test.

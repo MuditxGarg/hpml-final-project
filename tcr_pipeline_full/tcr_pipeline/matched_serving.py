@@ -14,6 +14,13 @@ import urllib.error
 import urllib.request
 
 
+def cell_order(actions, seed=None):
+    ordered = list(dict.fromkeys([(0, 0)] + list(actions)))
+    if seed is not None:
+        random.Random(seed).shuffle(ordered)
+    return ordered
+
+
 def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
 
@@ -238,6 +245,7 @@ def main(argv=None):
     run = subs.add_parser('run')
     for name in ('trace','url','model','output','hardware-json'): run.add_argument('--'+name, required=True)
     run.add_argument('--actions', nargs='+', required=True, help='N:B pairs; background-only (0:0) control is automatically first')
+    run.add_argument('--order-seed', type=int, default=None, help='randomize all cells including control; omitted retains control first')
     run.add_argument('--reference-budget', type=int, required=True)
     run.add_argument('--cache-policy', choices=['disabled','reset-prefix','retain'], required=True)
     run.add_argument('--slo', type=float, required=True)
@@ -258,8 +266,7 @@ def main(argv=None):
     if args.slo <= 0 or not 0 < args.attainment <= 1:
         parser.error('positive SLO and attainment in (0,1] required')
     trace = json.loads(Path(args.trace).read_text())
-    actions = [(0,0)] + [tuple(map(int, x.split(':'))) for x in args.actions]
-    actions = list(dict.fromkeys(actions))
+    actions = cell_order([tuple(map(int, x.split(':'))) for x in args.actions], args.order_seed)
     for n,b in actions:
         if n < 0 or (n == 0 and b != 0): parser.error('control is 0:0; action N must be positive')
         for event in trace['events']:
