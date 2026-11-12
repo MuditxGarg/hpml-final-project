@@ -1,0 +1,63 @@
+{
+  "method": "leave-one-action-out; censored/error cells excluded; out-of-domain predictions not clipped",
+  "mae_seconds": 3.550606268363229,
+  "evaluated_cells": 37,
+  "unknown_cells": 2,
+  "largest_errors": [
+    {
+      "action": [
+        4,
+        2048
+      ],
+      "load": 0.8,
+      "x": 1.1387853069077443,
+      "y": 61.77337932332375,
+      "predicted": 35.752976223731046,
+      "absolute_error": 26.020403099592706
+    },
+    {
+      "action": [
+        4,
+        1024
+      ],
+      "load": 1.0,
+      "x": 1.2,
+      "y": 39.13743393170061,
+      "predicted": 56.22164920438716,
+      "absolute_error": 17.08421527268655
+    },
+    {
+      "action": [
+        4,
+        0
+      ],
+      "load": 1.3,
+      "x": 1.416745827661571,
+      "y": 53.970692150251125,
+      "predicted": 68.37712907772475,
+      "absolute_error": 14.40643692747362
+    },
+    {
+      "action": [
+        1,
+        2048
+      ],
+      "load": 1.3,
+      "x": 1.384696326726936,
+      "y": 71.10068011449985,
+      "predicted": 58.956657608405486,
+      "absolute_error": 12.144022506094366
+    },
+    {
+      "action": [
+        4,
+        0
+      ],
+      "load": 1.0,
+      "x": 1.116745827661571,
+      "y": 29.555697191301533,
+      "predicted": 38.290192486466836,
+      "absolute_error": 8.734495295165303
+    }
+  ]
+}

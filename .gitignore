@@ -205,6 +205,10 @@ cython_debug/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
+# Per-run evaluation resources and raw outputs; curated reports live in docs/results/.
+evaluation-resources/
+evaluation-results/
+
 # Ruff stuff:
 .ruff_cache/
 

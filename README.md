@@ -3,14 +3,16 @@
 
 When an LLM server is busy, a request that "thinks more" (longer reasoning, or more parallel samples) slows down everyone else, not just itself. This project asks whether choosing the amount of test-time compute per question, and per server load, beats any fixed strategy on correct answers per GPU-second at a p95 latency target.
 
-**Status:** measurement stage done (labels and load sweep). The router, cost model and simulator are next. We have not yet shown that routing wins.
+**Status:** labels, cap-check measurements, load sweep and exploratory routing scripts are available. A corrected nested evaluation and matched-replay harness are now implemented; live end-to-end routing gains remain unproven.
+
+Start with [independent evaluation](docs/evaluation.md) and [matched serving](docs/matched-serving.md). Historical numerical results below are exploratory. The latest original scripts had test-set operating-point selection; the corrected 07/08 entry points invoke 09_evaluate.py, with historical code archived in legacy/.
 
 ## Repository layout
 
 | Folder            | What it is                                                                               |
 | ----------------- | ---------------------------------------------------------------------------------------- |
-| `tcr_pipeline/` | Current pipeline: labeling, probe features, load measurements, report. Start here.       |
-| `Pilot_Test/`   | First pilot (LATTE, 150 questions). Superseded by `tcr_pipeline/`, kept for reference. |
+| `tcr_pipeline_full/tcr_pipeline/` | Current pipeline: labeling, probe features, load measurements, report. Start here.       |
+| `Pilot_Test/`   | First pilot (LATTE, 150 questions). Superseded by `tcr_pipeline_full/tcr_pipeline/`, kept for reference. |
 
 ## Setup in one line
 
@@ -19,7 +21,7 @@ An action is `a = (N, B)`: N parallel samples (majority vote) and a thinking bud
 - Model: Qwen3-1.7B. Data: MATH-500. Server: vLLM 0.32.0.
 - Tested on an RTX 4080 Laptop GPU (12 GB) under WSL2.
 
-## Main results so far (`tcr_pipeline/tcr_results/main/report/overnight_report.md`)
+## Main results so far (`tcr_pipeline_full/tcr_pipeline/tcr_results/main/report/overnight_report.md`)
 
 Accuracy of majority vote over N samples (500 questions, 16 traces each):
 
@@ -52,12 +54,12 @@ Takeaways:
 ## Reproduce
 
 ```bash
-cd tcr_pipeline
+cd tcr_pipeline_full/tcr_pipeline
 python run_pipeline.py smoke        # 10-25 min, must print SMOKE OK
 python run_pipeline.py main --hours 48
 ```
 
-Details and the file list are in `tcr_pipeline/README.md`.
+Details and the file list are in `tcr_pipeline_full/tcr_pipeline/README.md`.
 
 ## Next
 
