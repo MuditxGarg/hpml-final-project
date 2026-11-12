@@ -1,0 +1,521 @@
+{
+  "status": "partial_deadline",
+  "calibration": {
+    "reference_capacity_jobs_s": 0.39491025497464244,
+    "slo_s": 87,
+    "target_rate": 0.03949102549746425,
+    "capacity_definition": "maximum error-free completed reference requests / total trial wall time including drain",
+    "slo_definition": "ceil(4 * nearest-rank p95 of 5 isolated local B1024 requests); pilot heuristic, not SLA",
+    "target_fraction": 0.1,
+    "rho_values": [
+      0.5,
+      0.8
+    ]
+  },
+  "completed_blocks": 3,
+  "skipped_blocks": [
+    {
+      "block": "seed20261114-rho0.5",
+      "reason": "conservative block bound plus archive margin exceeds deadline"
+    }
+  ],
+  "error": null,
+  "rows": [
+    {
+      "block": "seed20261113-rho0.5",
+      "partial_block": false,
+      "seed": 20261113,
+      "load": 0.5,
+      "n": 4,
+      "budget": 0,
+      "control": false,
+      "background_scheduled": 26,
+      "background_failures": 0,
+      "background_statuses": {
+        "completed": 26,
+        "drop": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0
+      },
+      "target_statuses": {
+        "completed": 5,
+        "drop": 0,
+        "timeout": 1,
+        "error": 0,
+        "censored": 0
+      },
+      "background_slo_attainment": 1.0,
+      "completed_p95_s": 54.865507732133665,
+      "completed_p95_delta_s": 15.458104935692276,
+      "matched_background_count": true,
+      "control_background_failures": 0,
+      "background_slo_delta": 0.0,
+      "target_scheduled": 6,
+      "target_slo_attainment": 0.8333333333333334,
+      "target_completed_p95_s": 50.846795502726934,
+      "latency_comparison": "all background requests completed",
+      "waiting_max_measured": 0.0,
+      "metrics_scrape_errors": 0
+    },
+    {
+      "block": "seed20261113-rho0.5",
+      "partial_block": false,
+      "seed": 20261113,
+      "load": 0.5,
+      "n": 0,
+      "budget": 0,
+      "control": true,
+      "background_scheduled": 26,
+      "background_failures": 0,
+      "background_statuses": {
+        "completed": 26,
+        "drop": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0
+      },
+      "target_statuses": {
+        "completed": 0,
+        "drop": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0
+      },
+      "background_slo_attainment": 1.0,
+      "completed_p95_s": 39.40740279644139,
+      "completed_p95_delta_s": 0.0,
+      "matched_background_count": true,
+      "control_background_failures": 0,
+      "background_slo_delta": 0.0,
+      "target_scheduled": 0,
+      "target_slo_attainment": null,
+      "target_completed_p95_s": null,
+      "latency_comparison": "all background requests completed",
+      "waiting_max_measured": 0.0,
+      "metrics_scrape_errors": 0
+    },
+    {
+      "block": "seed20261113-rho0.5",
+      "partial_block": false,
+      "seed": 20261113,
+      "load": 0.5,
+      "n": 4,
+      "budget": 2048,
+      "control": false,
+      "background_scheduled": 26,
+      "background_failures": 0,
+      "background_statuses": {
+        "completed": 26,
+        "drop": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0
+      },
+      "target_statuses": {
+        "completed": 0,
+        "drop": 0,
+        "timeout": 6,
+        "error": 0,
+        "censored": 0
+      },
+      "background_slo_attainment": 1.0,
+      "completed_p95_s": 85.00013557536393,
+      "completed_p95_delta_s": 45.59273277892254,
+      "matched_background_count": true,
+      "control_background_failures": 0,
+      "background_slo_delta": 0.0,
+      "target_scheduled": 6,
+      "target_slo_attainment": 0.0,
+      "target_completed_p95_s": null,
+      "latency_comparison": "all background requests completed",
+      "waiting_max_measured": 0.0,
+      "metrics_scrape_errors": 0
+    },
+    {
+      "block": "seed20261113-rho0.8",
+      "partial_block": false,
+      "seed": 20261113,
+      "load": 0.8,
+      "n": 4,
+      "budget": 0,
+      "control": false,
+      "background_scheduled": 39,
+      "background_failures": 0,
+      "background_statuses": {
+        "completed": 39,
+        "drop": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0
+      },
+      "target_statuses": {
+        "completed": 5,
+        "drop": 0,
+        "timeout": 1,
+        "error": 0,
+        "censored": 0
+      },
+      "background_slo_attainment": 1.0,
+      "completed_p95_s": 74.60117932989768,
+      "completed_p95_delta_s": 13.966789429929719,
+      "matched_background_count": true,
+      "control_background_failures": 0,
+      "background_slo_delta": 0.0,
+      "target_scheduled": 6,
+      "target_slo_attainment": 0.8333333333333334,
+      "target_completed_p95_s": 73.91328916272681,
+      "latency_comparison": "all background requests completed",
+      "waiting_max_measured": 0.0,
+      "metrics_scrape_errors": 0
+    },
+    {
+      "block": "seed20261113-rho0.8",
+      "partial_block": false,
+      "seed": 20261113,
+      "load": 0.8,
+      "n": 4,
+      "budget": 2048,
+      "control": false,
+      "background_scheduled": 39,
+      "background_failures": 9,
+      "background_statuses": {
+        "completed": 30,
+        "drop": 0,
+        "timeout": 9,
+        "error": 0,
+        "censored": 0
+      },
+      "target_statuses": {
+        "completed": 0,
+        "drop": 0,
+        "timeout": 6,
+        "error": 0,
+        "censored": 0
+      },
+      "background_slo_attainment": 0.23076923076923078,
+      "completed_p95_s": 91.7823189514693,
+      "completed_p95_delta_s": 31.14792905150135,
+      "matched_background_count": true,
+      "control_background_failures": 0,
+      "background_slo_delta": -0.7692307692307692,
+      "target_scheduled": 6,
+      "target_slo_attainment": 0.0,
+      "target_completed_p95_s": null,
+      "latency_comparison": "completed-only; failures/censoring present",
+      "waiting_max_measured": 0.0,
+      "metrics_scrape_errors": 0
+    },
+    {
+      "block": "seed20261113-rho0.8",
+      "partial_block": false,
+      "seed": 20261113,
+      "load": 0.8,
+      "n": 0,
+      "budget": 0,
+      "control": true,
+      "background_scheduled": 39,
+      "background_failures": 0,
+      "background_statuses": {
+        "completed": 39,
+        "drop": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0
+      },
+      "target_statuses": {
+        "completed": 0,
+        "drop": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0
+      },
+      "background_slo_attainment": 1.0,
+      "completed_p95_s": 60.63438989996796,
+      "completed_p95_delta_s": 0.0,
+      "matched_background_count": true,
+      "control_background_failures": 0,
+      "background_slo_delta": 0.0,
+      "target_scheduled": 0,
+      "target_slo_attainment": null,
+      "target_completed_p95_s": null,
+      "latency_comparison": "all background requests completed",
+      "waiting_max_measured": 0.0,
+      "metrics_scrape_errors": 0
+    },
+    {
+      "block": "seed20261114-rho0.8",
+      "partial_block": false,
+      "seed": 20261114,
+      "load": 0.8,
+      "n": 4,
+      "budget": 0,
+      "control": false,
+      "background_scheduled": 30,
+      "background_failures": 0,
+      "background_statuses": {
+        "completed": 30,
+        "drop": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0
+      },
+      "target_statuses": {
+        "completed": 3,
+        "drop": 0,
+        "timeout": 3,
+        "error": 0,
+        "censored": 0
+      },
+      "background_slo_attainment": 1.0,
+      "completed_p95_s": 74.20067362462069,
+      "completed_p95_delta_s": 30.074086581889986,
+      "matched_background_count": true,
+      "control_background_failures": 0,
+      "background_slo_delta": 0.0,
+      "target_scheduled": 6,
+      "target_slo_attainment": 0.3333333333333333,
+      "target_completed_p95_s": 90.77374023974629,
+      "latency_comparison": "all background requests completed",
+      "waiting_max_measured": 0.0,
+      "metrics_scrape_errors": 0
+    },
+    {
+      "block": "seed20261114-rho0.8",
+      "partial_block": false,
+      "seed": 20261114,
+      "load": 0.8,
+      "n": 4,
+      "budget": 2048,
+      "control": false,
+      "background_scheduled": 30,
+      "background_failures": 11,
+      "background_statuses": {
+        "completed": 19,
+        "drop": 0,
+        "timeout": 11,
+        "error": 0,
+        "censored": 0
+      },
+      "target_statuses": {
+        "completed": 0,
+        "drop": 0,
+        "timeout": 6,
+        "error": 0,
+        "censored": 0
+      },
+      "background_slo_attainment": 0.5333333333333333,
+      "completed_p95_s": 90.84551341962052,
+      "completed_p95_delta_s": 46.71892637688981,
+      "matched_background_count": true,
+      "control_background_failures": 0,
+      "background_slo_delta": -0.4666666666666667,
+      "target_scheduled": 6,
+      "target_slo_attainment": 0.0,
+      "target_completed_p95_s": null,
+      "latency_comparison": "completed-only; failures/censoring present",
+      "waiting_max_measured": 0.0,
+      "metrics_scrape_errors": 0
+    },
+    {
+      "block": "seed20261114-rho0.8",
+      "partial_block": false,
+      "seed": 20261114,
+      "load": 0.8,
+      "n": 0,
+      "budget": 0,
+      "control": true,
+      "background_scheduled": 30,
+      "background_failures": 0,
+      "background_statuses": {
+        "completed": 30,
+        "drop": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0
+      },
+      "target_statuses": {
+        "completed": 0,
+        "drop": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0
+      },
+      "background_slo_attainment": 1.0,
+      "completed_p95_s": 44.126587042730705,
+      "completed_p95_delta_s": 0.0,
+      "matched_background_count": true,
+      "control_background_failures": 0,
+      "background_slo_delta": 0.0,
+      "target_scheduled": 0,
+      "target_slo_attainment": null,
+      "target_completed_p95_s": null,
+      "latency_comparison": "all background requests completed",
+      "waiting_max_measured": 0.0,
+      "metrics_scrape_errors": 0
+    }
+  ],
+  "protocol": {
+    "protocol_phase": "fresh_local_calibration",
+    "corrective_reason": null,
+    "request_timeout_s": 92,
+    "drain_s": 92,
+    "reused_source": null,
+    "selected_actions": [
+      [
+        4,
+        0
+      ],
+      [
+        4,
+        2048
+      ]
+    ],
+    "omitted_default_actions": [
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        2048
+      ]
+    ],
+    "measured_target_arrivals": {
+      "definition": "conditional Poisson fixed count",
+      "count": 6,
+      "expected_rate": 0.05,
+      "warmup_rate": 0.03949102549746425
+    },
+    "configuration": {
+      "url": "http://127.0.0.1:8001",
+      "model": "m",
+      "lengths": "lengths.json",
+      "prompts": "prompts.json",
+      "output": "/content/t4-b-repeat-run1",
+      "reuse_calibration": null,
+      "seeds": [
+        20261113,
+        20261114
+      ],
+      "loads": [
+        0.5,
+        0.8
+      ],
+      "actions": [
+        "4:0",
+        "4:2048"
+      ],
+      "target_count": 6,
+      "warmup": 30.0,
+      "duration": 120.0,
+      "idle_timeout": 15,
+      "randomize_control": true,
+      "plan_only": false
+    },
+    "planned_schedule": {
+      "blocks": [
+        {
+          "seed": 20261113,
+          "rho": 0.5,
+          "conservative_block_s": 831.0,
+          "expected_target_jobs": 6,
+          "expected_background_jobs": 23.694615298478546
+        },
+        {
+          "seed": 20261113,
+          "rho": 0.8,
+          "conservative_block_s": 831.0,
+          "expected_target_jobs": 6,
+          "expected_background_jobs": 37.911384477565676
+        },
+        {
+          "seed": 20261114,
+          "rho": 0.8,
+          "conservative_block_s": 831.0,
+          "expected_target_jobs": 6,
+          "expected_background_jobs": 37.911384477565676
+        },
+        {
+          "seed": 20261114,
+          "rho": 0.5,
+          "conservative_block_s": 831.0,
+          "expected_target_jobs": 6,
+          "expected_background_jobs": 23.694615298478546
+        }
+      ],
+      "conservative_total_s": 3384.0,
+      "warmup_s": 30.0,
+      "duration_s": 120.0,
+      "horizon_s": 92,
+      "note": "expected counts are not guarantees; calibration/setup time excluded"
+    }
+  },
+  "repeated_comparisons": [
+    {
+      "load": 0.5,
+      "n": 4,
+      "budget": 0,
+      "independent_seeds": 1,
+      "background_jobs": 26,
+      "target_jobs": 6,
+      "uncensored_p95_pairs": 1,
+      "mean_p95_delta_s": 15.458104935692276,
+      "p95_delta_range_s": [
+        15.458104935692276,
+        15.458104935692276
+      ],
+      "p95_delta_ci95": null,
+      "mean_background_slo_delta": 0.0,
+      "inference": "descriptive paired block effects only; no population CI or routing claim"
+    },
+    {
+      "load": 0.5,
+      "n": 4,
+      "budget": 2048,
+      "independent_seeds": 1,
+      "background_jobs": 26,
+      "target_jobs": 6,
+      "uncensored_p95_pairs": 1,
+      "mean_p95_delta_s": 45.59273277892254,
+      "p95_delta_range_s": [
+        45.59273277892254,
+        45.59273277892254
+      ],
+      "p95_delta_ci95": null,
+      "mean_background_slo_delta": 0.0,
+      "inference": "descriptive paired block effects only; no population CI or routing claim"
+    },
+    {
+      "load": 0.8,
+      "n": 4,
+      "budget": 0,
+      "independent_seeds": 2,
+      "background_jobs": 69,
+      "target_jobs": 12,
+      "uncensored_p95_pairs": 2,
+      "mean_p95_delta_s": 22.020438005909853,
+      "p95_delta_range_s": [
+        13.966789429929719,
+        30.074086581889986
+      ],
+      "p95_delta_ci95": null,
+      "mean_background_slo_delta": 0.0,
+      "inference": "descriptive paired block effects only; no population CI or routing claim"
+    },
+    {
+      "load": 0.8,
+      "n": 4,
+      "budget": 2048,
+      "independent_seeds": 2,
+      "background_jobs": 69,
+      "target_jobs": 12,
+      "uncensored_p95_pairs": 0,
+      "mean_p95_delta_s": null,
+      "p95_delta_range_s": null,
+      "p95_delta_ci95": null,
+      "mean_background_slo_delta": -0.617948717948718,
+      "inference": "descriptive paired block effects only; no population CI or routing claim"
+    }
+  ]
+}

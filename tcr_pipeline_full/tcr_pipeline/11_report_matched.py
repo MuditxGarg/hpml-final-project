@@ -18,6 +18,7 @@ def table_rows(blocks):
             rows.append(dict(block=block['block'], partial_block=block.get('partial', False), seed=block['seed'], load=block['rho'],
                              n=c['n'], budget=c['budget'], control=c['control'],
                              background_scheduled=bg['scheduled'], background_failures=failures,
+                             background_statuses=bg['statuses'], target_statuses=tg.get('statuses'),
                              background_slo_attainment=bg['slo_attainment'], completed_p95_s=p95,
                              completed_p95_delta_s=p95-cp95 if p95 is not None and cp95 is not None else None,
                              matched_background_count=control is not None and bg['scheduled']==control['scheduled'],

@@ -1,0 +1,13 @@
+{
+  "status": "final collected; experiment partial by deadline",
+  "completed_blocks": 3,
+  "skipped_blocks": 1,
+  "raw_run_sha256": "b30e5f34a8627eac82b3651d20c481c5ecb1cd8768cfc2abb199ee48476bb1bc",
+  "server_evidence_sha256": "f4e464052e6a6f0ab5c9cabca32f6dce1c1993dd521216f2c0c07fe6f9d9c01c",
+  "conservative_allocation_start_utc": "2026-11-12T22:11:32Z",
+  "driver_deadline_utc": "2026-11-12T23:07:32Z",
+  "watchdog_release_utc": "2026-11-12T23:09:32Z",
+  "actual_release_utc": "2026-11-12T23:02:26.904338Z",
+  "release_verified": "runtime.unassign output and Reconnect T4 UI",
+  "paid_compute": false
+}
