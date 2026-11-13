@@ -69,4 +69,12 @@ Details and the file list are in `tcr_pipeline_full/tcr_pipeline/README.md`.
 4. Simulator and allocator with a p95 controller.
 5. Evaluate on the 400 held-out questions against fixed actions, a fixed-cost router, difficulty bins and an oracle, with confidence intervals; spot-check on the real server.
 
-Latest measurement: [Matched Serving Interference Study](docs/results/2026-11-12-serving-interference/README.md) — paired T4 replay, raw results, target failures, and limitations.
+## Latest experiment reports
+
+Read these in order; each report includes raw evidence, configuration and limitations:
+
+1. [Matched Serving Interference Study](docs/results/2026-11-12-serving-interference/README.md): forced-length T4 replay shows load-sensitive background interference, but deep targets timed out; it does not measure answer quality.
+2. [Real Answer Completion Validation](docs/results/2026-11-12-real-answer-validation/README.md): five-question idle A6000 diagnostic validates EOS-aware shallow sampling and two-stage deep answers.
+3. [Matched Real-Answer Load Comparison](docs/results/2026-11-12-real-answer-load/README.md): four complete paired blocks, 16 cells and 60 target decisions. Higher arrival rates increased latency, but no queueing was observed; background delivery misses came from output caps. Load-aware routing gains remain unproven.
+
+Reproduction: [matched replay](docs/matched-serving.md), [idle real answers](docs/real-answer-validation.md), and [real-answer load comparison](docs/real-answer-load.md). The reports retain the failed setup attempt and final allocation accounting. GPU experiments require an explicitly provisioned server; the local tests do not allocate GPUs.

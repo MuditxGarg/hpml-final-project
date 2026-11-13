@@ -4,7 +4,7 @@
 
 - Read committed 500-question/16-trace labels and cap-check labels from source revision `6a8ecec`.
 - Regenerated all 500 questions' hidden states (8 layers × 2048 features) on a free Colab Tesla T4, FP16 eager attention. The original feature archive was not shared in Discord or committed; the lean archive's log confirms it existed on the author's machine. New features are a distinct extraction, not a reproduction of BF16 numerical outputs. See `feature-manifest.json`.
-- Ran outer five-fold / inner three-fold evaluation using N={1,2,4}, B={0,1024,2048}, corrected B=0 cap2048, seed20261112. `nested-evaluation.md` and `nested-summary.json` contain results. Full question-level audit is local at `evaluation-results/probe-t4-cap2048-reviewed/results.json`.
+- Ran outer five-fold / inner three-fold evaluation using N={1,2,4}, B={0,1024,2048}, corrected B=0 cap2048, seed20261112. `nested-evaluation.md` and `nested-summary.json` contain results. Full question-level audit is included as `nested-results.json.gz`, preserved from the independent evaluation PR.
 - CPU and fake-HTTP test suite: 20 tests passed. Fake-server tests establish software plumbing, never GPU performance.
 
 ## Main observation
