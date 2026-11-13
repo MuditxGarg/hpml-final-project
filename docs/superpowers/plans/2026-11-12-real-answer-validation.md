@@ -14,7 +14,7 @@ Keep the 87s SLO distinct from the 180s observation deadline. Preserve failed sa
 - [x] Add tests for EOS-aware shallow requests, natural/forced deep continuation, common deadline, failed-sample voting, late answers and deterministic difficulty sampling; observe failure.
 - [x] Implement real_answer_validation.py with prepare/run/score commands, immutable plan, question block guard, immediate JSONL persistence, stage/token evidence and offline report.
 - [x] Run targeted tests and complete suite; build five-question input and portable bundle; inspect plan IDs and request bounds.
-- [ ] Review implementation, record evidence and resource handoff. Execute live pilot only after new GPU permission; otherwise leave runnable assets ready.
+- [x] Review implementation, record evidence and resource handoff. Execute live pilot only after new GPU permission; otherwise leave runnable assets ready.
 
 ## Execution ledger
 Scope: accepted real-answer validation step, implemented inline. Existing feature checkout is used; earlier naming edits are preserved. New GPU request pending.
@@ -29,3 +29,5 @@ Job13887170 failed2m55s on pypi.nvidia.com cusolver download; no answers. Confir
 Read-only download timing showed Mac~20MB/s vsnode~1MB/s. Job13887790 cancelled16m08s; cumulativeparent49m59s. Exact198package lock compiledonnode, allLinuxwheels downloadedlocally (2platform/indexissues resolved:glibc2.34 llguidance,torchvisionofficialindex lackswheelhash). Model9files~4.08GB allavailableLFShashesverified. Transferinprogress withoutGPU. Offlinebatch65min, totalparentbound114m59s. Code35tests passed; localempty-runreportfix notchangedactivegeneration.
 
 Offlinejob13888699 installed200packages and passeduvcheck in<1min, then failed41s because PyPI torchcodec0.17.0 links libnvrtc.so.13. Verified pinnedvLLM catches unavailableFFmpeg RuntimeError but notthisOSError. Use officialtorchcodec0.17.0+cpu forunusedaudio/video paths (hashd859426bd2fed833ed0826c6d3fefa7a261178cd550420bd536e9f073e7eea56); textmodel remainsFP16CUDA12.9. Cumulativeparent50m40s, next65min bound115m40s.
+
+Completed job13888804: all15 actions,30 sample transports, noHTTPtimeouts, oneunparseableanswer. Scores1/5,3/5,3/5; matched87starget. Successfulallocation6m05s; allparentallocations56m45s, conservativeincludingcleanup58m17s. GPUreleased, downloadedraw/logs/environment and auditedcounts/caps/ties. Finalreport: docs/results/2026-11-12-real-answer-validation/README.md.
