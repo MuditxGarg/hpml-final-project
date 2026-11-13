@@ -195,7 +195,8 @@ def score(args):
     # Require the same symbolic backend as project labeling; don't silently fall back to exact strings.
     import math_verify
     run_dir=Path(args.run);plan=json.loads((run_dir/'plan.json').read_text())
-    raw=[json.loads(x) for x in (run_dir/'raw.jsonl').read_text().splitlines()]
+    raw_path=run_dir/'raw.jsonl'
+    raw=[json.loads(x) for x in raw_path.read_text().splitlines()] if raw_path.exists() else []
     rows=score_rows(raw,json.loads(Path(args.gold).read_text()),plan['slo_s'])
     write_json(run_dir/'scored.json',rows)
     summaries=[]

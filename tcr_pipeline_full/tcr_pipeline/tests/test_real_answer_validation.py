@@ -141,3 +141,16 @@ def test_runner_http_records_all_actions_and_deadline_skips_whole_block(tmp_path
         assert not (tmp_path/'skipped/raw.jsonl').exists()
         assert len(json.loads((tmp_path/'skipped/status.json').read_text())['skipped_blocks'])==1
     finally:server.shutdown();server.server_close()
+
+
+def test_empty_deadline_guarded_run_has_zero_observed_not_zero_accuracy(tmp_path,monkeypatch):
+    import json,sys,types
+    monkeypatch.setitem(sys.modules,'math_verify',types.SimpleNamespace())
+    monkeypatch.setattr(m.importlib.metadata,'version',lambda p:'test')
+    (tmp_path/'plan.json').write_text(json.dumps(dict(slo_s=87,scope='diagnostic',blocks=[{'id':'q'}])))
+    (tmp_path/'status.json').write_text(json.dumps(dict(status='partial_deadline',skipped_blocks=[{'id':'q'}])))
+    (tmp_path/'gold.json').write_text(json.dumps({'q':'1'}))
+    m.score(types.SimpleNamespace(run=str(tmp_path),gold=str(tmp_path/'gold.json')))
+    summary=json.loads((tmp_path/'summary.json').read_text())
+    assert all(a['observed']==0 and a['planned']==1 and a['completed_p95_s'] is None for a in summary['actions'])
+    assert summary['status']['status']=='partial_deadline'
