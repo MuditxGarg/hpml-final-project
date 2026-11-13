@@ -90,3 +90,19 @@ def test_report_pairs_only_complete_blocks_and_exposes_contention():
     assert len(pairs)==1 and pairs[0]['background_p95_delta_s'] is None
     assert abs(pairs[0]['background_slo_delta']+.1)<1e-9
     assert pairs[0]['target_correct_within_slo']==3
+
+
+def test_run_cli_serializes_configuration_and_skips_unaffordable_blocks(tmp_path,monkeypatch):
+    import json,sys,types
+    monkeypatch.setitem(sys.modules,'transformers',types.SimpleNamespace(AutoTokenizer=types.SimpleNamespace(from_pretrained=lambda *a,**k:object())))
+    monkeypatch.setattr(m,'http',lambda *a,**k:'{"data":[]}')
+    monkeypatch.setattr(m,'calibrate',lambda *a,**k:dict(requests_per_s=1))
+    plan=tmp_path/'plan.json';plan.write_text(json.dumps(dict(prompts=[dict(id=str(i),thinking='p',nothinking='n') for i in range(5)])))
+    bg=tmp_path/'background.json';bg.write_text(json.dumps([dict(id='bg',thinking='p',nothinking='n')]))
+    out=tmp_path/'run'
+    monkeypatch.setattr(sys,'argv',['real_answer_load.py','run','--plan',str(plan),'--background',str(bg),'--out',str(out),'--deadline-epoch',str(time.time())])
+    m.main()
+    manifest=json.loads((out/'manifest.json').read_text())
+    assert manifest['status']=='partial_deadline' and len(manifest['skipped'])==4
+    assert 'fn' not in manifest['configuration']
+    assert manifest['configuration']['command']=='run'

@@ -119,7 +119,7 @@ def run(args):
     tokenizer=AutoTokenizer.from_pretrained(MODEL,revision=REVISION)
     blocks=[(seed,load) for seed in SEEDS for load in (.5,.9)]
     random.Random(20261118).shuffle(blocks)
-    state=dict(status='running',configuration=vars(args),blocks=blocks,completed=[],skipped=[],
+    state=dict(status='running',configuration={k:v for k,v in vars(args).items() if k!='fn'},blocks=blocks,completed=[],skipped=[],
                plan_sha256=digest(plan),background_sha256=digest(background),
                definition='real EOS-aware target and background answers; no router',slo_s=SLO,
                server_models=json.loads(http(args.url+'/v1/models')))
