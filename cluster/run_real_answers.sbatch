@@ -51,7 +51,7 @@ mkdir -p "${model_snapshot}"
 cp -r "${remote_root}/model/." "${model_snapshot}/"
 .venv/bin/python -m pip freeze > environment.txt
 export PATH="${local_root}/.venv/bin:${PATH}"
-server_args=(vllm serve Qwen/Qwen3-1.7B --revision 70d244cc86ccca08cf5af4e1e306ecf908b1ad5e --dtype half --max-model-len 5120 --max-num-seqs 64 --gpu-memory-utilization .85 --served-model-name m --host 127.0.0.1 --port 8001 --no-enable-prefix-caching)
+server_args=(vllm serve Qwen/Qwen3-1.7B --revision 70d244cc86ccca08cf5af4e1e306ecf908b1ad5e --tokenizer-revision 70d244cc86ccca08cf5af4e1e306ecf908b1ad5e --dtype half --max-model-len 5120 --max-num-seqs 64 --gpu-memory-utilization .85 --served-model-name m --host 127.0.0.1 --port 8001 --no-enable-prefix-caching)
 printf '%q ' "${server_args[@]}" > server_command.txt
 "${server_args[@]}" > server.log 2>&1 &
 server_pid=$!
