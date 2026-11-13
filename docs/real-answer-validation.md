@@ -23,7 +23,7 @@ python tcr_pipeline_full/tcr_pipeline/real_answer_validation.py prepare \
   --out evaluation-resources/real-answer-validation
 ```
 
-The portable bundle has `code/`, `input/{plan,gold}.json`, and `run_real_answers.sbatch`. Submit from its directory on Insomnia with `sbatch run_real_answers.sbatch`. The wrapper requests one GPU, 8 CPUs, 32 GiB, at most 60 minutes using `edu/short/free_short`. Installation and execution occur on the compute node in `/tmp`, matching the previously verified cluster convention. It saves raw results and installation/server logs to `results/job-ID/` even on failure. No software runs on the login node beyond file transfer and Slurm commands.
+The portable bundle has `code/`, `input/{plan,gold}.json`, and `run_real_answers.sbatch`. Submit from its directory on Insomnia with `sbatch run_real_answers.sbatch`. The wrapper requests one GPU, 8 CPUs, 32 GiB, 55 minutes for the corrected CUDA-12.9 job (after cancelling an incompatible 1m46s setup, below 60 minutes total) using `edu/short/free_short`. Installation and execution occur on the compute node in `/tmp`, matching the previously verified cluster convention. It saves raw results and installation/server logs to `results/job-ID/` even on failure. No software runs on the login node beyond file transfer and Slurm commands.
 
 Runner CLI for an existing dedicated server:
 
@@ -42,3 +42,7 @@ Set deadline from the actual allocation start, not from server readiness. The ru
 School GPU latency must not be pooled with previous T4 measurements. Record actual hardware and installed versions. An 87s target is retained for a transparent diagnostic comparison, not declared a suitable production SLO on the new hardware.
 
 API reference: [vLLM completion protocol](https://docs.vllm.ai/en/latest/api/vllm/entrypoints/openai/completion/protocol/) documents `return_token_ids`; [vLLM 0.32 installation](https://docs.vllm.ai/en/v0.32.0/getting_started/installation/gpu/) documents CUDA wheel compatibility. Actual integration is checked by the live run.
+
+## Current execution record
+
+2026-11-12: initial job 13886133 cancelled during dependency setup after 1m46s, before model execution. Driver575.57.08 supports CUDA12.9; PyPI default began resolving CUDA13 dependencies. Corrected job13886164 uses the official vLLM0.32.0+cu129 wheel and the PyTorch cu129 index, starts20:06:51 America/New_York, Slurm deadline21:01:51. Automatic requeue disabled. Actual submission script is run_real_answers_cuda129.sbatch; retain it with downloaded evidence.
