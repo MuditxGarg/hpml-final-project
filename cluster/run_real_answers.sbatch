@@ -7,7 +7,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
-#SBATCH --time=01:20:00
+#SBATCH --time=01:05:00
 #SBATCH --signal=B:TERM@120
 #SBATCH --output=latte-real-answers-%j.out
 #SBATCH --error=latte-real-answers-%j.err
@@ -39,27 +39,30 @@ export HF_HOME="${local_root}/hf-cache"
 export PIP_NO_CACHE_DIR=1
 nvidia-smi > hardware.txt
 python -m venv .venv
-.venv/bin/python -m pip install --upgrade uv > install.log 2>&1
-# Reuse fully downloaded official wheels; uv resolves/downloads remaining packages concurrently.
+.venv/bin/python -m pip install --no-index --find-links "${remote_root}/wheelhouse" uv > install.log 2>&1
 export UV_CACHE_DIR="${local_root}/uv-cache"
-export UV_HTTP_TIMEOUT=120
-.venv/bin/uv pip install --python .venv/bin/python \
+export UV_OFFLINE=1 HF_HUB_OFFLINE=1
+.venv/bin/uv pip install --python .venv/bin/python --no-index \
     --find-links "${remote_root}/wheelhouse" \
-    --constraint "${remote_root}/cuda129-sources.txt" \
-    'vllm==0.32.0+cu129' math-verify \
-    --extra-index-url https://download.pytorch.org/whl/cu129 \
-    --index-strategy unsafe-best-match >> install.log 2>&1
+    -r "${remote_root}/requirements-offline.lock" >> install.log 2>&1
+.venv/bin/uv pip check --python .venv/bin/python >> install.log 2>&1
+model_snapshot="${HF_HOME}/hub/models--Qwen--Qwen3-1.7B/snapshots/70d244cc86ccca08cf5af4e1e306ecf908b1ad5e"
+mkdir -p "${model_snapshot}"
+cp -r "${remote_root}/model/." "${model_snapshot}/"
 .venv/bin/python -m pip freeze > environment.txt
 export PATH="${local_root}/.venv/bin:${PATH}"
 server_args=(vllm serve Qwen/Qwen3-1.7B --revision 70d244cc86ccca08cf5af4e1e306ecf908b1ad5e --dtype half --max-model-len 5120 --max-num-seqs 64 --gpu-memory-utilization .85 --served-model-name m --host 127.0.0.1 --port 8001 --no-enable-prefix-caching)
 printf '%q ' "${server_args[@]}" > server_command.txt
 "${server_args[@]}" > server.log 2>&1 &
 server_pid=$!
-export LATTE_SESSION_DEADLINE_EPOCH=$((start_epoch+4680))
+export LATTE_SERVER_PID="${server_pid}"
+export LATTE_SESSION_DEADLINE_EPOCH=$((start_epoch+3780))
 python - <<'PY'
 import os,time,urllib.request
 limit=min(time.time()+900,int(os.environ['LATTE_SESSION_DEADLINE_EPOCH'])-900)
 while time.time()<limit:
+    try: os.kill(int(os.environ['LATTE_SERVER_PID']),0)
+    except ProcessLookupError: raise SystemExit('Model server exited; see server.log')
     try:
         with urllib.request.urlopen('http://127.0.0.1:8001/health',timeout=2) as r:
             if r.status==200: break

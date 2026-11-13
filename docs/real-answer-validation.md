@@ -48,3 +48,11 @@ API reference: [vLLM completion protocol](https://docs.vllm.ai/en/latest/api/vll
 2026-11-12: initial job 13886133 cancelled during dependency setup after 1m46s, before model execution. Driver575.57.08 supports CUDA12.9; PyPI default began resolving CUDA13 dependencies. Corrected job13886164 uses the official vLLM0.32.0+cu129 wheel and the PyTorch cu129 index, starts20:06:51 America/New_York, Slurm deadline21:01:51. Automatic requeue disabled. Actual submission script is run_real_answers_cuda129.sbatch; retain it with downloaded evidence.
 
 The user subsequently authorized120 minutes cumulative GPU time. Serial pip download was slow; job13886164 was cancelled after29m10s with completed official wheels preserved. Job13887170 uses `uv` plus the wheelhouse, an80-minute limit and no automatic requeue. Its generation code and fixed cohort are unchanged. This is setup recovery, not a repeated answer trial.
+
+## Offline cluster preparation
+
+The compute-node download path proved slow. Job13887790 was cancelled after16m08s; no answer requests had run. Total parent GPU allocation so far is49m59s across four setup attempts. The remaining execution uses a65-minute cap (total114m59s, with margin for cancellation grace), below the authorized120 minutes.
+
+The exact198-package Linux/Python3.11 environment was compiled on the actual cluster, then downloaded locally. The cluster uses glibc2.34 (the llguidance wheel requires2.31). PyPI wheels were checked against registry SHA256 values; the official torchvision cu129 index publishes no wheel hash, so its local digest is recorded for transfer provenance. Model files are pinned to the existing revision; all available LFS SHA256 values were checked. The shared `wheelhouse/` includes the original cached vLLM/CUDA files plus the transferred wheels and `uv` bootstrap package. `cluster/requirements-offline.lock` pins the exact environment. The `model/` folder is copied into the node-local Hugging Face snapshot cache.
+
+The current batch wrapper uses `UV_OFFLINE=1`, `HF_HUB_OFFLINE=1`, `--no-index` and the local wheelhouse. It checks dependency consistency and detects a prematurely exited server instead of waiting the full readiness timeout. No GPU is allocated during local download or upload.
