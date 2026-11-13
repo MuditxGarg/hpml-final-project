@@ -154,3 +154,17 @@ def test_empty_deadline_guarded_run_has_zero_observed_not_zero_accuracy(tmp_path
     summary=json.loads((tmp_path/'summary.json').read_text())
     assert all(a['observed']==0 and a['planned']==1 and a['completed_p95_s'] is None for a in summary['actions'])
     assert summary['status']['status']=='partial_deadline'
+
+
+def test_matched_scheduler_real_callback_preserves_control_and_failures():
+    import matched_serving as ms
+    trace=dict(seed=1,warmup_s=0,duration_s=.02,events=[dict(id='b',stream='background',at_s=0,measured=True),dict(id='t',stream='target',at_s=.001,measured=True)])
+    calls=[]
+    def execute(event,n,b,remaining):
+        calls.append((event['id'],n,b,remaining))
+        return dict(status='no_answer',pred=None,parts=[])
+    rows=ms.run_cell(trace,'unused','m',0,0,0,timeout_s=1,drain_s=1,job_runner=execute)
+    assert [x[0] for x in calls]==['b']
+    assert rows[0]['status']=='no_answer' and rows[0]['latency_s']>=0
+    assert rows[1]['status']=='not_offered_control'
+    assert ms.summarize(rows,87)['background']['slo_attainment']==0

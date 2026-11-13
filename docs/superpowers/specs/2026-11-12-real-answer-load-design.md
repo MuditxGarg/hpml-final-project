@@ -1,0 +1,15 @@
+# Matched Real-Answer Load Comparison
+
+Continue the user-approved fixed-action low/high-load comparison on the same Insomnia node (ins091) and RTX A6000 model as the idle diagnostic. A new GPU allocation needs explicit authorization. This is a small diagnostic, not a router evaluation.
+
+Reuse EOS-aware generation and scoring, not forced-token replay. Background requests use single shallow answers on the remaining 495 saved prompts; target requests use the existing five-question cohort. Fixed actions: control, (1,0), (4,0), (1,2048). Same background schedule, prompts and seeds across cells; identical stochastic outputs are not guaranteed across batching conditions. Control sends no target work. Both streams use 87s delivery SLO; target correctness scored offline. Keep failures/no-answer/late outputs in offered denominators.
+
+Implementation choice: reuse matched_serving's open-loop scheduler with an optional real-answer job callback, preserving existing synthetic behavior. A separate real_answer_load.py persists traces, calibrates, runs randomized cells and scores. This avoids replacing the tested scheduler or introducing a router before tradeoffs are measured.
+
+Calibration: three independent simultaneous bursts of 64 single-shallow requests, up to180s each, on the dedicated server. Median completed-request count divided by observed burst elapsed is an explicitly labeled finite-burst throughput proxy, not proven steady-state capacity. Abort calibration if any transport fails; missing boxes remain recorded. Freeze low/high arrival rates at0.5/0.9 of that proxy before comparisons. Report actual queue/cache telemetry; if both rates remain light, state that the experiment did not reach high contention rather than retuning after outcomes.
+
+Two predetermined seeds (20261116,20261117), each low/high, four cells per block. Randomize block order and all cell orders prospectively. Each cell has20s warmup,100s measured window,180s drain,30s idle checks before/after. Five target questions at evenly spaced measured arrivals (10,30,50,70,90s after warmup), shuffled by seed and matched across load levels. Background is Poisson; input draws separate from arrival draws. Target sample seeds vary by repetition, match across actions and loads. No target warmup requests. Max128 inflight jobs; drops count as misses.
+
+Worst case four paired blocks:96min, calibration<=12min, setup allowance~5min, cleanup3min: request120min new allocation. Start a block only if its entire worst-case bound plus180s reserve fits; retain partial data but do not present incomplete blocks as paired comparisons. Slurm no requeue, kill/save at limit. Exact GPU UUID must be recorded; same node/model is enforceable, physical UUID continuity with prior run is not available in prior evidence.
+
+Raw responses, token IDs, per-stage errors, cell telemetry and input hashes retained. Report target correct-and-on-time counts, background SLO attainment and completed-only p95 with failure counts; paired differences by seed, no request-level significance test. Two seeds/five questions cannot establish generalizable routing gains.

@@ -112,7 +112,7 @@ def wait_idle(url, timeout_s=120, stable_s=1):
     raise TimeoutError('server did not become idle; refusing next cell')
 
 
-def run_cell(trace, url, model, n, budget, reference_budget, timeout_s=120, drain_s=120, max_inflight=128, telemetry=None, metrics_interval_s=1):
+def run_cell(trace, url, model, n, budget, reference_budget, timeout_s=120, drain_s=120, max_inflight=128, telemetry=None, metrics_interval_s=1, job_runner=None):
     """Open-loop job admission; N parallel HTTP calls per admitted target job.
 
     Daemon workers cannot extend the cohort censor deadline. Idle verification by
@@ -149,6 +149,18 @@ def run_cell(trace, url, model, n, budget, reference_budget, timeout_s=120, drai
     def job(row):
         try:
             action_n, action_b = (1, reference_budget) if row['stream'] == 'background' else (n, budget)
+            if job_runner is not None:
+                dispatched = time.monotonic()
+                remaining = min(timeout_s-(dispatched-start-row['at_s']), deadline-dispatched)
+                try:
+                    result = job_runner(dict(row), action_n, action_b, max(0, remaining))
+                except Exception as exc:
+                    result = dict(status='error', error=f'{type(exc).__name__}: {exc}')
+                with lock:
+                    if not closed.is_set():
+                        row.update(result, latency_s=time.monotonic()-start-row['at_s'],
+                                   dispatch_lag_s=dispatched-start-row['at_s'])
+                return
             parts, part_lock = [], threading.Lock()
             def part(body):
                 dispatched = time.monotonic()
@@ -230,7 +242,7 @@ def summarize(rows, slo_s):
         lower = [r['latency_s'] if r['status']=='completed' else r.get('observed_s', math.inf) if r['status']=='censored' else math.inf for r in cohort]
         upper = [r['latency_s'] if r['status']=='completed' else math.inf for r in cohort]
         lo, hi = percentile(lower), percentile(upper)
-        output[stream] = dict(scheduled=len(cohort), not_offered_control=sum(r['measured'] and r['stream']==stream and r['status']=='not_offered_control' for r in rows), statuses={s:sum(r['status']==s for r in cohort) for s in ('completed','drop','timeout','error','censored')},
+        output[stream] = dict(scheduled=len(cohort), not_offered_control=sum(r['measured'] and r['stream']==stream and r['status']=='not_offered_control' for r in rows), statuses={s:sum(r['status']==s for r in cohort) for s in ('completed','no_answer','drop','timeout','error','censored')},
             slo_attainment=sum(v<=slo_s for v in complete)/len(cohort) if cohort else None,
             completed_p95_s=percentile(complete), unconditional_p95_lower_s=lo if lo is not None and math.isfinite(lo) else None,
             unconditional_p95_upper_s=hi if hi is not None and math.isfinite(hi) else None,
