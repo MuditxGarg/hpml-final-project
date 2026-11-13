@@ -1,4 +1,4 @@
-# B: repeated matched serving pilot — November 12, 2026
+# Matched Serving Interference Study — November 12, 2026
 
 The conditional-count T4 pilot completed **three paired blocks / nine cells**: one low-load block and two high-load blocks. The second low-load block was skipped by the deadline guard. This is E1 synthetic serving externality evidence, not an online router or answer-quality experiment.
 

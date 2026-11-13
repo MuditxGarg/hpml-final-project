@@ -68,3 +68,5 @@ Details and the file list are in `tcr_pipeline_full/tcr_pipeline/README.md`.
 3. Train the success probe (cross-validated).
 4. Simulator and allocator with a p95 controller.
 5. Evaluate on the 400 held-out questions against fixed actions, a fixed-cost router, difficulty bins and an oracle, with confidence intervals; spot-check on the real server.
+
+Latest measurement: [Matched Serving Interference Study](docs/results/2026-11-12-serving-interference/README.md) — paired T4 replay, raw results, target failures, and limitations.

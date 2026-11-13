@@ -111,7 +111,7 @@ python3 tcr_pipeline_full/tcr_pipeline/11_report_matched.py \
 
 The report keeps failures alongside completed-only p95, reports empty target cohorts and skipped blocks, and limits queue telemetry to the measured arrival window. It does not infer statistical significance or answer quality from the replay.
 
-## Repeated B continuation
+## Matched Serving Interference Study
 
 The bounded driver accepts `--warmup`, `--duration`, `--idle-timeout` and `--randomize-control`. These change both the actual trace and the deadline guard. `--plan-only --reuse-calibration PATH` prints expected cohort sizes and a conservative schedule estimate without accessing a server or GPU. Planning with an earlier calibration is only an estimate: a new GPU allocation must be calibrated again for the actual run.
 
