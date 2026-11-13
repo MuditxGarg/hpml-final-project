@@ -23,3 +23,5 @@ Scope: accepted real-answer validation step, implemented inline. Existing featur
 User selected Insomnia; previous project chat and HW2 scripts supplied connection/free partition. VPN + user SSH authentication completed. Job13886133 cancelled after1m46s because PyPI default selected CUDA13 on driver575.57.08. Corrected officialvLLM0.32.0+cu129 wheel job13886164 uses55-minute limit; no automatic requeue. Total upper bound56m46s. Pending live results.
 
 User authorized120min cumulativeGPU. Job13886164 cancelled29m10s after preserving complete vLLM/cuDNN/CUDA wheels; serial pip network throughput~0.86MB/s. Job13887170 usesuv parallel installer and savedwheelhouse,80min limit, same15action plan/code, no requeue. Parent allocation upper bound1m46s+29m10s+80m=110m56s (termination grace also below120m).
+
+Job13887170 failed2m55s on pypi.nvidia.com cusolver download; no answers. Confirmed exactsameversion official files.pythonhosted.org URL responds200 fromlogin. Added13 hash-pinned directsource constraints; no dependencyversion changes. Job13887790 submitted80min, cumulativeparent upperbound113m51s.

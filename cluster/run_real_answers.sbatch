@@ -42,8 +42,10 @@ python -m venv .venv
 .venv/bin/python -m pip install --upgrade uv > install.log 2>&1
 # Reuse fully downloaded official wheels; uv resolves/downloads remaining packages concurrently.
 export UV_CACHE_DIR="${local_root}/uv-cache"
+export UV_HTTP_TIMEOUT=120
 .venv/bin/uv pip install --python .venv/bin/python \
     --find-links "${remote_root}/wheelhouse" \
+    --constraint "${remote_root}/cuda129-sources.txt" \
     'vllm==0.32.0+cu129' math-verify \
     --extra-index-url https://download.pytorch.org/whl/cu129 \
     --index-strategy unsafe-best-match >> install.log 2>&1
