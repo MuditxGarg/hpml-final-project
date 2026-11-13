@@ -46,3 +46,5 @@ API reference: [vLLM completion protocol](https://docs.vllm.ai/en/latest/api/vll
 ## Current execution record
 
 2026-11-12: initial job 13886133 cancelled during dependency setup after 1m46s, before model execution. Driver575.57.08 supports CUDA12.9; PyPI default began resolving CUDA13 dependencies. Corrected job13886164 uses the official vLLM0.32.0+cu129 wheel and the PyTorch cu129 index, starts20:06:51 America/New_York, Slurm deadline21:01:51. Automatic requeue disabled. Actual submission script is run_real_answers_cuda129.sbatch; retain it with downloaded evidence.
+
+The user subsequently authorized120 minutes cumulative GPU time. Serial pip download was slow; job13886164 was cancelled after29m10s with completed official wheels preserved. Job13887170 uses `uv` plus the wheelhouse, an80-minute limit and no automatic requeue. Its generation code and fixed cohort are unchanged. This is setup recovery, not a repeated answer trial.
