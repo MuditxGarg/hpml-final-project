@@ -37,3 +37,7 @@ If generation stops early, offline scoring can process saved completed cells aft
 Inspect `calibration.json`, per-block trace/order files, raw sample responses and telemetry. Report target correct-and-on-time counts together with background SLO attainment and failure counts. A completed-only p95 does not include failed requests; preserve that distinction. Queue evidence determines whether the nominal high setting really produced load. Summarize paired control-to-action differences separately for each seed and load; with just two seeds, do not present request-level bootstraps as independent repetitions.
 
 The result may show no feasible crossover or no high contention. Either is useful diagnostic evidence, not a reason to claim routing gains. A later router comparison requires more questions/seeds and independent training/operating-point selection.
+
+## Completed run
+
+The corrected run completed all four paired blocks. See the [results and next steps](results/2026-11-12-real-answer-load/README.md). Nominal high load did not create observed queues; missing boxed answers, rather than latency, caused background delivery misses. Cumulative allocation including the failed startup was44m10s; GPU released.

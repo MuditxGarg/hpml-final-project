@@ -14,7 +14,7 @@ No new GPU until approved. Preserve old synthetic scheduler tests. Match backgro
 - [x] Implement optional callback and real_answer_load.py; run fake HTTP integration and existing tests.
 - [x] Prepare bounded same-node offline batch and 495-background-prompt bundle; verify hashes and resource estimate.
 - [x] Review implementation and fix material findings; commit runnable assets.
-- [ ] Request120min free cluster allocation, then execute only when approved, download/audit results and confirm release.
+- [x] Request120min free cluster allocation, then execute only when approved, download/audit results and confirm release.
 
 Local implementation complete:41tests pass including HTTP integration; batch syntax and git diff checks pass. Independent reviewer found missing paired deltas/queue summaries; regression observed RED then GREEN and full suite passed after fix. Input bundle has5targets,495disjoint backgrounds, hashes and exactcode. GPU not requested/allocated yet; request120min once reviewable assets committed.
 
@@ -23,3 +23,5 @@ Local implementation complete:41tests pass including HTTP integration; batch syn
 Heartbeat audit: job13889319 FAILED after3m30s; server/warmup succeeded but CLI manifest serialized argparse fn callback. No calibration/comparison ran. Downloaded logs and confirmed emptyqueue/GPUrelease. Added actualCLI regression, reproduced TypeError, excludedfn from manifest;42tests pass. Failure report docs/results/2026-11-12-real-answer-load-attempt/README.md. No replacementjob submitted; terminal-job heartbeat removed.
 
 User authorized corrected retry within remaining116m30s of original cumulative120min. Uploaded fresh hash-verified bundle to /insomnia001/depts/edu/users/ps3558/latte-real-load-retry-20261112, code e5f0706,42tests pass. Submitted13889524. Slurm rounded submitted01:56:30 to01:57:00, so immediately reduced pending job with scontrol TimeLimit=115; confirmed effective01:55:00. Previous3m30s+115min=118m30s parent cap, leaving90sec cleanup margin. Submitted script/internaldeadline remain original retry copy (113m30s internal); Slurm TERM signal at113min ensures earlier exit/save. No additional job authorized. Heartbeat follow-latte-corrected-load-experiment monitors this retry only and deletes itself after terminal handling or required user action.
+
+Completed13889524 exit0 in40m40s; cumulative44m10s with failedattempt. All4blocks/16cells/60targets audited; matchinginputs/controlabsence/transportcompletion verified. Waitingzero in1600samples, KVmax9.27%;232/3416 measuredbackground outputs missingboxes, allcap2048; noactual87s transportmisses. Report docs/results/2026-11-12-real-answer-load/README.md, rawarchive downloaded and verified. GPUreleased; no new allocation. Terminal heartbeat deleted after result delivery.
