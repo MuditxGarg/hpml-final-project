@@ -5,7 +5,7 @@ When an LLM server is busy, a request that "thinks more" (longer reasoning, or m
 
 **Status:** labels, cap-check measurements, load sweep and exploratory routing scripts are available. A corrected nested evaluation and matched-replay harness are now implemented; live end-to-end routing gains remain unproven.
 
-Start with [independent evaluation](docs/evaluation.md) and [matched serving](docs/matched-serving.md). Per-machine light and contended background rates come from the [sustained calibration](docs/sustained-calibration.md). Historical numerical results below are exploratory. The latest original scripts had test-set operating-point selection; the corrected 07/08 entry points invoke 09_evaluate.py, with historical code archived in legacy/.
+The latest measured baseline on the RTX 4080 is in [docs/results/2026-11-15-baseline-4080](docs/results/2026-11-15-baseline-4080/INTERPRETATION.md). Start with [independent evaluation](docs/evaluation.md) and [matched serving](docs/matched-serving.md). Per-machine light and contended background rates come from the [sustained calibration](docs/sustained-calibration.md). Historical numerical results below are exploratory. The latest original scripts had test-set operating-point selection; the corrected 07/08 entry points invoke 09_evaluate.py, with historical code archived in legacy/.
 
 ## Repository layout
 

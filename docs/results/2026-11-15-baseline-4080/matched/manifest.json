@@ -1,0 +1,129 @@
+{
+  "experiment": "matched real-answer comparison of fixed actions; synthetic background, real target answers; no router",
+  "status": "complete",
+  "configuration": {
+    "command": "run",
+    "plan": "/root/hpml-final-project/evaluation-resources/matched-real-answers-plan-50q-seed20261115/plan.json",
+    "calibration": "/root/hpml-final-project/evaluation-results/sustained-calibration-4080-20261115-seed1042/calibration.json",
+    "lengths": "tcr_results/main/lengths_v2.json",
+    "prompts": "/root/hpml-final-project/evaluation-resources/sustained-calibration-4080/prompts.json",
+    "hardware_json": "/root/hpml-final-project/evaluation-resources/sustained-calibration-4080/hardware.json",
+    "out": "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-20261115",
+    "url": "http://127.0.0.1:8001",
+    "model": "m",
+    "actions": [
+      "1:0",
+      "4:0",
+      "1:2048",
+      "4:2048"
+    ],
+    "seeds": [
+      20261116,
+      20261117,
+      20261118
+    ],
+    "target_fraction": 0.05,
+    "warmup": 60,
+    "timeout": 300,
+    "idle_timeout": 900,
+    "idle_stable": 1,
+    "max_inflight": 512,
+    "metrics_interval": 1,
+    "deadline_epoch": null,
+    "no_gpu": false
+  },
+  "hardware_user_supplied": {
+    "gpu_model": "NVIDIA GeForce RTX 4080 Laptop GPU (12 GB)",
+    "gpu_count": 1,
+    "driver": "617.42",
+    "host": "HP Omen laptop, i9-13900HX, WSL2 (6.18.54.1-microsoft-standard-WSL2)",
+    "vllm_version": "0.32.0",
+    "torch_version": "2.13.0+cu130",
+    "model": "Qwen/Qwen3-1.7B",
+    "model_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "tokenizer_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "server_command": "vllm serve Qwen/Qwen3-1.7B --dtype bfloat16 --max-model-len 5120 --gpu-memory-utilization 0.85 --enable-prefix-caching --max-num-seqs 128 --port 8001 --served-model-name m --seed 20261104 (VLLM_USE_FLASHINFER_SAMPLER=0)",
+    "kv_cache_tokens": 55664,
+    "prefix_caching_enabled": true,
+    "other_clients": "none",
+    "prompt_provenance": "500 MATH-500 questions, Qwen3 chat template, replay convention of colab_recover_features.py (no extra <think> suffix)",
+    "length_provenance": "tcr_results/main/lengths_v2.json, budget 1024 pool"
+  },
+  "environment": {
+    "git_commit": "abae828fa7bc9b943a6a5ab51fdb45f2fd4c18be",
+    "git_dirty": false,
+    "client_platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "python": "3.12.16",
+    "nvidia_smi": "NVIDIA GeForce RTX 4080 Laptop GPU, 12282 MiB, 617.42",
+    "server_version": {
+      "version": "0.32.0"
+    },
+    "server_models": {
+      "object": "list",
+      "data": [
+        {
+          "id": "m",
+          "object": "model",
+          "created": 1794731409,
+          "owned_by": "vllm",
+          "root": "Qwen/Qwen3-1.7B",
+          "parent": null,
+          "max_model_len": 5120,
+          "permission": [
+            {
+              "id": "modelperm-86312bfa34cae90b",
+              "object": "model_permission",
+              "created": 1794731409,
+              "allow_create_engine": false,
+              "allow_sampling": true,
+              "allow_logprobs": true,
+              "allow_search_indices": false,
+              "allow_view": true,
+              "allow_fine_tuning": false,
+              "organization": "*",
+              "group": null,
+              "is_blocking": false
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "plan_sha256": "573378401f87e411b9d46f6bfa2649d14343862c8f492017500213a60e79a518",
+  "calibration_sha256": "d9f579516caa48ed1daf460a6ee40cb5b461a74ca36e6e326fb78d8272218af2",
+  "calibration_source": "/root/hpml-final-project/evaluation-results/sustained-calibration-4080-20261115-seed1042/calibration.json",
+  "rates_rps": {
+    "light": 1.2314943584721938,
+    "contended": 2.4629887169443876
+  },
+  "target_rate_rps": 0.12314943584721938,
+  "window_s": 406.01079214061997,
+  "reference_budget": 1024,
+  "latency_targets_s": [
+    20.91757719599991,
+    41.83515439199982
+  ],
+  "questions": 50,
+  "background_prompts": 450,
+  "lengths_sha256": "481985f997557d7f79fb14411cb5b435ca6be5fb3f2b9ad84d91956519cc3c23",
+  "blocks": [
+    "seed-20261116-contended",
+    "seed-20261116-light",
+    "seed-20261117-light",
+    "seed-20261117-contended",
+    "seed-20261118-light",
+    "seed-20261118-contended"
+  ],
+  "completed": [
+    "seed-20261116-contended",
+    "seed-20261116-light",
+    "seed-20261117-light",
+    "seed-20261117-contended",
+    "seed-20261118-light",
+    "seed-20261118-contended"
+  ],
+  "skipped": [],
+  "started_unix_s": 1794731409.2113678,
+  "control_definition": "(0,0): background only; target jobs retained but not offered",
+  "finished_unix_s": 1794746486.0528092
+}
