@@ -1,0 +1,17 @@
+{
+  "gpu_model": "NVIDIA GeForce RTX 4080 Laptop GPU (12 GB)",
+  "gpu_count": 1,
+  "driver": "617.42",
+  "host": "HP Omen laptop, i9-13900HX, WSL2 (6.18.54.1-microsoft-standard-WSL2)",
+  "vllm_version": "0.32.0",
+  "torch_version": "2.13.0+cu130",
+  "model": "Qwen/Qwen3-1.7B",
+  "model_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "tokenizer_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "server_command": "vllm serve Qwen/Qwen3-1.7B --dtype bfloat16 --max-model-len 5120 --gpu-memory-utilization 0.85 --enable-prefix-caching --max-num-seqs 128 --port 8001 --served-model-name m --seed 20261104 (VLLM_USE_FLASHINFER_SAMPLER=0)",
+  "kv_cache_tokens": 55664,
+  "prefix_caching_enabled": true,
+  "other_clients": "none",
+  "prompt_provenance": "500 MATH-500 questions, Qwen3 chat template, replay convention of colab_recover_features.py (no extra <think> suffix)",
+  "length_provenance": "tcr_results/main/lengths_v2.json, budget 1024 pool"
+}
