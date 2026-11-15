@@ -1,8 +1,11 @@
 """Fake vLLM-compatible server (processor-sharing) to test the load-generator logic without a GPU."""
-import json, threading, time, sys
+import json, os, threading, time, sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 SPEED = 20.0   # time compression
-CAP, PER_REQ, MAXSEQ = 5000.0 * SPEED, 90.0 * SPEED, 128
+# Total tokens/s, per-request tokens/s and concurrent sequences; override from the environment for tests.
+CAP = float(os.environ.get('FAKE_VLLM_CAP', 5000.0 * SPEED))
+PER_REQ = float(os.environ.get('FAKE_VLLM_PER_REQ', 90.0 * SPEED))
+MAXSEQ = int(os.environ.get('FAKE_VLLM_MAXSEQ', 128))
 lock = threading.Lock()
 running, waiting, gen_total = [], [], [0.0]
 
@@ -41,10 +44,19 @@ class H(BaseHTTPRequestHandler):
     def do_POST(self):
         n = int(self.headers['Content-Length']); b = json.loads(self.rfile.read(n))
         r = R(b['max_tokens'])
-        with lock: waiting.append(r)
+        with lock:   # admit at once when a sequence slot is free; queue only when the server is full
+            (running if len(running) < MAXSEQ and not waiting else waiting).append(r)
         r.ev.wait()
-        self.send_response(200); self.end_headers(); self.wfile.write(b'{}')
+        try:
+            self.send_response(200); self.end_headers()
+            self.wfile.write(json.dumps({'choices': [{'text': ''}], 'usage': {'completion_tokens': b['max_tokens']}}).encode())
+        except (BrokenPipeError, ConnectionResetError):
+            pass   # client gave up (timeout or censor deadline)
 
 
 threading.Thread(target=loop, daemon=True).start()
-ThreadingHTTPServer(('127.0.0.1', int(sys.argv[1])), H).serve_forever()
+class Server(ThreadingHTTPServer):
+    request_queue_size = 256   # accept bursts without SYN retries
+
+
+Server(('127.0.0.1', int(sys.argv[1])), H).serve_forever()
