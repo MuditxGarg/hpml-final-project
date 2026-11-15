@@ -1,0 +1,72 @@
+{
+  "status": "complete",
+  "configuration": {
+    "command": "run",
+    "plan": "input/plan.json",
+    "background": "input/background.json",
+    "out": "run",
+    "url": "http://127.0.0.1:8001",
+    "model": "m",
+    "deadline_epoch": 1794548925.0
+  },
+  "blocks": [
+    [
+      20261117,
+      0.5
+    ],
+    [
+      20261116,
+      0.5
+    ],
+    [
+      20261117,
+      0.9
+    ],
+    [
+      20261116,
+      0.9
+    ]
+  ],
+  "completed": [
+    "seed-20261117-load-0.5",
+    "seed-20261116-load-0.5",
+    "seed-20261117-load-0.9",
+    "seed-20261116-load-0.9"
+  ],
+  "skipped": [],
+  "plan_sha256": "7a184072114ec302281f1b536b6228c77943b0d09b9e1c54f8702f66120716f8",
+  "background_sha256": "3dd19d54b40974d4a85a40ce6b1651fc7eeb3e3f27770e8b000073f07e271a86",
+  "definition": "real EOS-aware target and background answers; no router",
+  "slo_s": 87,
+  "server_models": {
+    "object": "list",
+    "data": [
+      {
+        "id": "m",
+        "object": "model",
+        "created": 1794542322,
+        "owned_by": "vllm",
+        "root": "Qwen/Qwen3-1.7B",
+        "parent": null,
+        "max_model_len": 5120,
+        "permission": [
+          {
+            "id": "modelperm-ba785c6748d5dae2",
+            "object": "model_permission",
+            "created": 1794542322,
+            "allow_create_engine": false,
+            "allow_sampling": true,
+            "allow_logprobs": true,
+            "allow_search_indices": false,
+            "allow_view": true,
+            "allow_fine_tuning": false,
+            "organization": "*",
+            "group": null,
+            "is_blocking": false
+          }
+        ]
+      }
+    ]
+  },
+  "finished_unix_s": 1794544546.436879
+}

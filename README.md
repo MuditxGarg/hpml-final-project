@@ -3,9 +3,9 @@
 
 When an LLM server is busy, a request that "thinks more" (longer reasoning, or more parallel samples) slows down everyone else, not just itself. This project asks whether choosing the amount of test-time compute per question, and per server load, beats any fixed strategy on correct answers per GPU-second at a p95 latency target.
 
-**Status:** labels, cap-check measurements, load sweep and exploratory routing scripts are available. A corrected nested evaluation is now implemented; live end-to-end routing gains remain unproven.
+**Status:** labels, cap-check measurements, load sweep and exploratory routing scripts are available. A corrected nested evaluation and matched-replay harness are now implemented; live end-to-end routing gains remain unproven.
 
-Start with [independent evaluation](docs/evaluation.md). Historical numerical results below are exploratory. The latest original scripts had test-set operating-point selection; the corrected 07/08 entry points invoke 09_evaluate.py, with historical code archived in legacy/.
+Start with [independent evaluation](docs/evaluation.md) and [matched serving](docs/matched-serving.md). Historical numerical results below are exploratory. The latest original scripts had test-set operating-point selection; the corrected 07/08 entry points invoke 09_evaluate.py, with historical code archived in legacy/.
 
 ## Repository layout
 
@@ -68,3 +68,13 @@ Details and the file list are in `tcr_pipeline_full/tcr_pipeline/README.md`.
 3. Train the success probe (cross-validated).
 4. Simulator and allocator with a p95 controller.
 5. Evaluate on the 400 held-out questions against fixed actions, a fixed-cost router, difficulty bins and an oracle, with confidence intervals; spot-check on the real server.
+
+## Latest experiment reports
+
+Read these in order; each report includes raw evidence, configuration and limitations:
+
+1. [Matched Serving Interference Study](docs/results/2026-11-12-serving-interference/README.md): forced-length T4 replay shows load-sensitive background interference, but deep targets timed out; it does not measure answer quality.
+2. [Real Answer Completion Validation](docs/results/2026-11-12-real-answer-validation/README.md): five-question idle A6000 diagnostic validates EOS-aware shallow sampling and two-stage deep answers.
+3. [Matched Real-Answer Load Comparison](docs/results/2026-11-12-real-answer-load/README.md): four complete paired blocks, 16 cells and 60 target decisions. Higher arrival rates increased latency, but no queueing was observed; background delivery misses came from output caps. Load-aware routing gains remain unproven.
+
+Reproduction: [matched replay](docs/matched-serving.md), [idle real answers](docs/real-answer-validation.md), and [real-answer load comparison](docs/real-answer-load.md). The reports retain the failed setup attempt and final allocation accounting. GPU experiments require an explicitly provisioned server; the local tests do not allocate GPUs.

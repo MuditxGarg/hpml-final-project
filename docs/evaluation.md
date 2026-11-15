@@ -43,7 +43,7 @@ The curve is fit to the independent recorded externality sweep using **backgroun
 
 Original measurements used original `lengths.json` (B=0 cap1024). Corrected evaluation predicts the effect of new token lengths through this curve, a transfer assumption requiring real replay. Censored/error cells are excluded because their stored p95 is not an uncensored latency percentile; the count and limitation are reported. This exclusion can bias high-load estimates downward. Out-of-range offered loads return unknown rather than endpoint-clipped predictions. The curve cannot establish that width, context length and cache behavior are fully explained by tokens.
 
-Do not call these results correct answers per GPU-second: they are expected label accuracy plus predicted background p95. End-to-end goodput needs measured GPU wall time, actual answer aggregation, and a real policy-serving run. Synthetic-length replay itself would not measure answer quality.
+Do not call these results correct answers per GPU-second: they are expected label accuracy plus predicted background p95. End-to-end goodput needs measured GPU wall time, actual answer aggregation, and a real policy-serving run. See [matched serving](matched-serving.md) for E1 replay; synthetic-length replay itself does not measure answer quality.
 
 ## Audit files
 

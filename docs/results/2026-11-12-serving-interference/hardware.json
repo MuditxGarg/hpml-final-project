@@ -1,0 +1,17 @@
+{
+  "nvidia_smi": "Thu Nov 12 22:25:33 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.82.07              Driver Version: 580.82.07      CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  Tesla T4                       Off |   00000000:00:04.0 Off |                    0 |\n| N/A   58C    P0             29W /   70W |   12221MiB /  15360MiB |      0%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            6560      C   VLLM::EngineCore                      12218MiB |\n+-----------------------------------------------------------------------------------------+",
+  "versions": {
+    "vllm": "0.32.0",
+    "torch": "2.13.0",
+    "transformers": "5.19.0",
+    "numpy": "2.4.6"
+  },
+  "dtype": "half",
+  "prefix_caching_enabled": false,
+  "served_model": "m",
+  "server_url": "http://127.0.0.1:8001",
+  "other_clients": "none; dedicated free Colab T4 assumed",
+  "length_provenance": "parent-supplied corrected B0-cap2048 empirical lengths; budgets1024/2048",
+  "lengths_sha256": "28ccf9a8df18d106c5c25ee1b69999d12a80982538d6ece87c93923b61a6a5af",
+  "prompts_sha256": "ebc248cc3bfefd01eb7a2620cdebdddd6dc6ce213f7f8f437957be6cdc782dca"
+}

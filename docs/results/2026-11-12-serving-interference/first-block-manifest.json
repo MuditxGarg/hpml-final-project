@@ -1,0 +1,64 @@
+{
+  "experiment": "E1 synthetic token-count externality; no answer-quality claim",
+  "trace_sha256": "4b4ba06b13c799ac0f6c8261bde3128b1384c4fdab0878afdf6d66e5d907e153",
+  "configuration": {
+    "command": "run",
+    "trace": "/content/t4-b-repeat-run1/seed20261113-rho0.5-trace.json",
+    "url": "http://127.0.0.1:8001",
+    "model": "m",
+    "output": "/content/t4-b-repeat-run1/seed20261113-rho0.5",
+    "hardware_json": "/content/t4-b-repeat-run1/hardware.json",
+    "actions": [
+      "4:2048",
+      "4:0"
+    ],
+    "order_seed": 20266113,
+    "reference_budget": 1024,
+    "cache_policy": "disabled",
+    "slo": 87.0,
+    "attainment": 0.95,
+    "timeout": 92.0,
+    "drain": 92.0,
+    "idle_timeout": 15.0,
+    "max_inflight": 128,
+    "metrics_interval": 1.0
+  },
+  "hardware_user_supplied": {
+    "nvidia_smi": "Thu Nov 12 22:25:33 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.82.07              Driver Version: 580.82.07      CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  Tesla T4                       Off |   00000000:00:04.0 Off |                    0 |\n| N/A   58C    P0             29W /   70W |   12221MiB /  15360MiB |      0%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            6560      C   VLLM::EngineCore                      12218MiB |\n+-----------------------------------------------------------------------------------------+",
+    "versions": {
+      "vllm": "0.32.0",
+      "torch": "2.13.0",
+      "transformers": "5.19.0",
+      "numpy": "2.4.6"
+    },
+    "dtype": "half",
+    "prefix_caching_enabled": false,
+    "served_model": "m",
+    "server_url": "http://127.0.0.1:8001",
+    "other_clients": "none; dedicated free Colab T4 assumed",
+    "length_provenance": "parent-supplied corrected B0-cap2048 empirical lengths; budgets1024/2048",
+    "lengths_sha256": "28ccf9a8df18d106c5c25ee1b69999d12a80982538d6ece87c93923b61a6a5af",
+    "prompts_sha256": "ebc248cc3bfefd01eb7a2620cdebdddd6dc6ce213f7f8f437957be6cdc782dca"
+  },
+  "client_platform": "Linux-6.6.159+-x86_64-with-glibc2.39",
+  "started_unix_s": 1794522606.1195679,
+  "cache_policy_note": "disabled is a user assertion; reset-prefix calls vLLM endpoint; retain is order-dependent",
+  "cell_order": [
+    [
+      4,
+      0
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      4,
+      2048
+    ]
+  ],
+  "control_definition": "background_only; target events retained but not offered",
+  "telemetry": "per-cell timestamped /metrics samples; missing/failed samples recorded as errors",
+  "status": "complete",
+  "finished_unix_s": 1794523200.0407064
+}

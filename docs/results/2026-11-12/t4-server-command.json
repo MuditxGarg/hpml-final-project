@@ -1,0 +1,25 @@
+{
+  "argv": [
+    "vllm",
+    "serve",
+    "Qwen/Qwen3-1.7B",
+    "--dtype",
+    "half",
+    "--max-model-len",
+    "5120",
+    "--gpu-memory-utilization",
+    "0.85",
+    "--max-num-seqs",
+    "64",
+    "--served-model-name",
+    "m",
+    "--port",
+    "8001",
+    "--host",
+    "127.0.0.1",
+    "--no-enable-prefix-caching"
+  ],
+  "pid": 7207,
+  "model_snapshot": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "watchdog_utc": "2026-11-12T21:39:00Z"
+}

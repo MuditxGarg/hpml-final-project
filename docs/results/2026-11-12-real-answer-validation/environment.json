@@ -1,0 +1,40 @@
+{
+  "versions": {
+    "transformers": "5.19.0"
+  },
+  "server_url": "http://127.0.0.1:8001",
+  "model": "m",
+  "deadline_utc": "2026-11-13T03:41:18+00:00",
+  "slurm_job_id": "13888804",
+  "plan_sha256": "818b9fe512394a49cf0534a4496b2d454241d70597c2bcae53dc00a60c308df2",
+  "server_models": {
+    "object": "list",
+    "data": [
+      {
+        "id": "m",
+        "object": "model",
+        "created": 1794537685,
+        "owned_by": "vllm",
+        "root": "Qwen/Qwen3-1.7B",
+        "parent": null,
+        "max_model_len": 5120,
+        "permission": [
+          {
+            "id": "modelperm-bb60612f512a5bbd",
+            "object": "model_permission",
+            "created": 1794537685,
+            "allow_create_engine": false,
+            "allow_sampling": true,
+            "allow_logprobs": true,
+            "allow_search_indices": false,
+            "allow_view": true,
+            "allow_fine_tuning": false,
+            "organization": "*",
+            "group": null,
+            "is_blocking": false
+          }
+        ]
+      }
+    ]
+  }
+}

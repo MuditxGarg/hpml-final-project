@@ -1,0 +1,15 @@
+# Real Answer Completion Validation
+
+Implement the next experiment explicitly requested after the Matched Serving Interference Study. First isolate answer generation and completion on an idle server; matched background trials follow only once this works.
+
+## Approach
+Extend the existing HTTP tooling with a separate runner, preserving the synthetic replay unchanged. Direct offline vLLM generation would hide HTTP/two-stage overhead; immediately adding background load would confound idle generation failures with interference. Use real EOS-aware HTTP generation, then offline scoring with the existing math verifier. This implementation choice follows the user-approved sequence.
+
+## Protocol
+Qwen3-1.7B revision 70d244cc86ccca08cf5af4e1e306ecf908b1ad5e, FP16, vLLM 0.32.0, one school-cluster GPU (actual model recorded), prefix cache disabled. Deterministic sample seed 20261115: one MATH-500 question from each level 1–5, selected by ID before outcomes; this is diagnostic, not a held-out accuracy benchmark. Actions (1,0), (4,0), (1,2048); randomize action order within question. Require idle server before and after each action. Persist the full plan before execution and persist every action immediately. No automatic retry or selection by correctness.
+
+B=0 uses existing non-thinking prompt and 2048 output cap. Deep mode preserves the legacy labeling prompt (including the explicit <think> marker, recorded explicitly), samples up to 2048 thinking tokens or </think>, then uses the legacy natural/forced final-answer suffix and a greedy 48-token answer stage. Preserve returned token IDs for continuation; never silently retokenize output. This reproduces the labeling *protocol*, not its samples (fresh capped generation instead of offline cutting). Record all text, token IDs, stage timings and finish reasons. Fail visibly if token IDs are unavailable. Saved prompt inspection confirms the thinking prompt ends at the assistant header without an opening marker; appending it matches the original labeler.
+
+All N samples must complete for the primary aggregate; plurality vote over parsed normalized boxes, ties resolved by lowest sample index, no-valid-answer is failure. A completed capped response with a valid boxed answer is scoreable but cap hits remain visible. Record end-to-end latency through extraction/voting; grade correctness offline to avoid counting an oracle verifier as serving work. SLO stays 87 seconds, observation deadline 180 seconds per action (across all stages). Misses stay in denominator. Neither changing the observation timeout nor offline scoring changes the SLO.
+
+User selected the school Insomnia cluster; use one GPU in edu/short/free_short for at most 60 minutes. A UTC session deadline must be set; reserve at least 3 minutes for collection/release and only begin a question block if all 3 worst-case action timeouts plus idle checks fit. Slurm enforces allocation duration; the batch wrapper traps termination and saves partial results. Report skipped questions and incomplete blocks separately. Do not claim statistical confidence, background feasibility, or routing improvement from five idle questions.
