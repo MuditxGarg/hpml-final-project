@@ -39,6 +39,21 @@ def loop():
                         running.remove(r); r.ev.set()
 
 
+def answer(b):
+    """Token count and canned choice. Replay requests (ignore_eos) get their exact length; real-answer
+    requests get a short fixed answer so the scoring path can be tested: 300 thinking tokens, then '1'."""
+    if b.get('ignore_eos'):
+        return b['max_tokens'], {'text': ''}
+    if b.get('stop'):   # thinking stage
+        L = min(b['max_tokens'], 300)
+        cut = L == b['max_tokens']
+        return L, {'text': 'work', 'token_ids': [1, 2, 3], 'finish_reason': 'length' if cut else 'stop',
+                   'stop_reason': None if cut else '</think>'}
+    if b['max_tokens'] == 48:   # forced final answer after thinking
+        return 4, {'text': '1}', 'finish_reason': 'stop'}
+    return min(b['max_tokens'], 60), {'text': '\\boxed{1}', 'finish_reason': 'stop'}
+
+
 class H(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
     def do_GET(self):
@@ -53,7 +68,8 @@ class H(BaseHTTPRequestHandler):
         self.send_response(200); self.end_headers(); self.wfile.write(txt.encode())
     def do_POST(self):
         n = int(self.headers['Content-Length']); b = json.loads(self.rfile.read(n))
-        r = R(b['max_tokens'])
+        L, choice = answer(b)
+        r = R(L)
         with lock:   # admit at once when a sequence slot is free; queue only when the server is full
             if len(running) < MAXSEQ and not waiting: admit(r)
             else: waiting.append(r)
@@ -63,7 +79,7 @@ class H(BaseHTTPRequestHandler):
                 sent = 0
                 while True:
                     done = r.ev.wait(0.02)
-                    count = b['max_tokens'] if done else int(b['max_tokens'] - max(r.rem, 0))
+                    count = L if done else int(L - max(r.rem, 0))
                     if count > sent:
                         self.wfile.write(b'data: ' + json.dumps({'choices': [{'text': ''}], 'usage': {'completion_tokens': count}}).encode() + b'\n\n')
                         self.wfile.flush(); sent = count
@@ -71,7 +87,7 @@ class H(BaseHTTPRequestHandler):
                         self.wfile.write(b'data: [DONE]\n\n'); return
             r.ev.wait()
             self.send_response(200); self.end_headers()
-            self.wfile.write(json.dumps({'choices': [{'text': ''}], 'usage': {'completion_tokens': b['max_tokens']}}).encode())
+            self.wfile.write(json.dumps({'choices': [choice], 'usage': {'completion_tokens': L}}).encode())
         except (BrokenPipeError, ConnectionResetError):
             pass   # client gave up (timeout or censor deadline)
 
