@@ -106,6 +106,34 @@ def test_run_and_score_against_fake_server(fake_server, tmp_path, monkeypatch): 
         m.main(argv)
 
 
+def test_rate_override_keeps_the_target_schedule(fake_server, tmp_path, monkeypatch):  # noqa: F811
+    monkeypatch.setattr(m, 'load_tokenizer', lambda: Tokenizer())
+    cohort = questions()
+    files = dict(plan=dict(questions=cohort), prompts=cohort + [dict(id='b0', thinking='bg', nothinking='bg')],
+                 lengths={'200': [200]}, hardware={'device': 'fake CPU HTTP server'},
+                 calibration=dict(status='complete', reference_budget=200, latency_targets_s=[.4, 8.],
+                                  light_rate_rps=3., contended_rate_rps=10.),
+                 gold={q['id']: '1' for q in cohort})
+    for name, value in files.items():
+        (tmp_path / f'{name}.json').write_text(json.dumps(value))
+    out = tmp_path / 'run'
+    argv = ['run', '--url', fake_server, '--model', 'fake', '--out', str(out), '--no-gpu', '--seeds', '5',
+            '--actions', '1:0', '--rates', 'mid=6', '--target-fraction', '.5', '--warmup', '.3', '--timeout', '30',
+            '--idle-timeout', '30', '--idle-stable', '.1', '--metrics-interval', '.05',
+            '--hardware-json', str(tmp_path / 'hardware.json')]
+    for name in ('plan', 'calibration', 'lengths', 'prompts'):
+        argv += ['--' + name, str(tmp_path / f'{name}.json')]
+    m.main(argv)
+    manifest = json.loads((out / 'manifest.json').read_text())
+    # The window still follows the calibrated contended rate (5 questions at 0.5 * 10 jobs/s).
+    assert manifest['completed'] == ['seed-5-mid'] and manifest['rates_rps'] == {'mid': 6.} and manifest['window_s'] == 1.
+    m.score(types.SimpleNamespace(out=str(out), gold=str(tmp_path / 'gold.json'), draws=50), verifier=lambda gold, pred: gold == pred)
+    summary = json.loads((out / 'summary.json').read_text())
+    assert [a['rate'] for a in summary['actions']] == ['mid'] and summary['actions'][0]['accuracy']['value'] == 1
+    with pytest.raises(SystemExit, match='distinct'):
+        m.main(argv[:argv.index('--rates') + 1] + ['a=1', 'a=2'] + argv[argv.index('--rates') + 2:])
+
+
 def test_run_refuses_an_incomplete_calibration(tmp_path):
     (tmp_path / 'calibration.json').write_text(json.dumps(dict(status='no contended rung')))
     argv = ['run', '--out', str(tmp_path / 'run'), '--calibration', str(tmp_path / 'calibration.json')]

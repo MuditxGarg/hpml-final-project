@@ -126,7 +126,12 @@ def run(args):
     questions = plan['questions']
     budget, targets = calibration['reference_budget'], calibration['latency_targets_s']
     rates = dict(light=calibration['light_rate_rps'], contended=calibration['contended_rate_rps'])
+    # The target schedule always follows the calibrated contended rate, so it is the same for any background rate.
     target_rate = args.target_fraction * rates['contended']
+    if args.rates:
+        rates = {label: float(value) for label, value in (item.split('=') for item in args.rates)}
+        if len(rates) != len(args.rates) or min(rates.values()) <= 0:
+            raise SystemExit('--rates needs distinct labels and positive rates')
     duration = len(questions) / target_rate
     lengths = json.loads(Path(args.lengths).read_text())
     chosen = {q['id'] for q in questions}
@@ -266,7 +271,7 @@ def score(args, verifier=None):
                 waiting_max=cell['server']['waiting']['max'], kv_cache_max=cell['server']['kv_cache']['max'],
                 preemptions=cell['server']['counters']['preemptions']))
     actions, differences = [], []
-    for rate in ('light', 'contended'):
+    for rate in sorted({r['rate'] for r in records}, key=lambda label: (manifest['rates_rps'][label], label)):
         groups = {}
         for r in records:
             if r['rate'] == rate:
@@ -329,6 +334,8 @@ def main(argv=None):
     p.add_argument('--actions', nargs='+', default=['1:0', '4:0', '1:2048', '4:2048'])
     p.add_argument('--seeds', type=int, nargs='+', default=[20261116, 20261117, 20261118])
     p.add_argument('--target-fraction', type=float, default=.05, help='target job rate as a fraction of the contended rate')
+    p.add_argument('--rates', nargs='+', default=None, metavar='LABEL=RPS',
+                   help='background rates to run instead of the frozen pair, for example between them')
     p.add_argument('--warmup', type=float, default=60)
     p.add_argument('--timeout', type=float, default=300, help='per-job observation limit, also the drain limit')
     p.add_argument('--idle-timeout', type=float, default=900)
