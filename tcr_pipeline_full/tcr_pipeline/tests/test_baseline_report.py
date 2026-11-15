@@ -71,3 +71,20 @@ def test_missing_values_render_as_a_dash():
     assert br.fmt(None) == '-' and br.fmt(1.25, 2) == '1.25'
     assert br.action_name(0, 0) == 'control' and br.action_name(4, 2048) == '(4,2048)'
     assert br.interval(dict(value=None, ci95=None)) == '- [-, -]'
+
+
+def test_several_matched_runs_share_one_load_curve(tmp_path):
+    first = matched_run(tmp_path)
+    second = tmp_path / 'ladder'
+    second.mkdir()
+    summary = json.loads((first / 'summary.json').read_text())
+    summary['actions'] = [dict(a, rate='mid') for a in summary['actions'] if a['rate'] == 'light']
+    (second / 'summary.json').write_text(json.dumps(summary))
+    for run, rates in ((first, dict(light=1.2, contended=2.5)), (second, dict(mid=1.7))):
+        manifest = json.loads((first / 'manifest.json').read_text())
+        (run / 'manifest.json').write_text(json.dumps(dict(manifest, rates_rps=rates)))
+    out = tmp_path / 'report'
+    br.main(['--matched', str(first), '--matched', str(second), '--hardware', 'test machine', '--output', str(out)])
+    text = (out / 'README.md').read_text()
+    assert '### Matched real-answer comparison\n' in text and '### Matched real-answer comparison (ladder)' in text
+    assert {'matched-actions.png', 'matched-actions-2.png', 'matched-load-curve.png'} <= {p.name for p in (out / 'figures').iterdir()}

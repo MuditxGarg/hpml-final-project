@@ -18,6 +18,8 @@ import sys
 INK, MUTED, GRID, SURFACE = '#0b0b0b', '#52514e', '#e4e3df', '#fcfcfb'
 SERIES = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100']
 CONTROL = '#8a897f'
+# Colour follows the action, whichever actions a figure happens to show.
+COLOR = {(1, 0): SERIES[0], (1, 2048): SERIES[1], (4, 0): SERIES[2], (4, 2048): SERIES[3]}
 
 
 def fmt(value, digits=1):
@@ -137,7 +139,7 @@ def matched_section(directory, sources):
             'Paired differences between actions at the same rate (first minus second):', '',
             table(['Rate', 'Metric', 'Action', 'Minus', 'Questions', 'Difference', '95% interval', 'Interval excludes zero'], gaps), '',
             'Definitions: ' + ' '.join(f'**{k}**: {v}.' for k, v in summary['definitions'].items())]
-    return '\n'.join(text), dict(summary=summary)
+    return '\n'.join(text), dict(summary=summary, rates=manifest.get('rates_rps', {}), name=Path(directory).name)
 
 
 def style(ax, title, xlabel, ylabel):
@@ -236,10 +238,10 @@ def make_figures(out, calibrations, profile, matched):
             axes[-1].set_xlabel('Seconds from the start of the cell (warm-up included)', color=MUTED, fontsize=9)
             save(fig, 'profile-collapse-timeline.png', f'Profiling pass, {action_name(worst["n"], worst["budget"])} at the {worst["rate_label"]} rate: KV-cache usage, waiting requests and preemptions over time.')
 
-    if matched:
-        actions = matched['summary']['actions']
+    for index, run in enumerate(matched):
+        actions = run['summary']['actions']
         names = sorted({(a['n'], a['budget']) for a in actions})
-        labels = [r for r in ('light', 'contended') if any(a['rate'] == r for a in actions)]
+        labels = sorted({a['rate'] for a in actions}, key=lambda r: (run['rates'].get(r, {'light': 0, 'contended': 1}.get(r, 2)), r))
         fig, axes = plt.subplots(1, 2, figsize=(10, 3.8))
         for ax, key, title, unit in ((axes[0], 'correct_within_loose', 'Correct answers within the loose target', 'Fraction of target jobs'),
                                      (axes[1], 'correct_within_loose_per_gpu_s', 'Correct answers within the loose target per GPU-second', 'Per attributed GPU-second')):
@@ -250,13 +252,35 @@ def make_figures(out, calibrations, profile, matched):
                     if entry is None or entry[key]['value'] is None:
                         continue
                     x, value, ci = j + (i - (len(names) - 1) / 2) * width, entry[key]['value'], entry[key]['ci95']
-                    ax.bar(x, value, width=width * .88, color=SERIES[i % 4], label=action_name(*a) if j == 0 else None)
+                    ax.bar(x, value, width=width * .88, color=COLOR.get(a, CONTROL), label=action_name(*a) if j == 0 else None)
                     if ci:
                         ax.plot([x, x], ci, color=INK, linewidth=1.2)
             ax.set_xticks(range(len(labels)), [f'{label} rate' for label in labels])
             style(ax, title, '', unit)
         axes[0].legend(frameon=False, fontsize=8, labelcolor=MUTED, loc='upper right', ncols=2)
-        save(fig, 'matched-actions.png', 'Matched real-answer comparison: correct answers within the loose latency target, as a fraction of target jobs and per attributed GPU-second. Black lines: 95% bootstrap intervals over questions.')
+        save(fig, 'matched-actions.png' if not index else f'matched-actions-{index + 1}.png',
+             f'Matched real-answer comparison ({run["name"]}): correct answers within the loose latency target, as a fraction of target jobs and per attributed GPU-second. Black lines: 95% bootstrap intervals over questions.')
+
+    # Every background rate of every matched run on one load axis. Rates without a recorded value are left out.
+    points = {}
+    for run in matched:
+        for a in run['summary']['actions']:
+            if a['rate'] in run['rates'] and a['correct_within_loose']['value'] is not None:
+                points.setdefault((a['n'], a['budget']), []).append((run['rates'][a['rate']], a['correct_within_loose']))
+    if len({rate for series in points.values() for rate, _ in series}) >= 3:
+        fig, ax = plt.subplots(figsize=(6.4, 3.8))
+        for a, series in sorted(points.items()):
+            series.sort(key=lambda item: item[0])
+            xs = [rate for rate, _ in series]
+            ax.plot(xs, [v['value'] for _, v in series], color=COLOR.get(a, CONTROL), linewidth=2, marker='o', markersize=5, label=action_name(*a))
+            for rate, v in series:
+                if v['ci95']:
+                    ax.plot([rate, rate], v['ci95'], color=COLOR.get(a, CONTROL), linewidth=1, alpha=.55)
+        ax.set_ylim(0, 1)
+        ax.margins(x=.12)
+        style(ax, 'Correct answers within the loose target against background load', 'Background rate (req/s)', 'Fraction of target jobs')
+        ax.legend(frameon=False, fontsize=8, labelcolor=MUTED, loc='lower left')
+        save(fig, 'matched-load-curve.png', 'Matched real-answer comparison: correct answers within the loose latency target against the background rate, all matched runs. Vertical lines: 95% bootstrap intervals over questions.')
     return figures
 
 
@@ -264,7 +288,7 @@ def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--calibration', action='append', default=[], help='sustained calibration output directory (repeatable)')
     p.add_argument('--profile', help='profiling pass output directory')
-    p.add_argument('--matched', help='scored matched real-answer output directory')
+    p.add_argument('--matched', action='append', default=[], metavar='DIR', help='scored matched real-answer output directory; repeat to add runs at other rates')
     p.add_argument('--title', default='Mid-point baseline and profiling')
     p.add_argument('--hardware', required=True, help='one-line hardware label; results from different machines are never pooled')
     p.add_argument('--output', required=True)
@@ -275,7 +299,7 @@ def main(argv=None):
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=False)
     sources = Sources()
-    sections, calibrations, profile, matched = [], [], None, None
+    sections, calibrations, profile, matched = [], [], None, []
     for directory in args.calibration:
         text, data = calibration_section(directory, sources)
         sections.append(text)
@@ -283,9 +307,10 @@ def main(argv=None):
     if args.profile:
         text, profile = profile_section(args.profile, sources)
         sections.append(text)
-    if args.matched:
-        text, matched = matched_section(args.matched, sources)
-        sections.append(text)
+    for index, directory in enumerate(args.matched):
+        text, run = matched_section(directory, sources)
+        sections.append(text.replace('### Matched real-answer comparison', f'### Matched real-answer comparison ({run["name"]})', 1) if index else text)
+        matched.append(run)
     figures, note = [], 'Plots were not requested.'
     if not args.no_plots:
         try:
@@ -299,7 +324,7 @@ def main(argv=None):
     if profile:
         measured.append('- **Profiling pass:** a background-only control and each action at the two frozen rates on one matched synthetic trace per rate; server gauges, counters and histograms, GPU samples, and client timing of streamed target requests.')
     if matched:
-        measured.append('- **Matched real-answer comparison:** real, graded answers to a fixed question cohort for each fixed action, next to matched synthetic background traffic at the two frozen rates.')
+        measured.append('- **Matched real-answer comparison:** real, graded answers to a fixed question cohort for each fixed action, next to matched synthetic background traffic at the background rates of each run.')
     lines = [f'# {args.title}', '', f'Hardware: {args.hardware}. Results from other machines must not be pooled with these.', '',
              'Generated by `16_make_baseline_report.py` from the logged run directories listed in `sources.json`. Every number below is formatted from a logged value; none is typed by hand.', '',
              '## What was measured', '', *measured, '',

@@ -1,0 +1,1613 @@
+{
+  "status": "complete",
+  "blocks_scored": [
+    "seed-20261116-mid-high",
+    "seed-20261116-mid-low",
+    "seed-20261117-mid-low",
+    "seed-20261117-mid-high",
+    "seed-20261118-mid-low",
+    "seed-20261118-mid-high"
+  ],
+  "blocks_skipped": [],
+  "latency_targets_s": {
+    "tight": 20.91757719599991,
+    "loose": 41.83515439199982
+  },
+  "cells": [
+    {
+      "block": "seed-20261116-mid-high",
+      "cell": "cell-0-N0-B0",
+      "seed": 20261116,
+      "rate": "mid-high",
+      "n": 0,
+      "budget": 0,
+      "target_jobs": 0,
+      "target_statuses": {
+        "completed": 0,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 0,
+      "target_correct_tight": 0,
+      "target_correct_loose": 0,
+      "target_latency_p95_s": null,
+      "target_tokens": 0,
+      "target_gpu_s": 0,
+      "background_jobs": 882,
+      "background_within_tight": 870,
+      "background_within_loose": 882,
+      "background_p95_s": 20.445738832545516,
+      "cell_wall_s": 479.57197921199986,
+      "generation_tokens": 1012737.0,
+      "goodput_tight_per_gpu_s": 1.814117666819327,
+      "goodput_loose_per_gpu_s": 1.8391399794651109,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.6454859114433582,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261116-mid-high",
+      "cell": "cell-1-N1-B0",
+      "seed": 20261116,
+      "rate": "mid-high",
+      "n": 1,
+      "budget": 0,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 48,
+        "no_answer": 2,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 43,
+      "target_correct_tight": 40,
+      "target_correct_loose": 43,
+      "target_latency_p95_s": 33.970030290414456,
+      "target_tokens": 30814,
+      "target_gpu_s": 14.173629002758027,
+      "background_jobs": 882,
+      "background_within_tight": 768,
+      "background_within_loose": 882,
+      "background_p95_s": 21.328172687317533,
+      "cell_wall_s": 479.9802361339971,
+      "generation_tokens": 1043495.0,
+      "goodput_tight_per_gpu_s": 1.6834026469673824,
+      "goodput_loose_per_gpu_s": 1.9271626837188476,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.684301322599195,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261116-mid-high",
+      "cell": "cell-2-N1-B2048",
+      "seed": 20261116,
+      "rate": "mid-high",
+      "n": 1,
+      "budget": 2048,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 50,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 41,
+      "target_correct_tight": 11,
+      "target_correct_loose": 33,
+      "target_latency_p95_s": 50.52247593653448,
+      "target_tokens": 80795,
+      "target_gpu_s": 36.20793483597055,
+      "background_jobs": 882,
+      "background_within_tight": 488,
+      "background_within_loose": 882,
+      "background_p95_s": 25.767365482886305,
+      "cell_wall_s": 490.0478117590028,
+      "generation_tokens": 1093501.0,
+      "goodput_tight_per_gpu_s": 1.0182679894209992,
+      "goodput_loose_per_gpu_s": 1.8671647501407096,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.9140310523289247,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261116-mid-high",
+      "cell": "cell-3-N4-B0",
+      "seed": 20261116,
+      "rate": "mid-high",
+      "n": 4,
+      "budget": 0,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 49,
+        "no_answer": 1,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 41,
+      "target_correct_tight": 37,
+      "target_correct_loose": 40,
+      "target_latency_p95_s": 42.931369496977084,
+      "target_tokens": 119040,
+      "target_gpu_s": 50.80522088533299,
+      "background_jobs": 882,
+      "background_within_tight": 528,
+      "background_within_loose": 882,
+      "background_p95_s": 24.16285005946682,
+      "cell_wall_s": 482.98420268799964,
+      "generation_tokens": 1131664.0,
+      "goodput_tight_per_gpu_s": 1.1698105173120565,
+      "goodput_loose_per_gpu_s": 1.9089651273658692,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.7849338700402531,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261116-mid-low",
+      "cell": "cell-0-N1-B0",
+      "seed": 20261116,
+      "rate": "mid-low",
+      "n": 1,
+      "budget": 0,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 46,
+        "no_answer": 4,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 41,
+      "target_correct_tight": 41,
+      "target_correct_loose": 41,
+      "target_latency_p95_s": 35.10863232297032,
+      "target_tokens": 30337,
+      "target_gpu_s": 16.992053037108697,
+      "background_jobs": 718,
+      "background_within_tight": 715,
+      "background_within_loose": 718,
+      "background_p95_s": 19.836559929842196,
+      "cell_wall_s": 480.98538658300095,
+      "generation_tokens": 858734.0,
+      "goodput_tight_per_gpu_s": 1.571773324280698,
+      "goodput_loose_per_gpu_s": 1.5780105200119705,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.6069580218516388,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261116-mid-low",
+      "cell": "cell-1-N4-B0",
+      "seed": 20261116,
+      "rate": "mid-low",
+      "n": 4,
+      "budget": 0,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 48,
+        "no_answer": 2,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 44,
+      "target_correct_tight": 39,
+      "target_correct_loose": 44,
+      "target_latency_p95_s": 39.484030965972295,
+      "target_tokens": 118408,
+      "target_gpu_s": 60.264888648946446,
+      "background_jobs": 718,
+      "background_within_tight": 654,
+      "background_within_loose": 718,
+      "background_p95_s": 23.17870794083953,
+      "cell_wall_s": 481.943009169001,
+      "generation_tokens": 946918.0,
+      "goodput_tight_per_gpu_s": 1.4379293543336542,
+      "goodput_loose_per_gpu_s": 1.5810998095270483,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.8599769982748706,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261116-mid-low",
+      "cell": "cell-2-N0-B0",
+      "seed": 20261116,
+      "rate": "mid-low",
+      "n": 0,
+      "budget": 0,
+      "target_jobs": 0,
+      "target_statuses": {
+        "completed": 0,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 0,
+      "target_correct_tight": 0,
+      "target_correct_loose": 0,
+      "target_latency_p95_s": null,
+      "target_tokens": 0,
+      "target_gpu_s": 0,
+      "background_jobs": 718,
+      "background_within_tight": 718,
+      "background_within_loose": 718,
+      "background_p95_s": 17.946613451598296,
+      "cell_wall_s": 479.9822240930007,
+      "generation_tokens": 828389.0,
+      "goodput_tight_per_gpu_s": 1.4958887307894997,
+      "goodput_loose_per_gpu_s": 1.4958887307894997,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.5379528464634847,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261116-mid-low",
+      "cell": "cell-3-N1-B2048",
+      "seed": 20261116,
+      "rate": "mid-low",
+      "n": 1,
+      "budget": 2048,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 50,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 42,
+      "target_correct_tight": 13,
+      "target_correct_loose": 42,
+      "target_latency_p95_s": 39.026028693975775,
+      "target_tokens": 80328,
+      "target_gpu_s": 43.40510933917608,
+      "background_jobs": 718,
+      "background_within_tight": 692,
+      "background_within_loose": 718,
+      "background_p95_s": 20.676671313450214,
+      "cell_wall_s": 491.1048639299988,
+      "generation_tokens": 908867.0,
+      "goodput_tight_per_gpu_s": 1.4355386227665001,
+      "goodput_loose_per_gpu_s": 1.5475309975922555,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.6451983898792409,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261117-mid-low",
+      "cell": "cell-0-N1-B0",
+      "seed": 20261117,
+      "rate": "mid-low",
+      "n": 1,
+      "budget": 0,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 50,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 42,
+      "target_correct_tight": 40,
+      "target_correct_loose": 42,
+      "target_latency_p95_s": 28.309016758536757,
+      "target_tokens": 27577,
+      "target_gpu_s": 15.72670105864211,
+      "background_jobs": 707,
+      "background_within_tight": 707,
+      "background_within_loose": 707,
+      "background_p95_s": 17.99789482557162,
+      "cell_wall_s": 477.95153656099865,
+      "generation_tokens": 838095.0,
+      "goodput_tight_per_gpu_s": 1.5629199675240797,
+      "goodput_loose_per_gpu_s": 1.567104492202859,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.5014376078205866,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261117-mid-low",
+      "cell": "cell-1-N0-B0",
+      "seed": 20261117,
+      "rate": "mid-low",
+      "n": 0,
+      "budget": 0,
+      "target_jobs": 0,
+      "target_statuses": {
+        "completed": 0,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 0,
+      "target_correct_tight": 0,
+      "target_correct_loose": 0,
+      "target_latency_p95_s": null,
+      "target_tokens": 0,
+      "target_gpu_s": 0,
+      "background_jobs": 707,
+      "background_within_tight": 707,
+      "background_within_loose": 707,
+      "background_p95_s": 17.672228456461255,
+      "cell_wall_s": 477.9026637440038,
+      "generation_tokens": 810527.0,
+      "goodput_tight_per_gpu_s": 1.4793807476635366,
+      "goodput_loose_per_gpu_s": 1.4793807476635366,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.47642323174238066,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261117-mid-low",
+      "cell": "cell-2-N4-B0",
+      "seed": 20261117,
+      "rate": "mid-low",
+      "n": 4,
+      "budget": 0,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 49,
+        "no_answer": 1,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 42,
+      "target_correct_tight": 38,
+      "target_correct_loose": 42,
+      "target_latency_p95_s": 36.851711414719546,
+      "target_tokens": 121025,
+      "target_gpu_s": 62.47959592520004,
+      "background_jobs": 707,
+      "background_within_tight": 705,
+      "background_within_loose": 707,
+      "background_p95_s": 19.886245283790856,
+      "cell_wall_s": 480.9480794800038,
+      "generation_tokens": 931612.0,
+      "goodput_tight_per_gpu_s": 1.5448653018914726,
+      "goodput_loose_per_gpu_s": 1.5573406609915383,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.624784358826912,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261117-mid-low",
+      "cell": "cell-3-N1-B2048",
+      "seed": 20261117,
+      "rate": "mid-low",
+      "n": 1,
+      "budget": 2048,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 50,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 40,
+      "target_correct_tight": 15,
+      "target_correct_loose": 40,
+      "target_latency_p95_s": 37.36744293146802,
+      "target_tokens": 82555,
+      "target_gpu_s": 44.734790045200036,
+      "background_jobs": 707,
+      "background_within_tight": 706,
+      "background_within_loose": 707,
+      "background_p95_s": 20.040363449063648,
+      "cell_wall_s": 483.97401872400224,
+      "generation_tokens": 893141.0,
+      "goodput_tight_per_gpu_s": 1.4897493917151108,
+      "goodput_loose_per_gpu_s": 1.5434712837880553,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.6184588844163312,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261117-mid-high",
+      "cell": "cell-0-N4-B0",
+      "seed": 20261117,
+      "rate": "mid-high",
+      "n": 4,
+      "budget": 0,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 50,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 42,
+      "target_correct_tight": 35,
+      "target_correct_loose": 41,
+      "target_latency_p95_s": 40.45556949341483,
+      "target_tokens": 118570,
+      "target_gpu_s": 50.74616243450231,
+      "background_jobs": 889,
+      "background_within_tight": 647,
+      "background_within_loose": 889,
+      "background_p95_s": 26.279771137365913,
+      "cell_wall_s": 485.99219285000436,
+      "generation_tokens": 1135536.0,
+      "goodput_tight_per_gpu_s": 1.4033147240504975,
+      "goodput_loose_per_gpu_s": 1.9136109873415874,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.8895917193789534,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261117-mid-high",
+      "cell": "cell-1-N1-B2048",
+      "seed": 20261117,
+      "rate": "mid-high",
+      "n": 1,
+      "budget": 2048,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 50,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 39,
+      "target_correct_tight": 10,
+      "target_correct_loose": 30,
+      "target_latency_p95_s": 48.77650119628407,
+      "target_tokens": 82347,
+      "target_gpu_s": 36.70461266632558,
+      "background_jobs": 889,
+      "background_within_tight": 447,
+      "background_within_loose": 889,
+      "background_p95_s": 25.345965607889696,
+      "cell_wall_s": 489.9974638959975,
+      "generation_tokens": 1099312.0,
+      "goodput_tight_per_gpu_s": 0.9326578884028648,
+      "goodput_loose_per_gpu_s": 1.8755199112521503,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.8248993674525589,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261117-mid-high",
+      "cell": "cell-2-N1-B0",
+      "seed": 20261117,
+      "rate": "mid-high",
+      "n": 1,
+      "budget": 0,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 49,
+        "no_answer": 1,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 40,
+      "target_correct_tight": 40,
+      "target_correct_loose": 40,
+      "target_latency_p95_s": 27.261527746473064,
+      "target_tokens": 27083,
+      "target_gpu_s": 12.480547783264255,
+      "background_jobs": 889,
+      "background_within_tight": 822,
+      "background_within_loose": 889,
+      "background_p95_s": 21.062189552084476,
+      "cell_wall_s": 481.1248175080036,
+      "generation_tokens": 1044049.0,
+      "goodput_tight_per_gpu_s": 1.79163487027077,
+      "goodput_loose_per_gpu_s": 1.9308918729484286,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.6986774008050604,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261117-mid-high",
+      "cell": "cell-3-N0-B0",
+      "seed": 20261117,
+      "rate": "mid-high",
+      "n": 0,
+      "budget": 0,
+      "target_jobs": 0,
+      "target_statuses": {
+        "completed": 0,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 0,
+      "target_correct_tight": 0,
+      "target_correct_loose": 0,
+      "target_latency_p95_s": null,
+      "target_tokens": 0,
+      "target_gpu_s": 0,
+      "background_jobs": 889,
+      "background_within_tight": 869,
+      "background_within_loose": 889,
+      "background_p95_s": 20.52855511720088,
+      "cell_wall_s": 480.9364119689999,
+      "generation_tokens": 1016978.0,
+      "goodput_tight_per_gpu_s": 1.8068916770976655,
+      "goodput_loose_per_gpu_s": 1.8484772162713747,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.6604370327774582,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261118-mid-low",
+      "cell": "cell-0-N1-B2048",
+      "seed": 20261118,
+      "rate": "mid-low",
+      "n": 1,
+      "budget": 2048,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 50,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 43,
+      "target_correct_tight": 15,
+      "target_correct_loose": 43,
+      "target_latency_p95_s": 37.5207815661534,
+      "target_tokens": 78982,
+      "target_gpu_s": 42.22742430245629,
+      "background_jobs": 721,
+      "background_within_tight": 719,
+      "background_within_loose": 721,
+      "background_p95_s": 20.00698825394761,
+      "cell_wall_s": 487.96996123900317,
+      "generation_tokens": 912697.0,
+      "goodput_tight_per_gpu_s": 1.5041909508862035,
+      "goodput_loose_per_gpu_s": 1.5656701450641137,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.6081081081081081,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261118-mid-low",
+      "cell": "cell-1-N4-B0",
+      "seed": 20261118,
+      "rate": "mid-low",
+      "n": 4,
+      "budget": 0,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 49,
+        "no_answer": 1,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 44,
+      "target_correct_tight": 39,
+      "target_correct_loose": 44,
+      "target_latency_p95_s": 35.615530272786884,
+      "target_tokens": 117591,
+      "target_gpu_s": 60.34231704300983,
+      "background_jobs": 721,
+      "background_within_tight": 721,
+      "background_within_loose": 721,
+      "background_p95_s": 19.751988006995532,
+      "cell_wall_s": 488.1194714200028,
+      "generation_tokens": 951214.0,
+      "goodput_tight_per_gpu_s": 1.5569958678129792,
+      "goodput_loose_per_gpu_s": 1.5672392616801698,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.5957446808510638,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261118-mid-low",
+      "cell": "cell-2-N0-B0",
+      "seed": 20261118,
+      "rate": "mid-low",
+      "n": 0,
+      "budget": 0,
+      "target_jobs": 0,
+      "target_statuses": {
+        "completed": 0,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 0,
+      "target_correct_tight": 0,
+      "target_correct_loose": 0,
+      "target_latency_p95_s": null,
+      "target_tokens": 0,
+      "target_gpu_s": 0,
+      "background_jobs": 721,
+      "background_within_tight": 650,
+      "background_within_loose": 721,
+      "background_p95_s": 21.661225231921435,
+      "cell_wall_s": 478.07138829200267,
+      "generation_tokens": 833773.0,
+      "goodput_tight_per_gpu_s": 1.3596295781729246,
+      "goodput_loose_per_gpu_s": 1.5081429628656593,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.5891316848763657,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261118-mid-low",
+      "cell": "cell-3-N1-B0",
+      "seed": 20261118,
+      "rate": "mid-low",
+      "n": 1,
+      "budget": 0,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 49,
+        "no_answer": 1,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 41,
+      "target_correct_tight": 39,
+      "target_correct_loose": 41,
+      "target_latency_p95_s": 27.429160930853755,
+      "target_tokens": 27901,
+      "target_gpu_s": 15.573333094203509,
+      "background_jobs": 721,
+      "background_within_tight": 595,
+      "background_within_loose": 721,
+      "background_p95_s": 21.592303977759627,
+      "cell_wall_s": 480.94366440700105,
+      "generation_tokens": 861653.0,
+      "goodput_tight_per_gpu_s": 1.3182417129493034,
+      "goodput_loose_per_gpu_s": 1.5843851502639892,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.6035077630822312,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261118-mid-high",
+      "cell": "cell-0-N1-B2048",
+      "seed": 20261118,
+      "rate": "mid-high",
+      "n": 1,
+      "budget": 2048,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 50,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 41,
+      "target_correct_tight": 3,
+      "target_correct_loose": 21,
+      "target_latency_p95_s": 64.88282982278298,
+      "target_tokens": 81329,
+      "target_gpu_s": 37.57593098469964,
+      "background_jobs": 852,
+      "background_within_tight": 54,
+      "background_within_loose": 852,
+      "background_p95_s": 34.30227273298641,
+      "cell_wall_s": 497.1384978470014,
+      "generation_tokens": 1076002.0,
+      "goodput_tight_per_gpu_s": 0.11465617779925431,
+      "goodput_loose_per_gpu_s": 1.7560498810306844,
+      "waiting_max": 17.0,
+      "kv_cache_max": 0.9994249568717654,
+      "preemptions": 111.0
+    },
+    {
+      "block": "seed-20261118-mid-high",
+      "cell": "cell-1-N1-B0",
+      "seed": 20261118,
+      "rate": "mid-high",
+      "n": 1,
+      "budget": 0,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 47,
+        "no_answer": 3,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 41,
+      "target_correct_tight": 35,
+      "target_correct_loose": 41,
+      "target_latency_p95_s": 43.549785409972344,
+      "target_tokens": 28795,
+      "target_gpu_s": 14.013329827876628,
+      "background_jobs": 852,
+      "background_within_tight": 60,
+      "background_within_loose": 852,
+      "background_p95_s": 33.88505024837657,
+      "cell_wall_s": 498.0895618059949,
+      "generation_tokens": 1023489.0,
+      "goodput_tight_per_gpu_s": 0.1907287509811385,
+      "goodput_loose_per_gpu_s": 1.792850259222702,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.8867165037377803,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261118-mid-high",
+      "cell": "cell-2-N0-B0",
+      "seed": 20261118,
+      "rate": "mid-high",
+      "n": 0,
+      "budget": 0,
+      "target_jobs": 0,
+      "target_statuses": {
+        "completed": 0,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 0,
+      "target_correct_tight": 0,
+      "target_correct_loose": 0,
+      "target_latency_p95_s": null,
+      "target_tokens": 0,
+      "target_gpu_s": 0,
+      "background_jobs": 852,
+      "background_within_tight": 121,
+      "background_within_loose": 852,
+      "background_p95_s": 26.931240250479505,
+      "cell_wall_s": 483.0138569769988,
+      "generation_tokens": 994635.0,
+      "goodput_tight_per_gpu_s": 0.2505104113519502,
+      "goodput_loose_per_gpu_s": 1.7639245493542277,
+      "waiting_max": 0.0,
+      "kv_cache_max": 0.864002300172513,
+      "preemptions": 0.0
+    },
+    {
+      "block": "seed-20261118-mid-high",
+      "cell": "cell-3-N4-B0",
+      "seed": 20261118,
+      "rate": "mid-high",
+      "n": 4,
+      "budget": 0,
+      "target_jobs": 50,
+      "target_statuses": {
+        "completed": 50,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_correct": 45,
+      "target_correct_tight": 31,
+      "target_correct_loose": 41,
+      "target_latency_p95_s": 59.65458568434764,
+      "target_tokens": 118873,
+      "target_gpu_s": 53.067887063058805,
+      "background_jobs": 852,
+      "background_within_tight": 50,
+      "background_within_loose": 852,
+      "background_p95_s": 35.90488632014652,
+      "cell_wall_s": 497.11663404700084,
+      "generation_tokens": 1113550.0,
+      "goodput_tight_per_gpu_s": 0.16293962915821822,
+      "goodput_loose_per_gpu_s": 1.7963591214603565,
+      "waiting_max": 10.0,
+      "kv_cache_max": 1.0,
+      "preemptions": 51.0
+    }
+  ],
+  "actions": [
+    {
+      "rate": "mid-low",
+      "n": 1,
+      "budget": 0,
+      "jobs": 150,
+      "questions": 50,
+      "seeds": [
+        20261116,
+        20261117,
+        20261118
+      ],
+      "statuses": {
+        "completed": 145,
+        "no_answer": 5,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_gpu_s": 48.292087189954316,
+      "accuracy": {
+        "value": 0.8266666666666667,
+        "ci95": [
+          0.7333333333333333,
+          0.9133333333333333
+        ]
+      },
+      "correct_within_tight": {
+        "value": 0.8,
+        "ci95": [
+          0.6933333333333334,
+          0.8933333333333333
+        ]
+      },
+      "correct_within_loose": {
+        "value": 0.8266666666666667,
+        "ci95": [
+          0.7266666666666667,
+          0.9066666666666666
+        ]
+      },
+      "correct_within_tight_per_gpu_s": {
+        "value": 2.4848791382320354,
+        "ci95": [
+          1.7847997906340802,
+          3.4179855356773987
+        ]
+      },
+      "correct_within_loose_per_gpu_s": {
+        "value": 2.56770844283977,
+        "ci95": [
+          1.8838616425015133,
+          3.5044624829319706
+        ]
+      }
+    },
+    {
+      "rate": "mid-low",
+      "n": 1,
+      "budget": 2048,
+      "jobs": 150,
+      "questions": 50,
+      "seeds": [
+        20261116,
+        20261117,
+        20261118
+      ],
+      "statuses": {
+        "completed": 150,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_gpu_s": 130.3673236868324,
+      "accuracy": {
+        "value": 0.8333333333333334,
+        "ci95": [
+          0.7333333333333333,
+          0.92
+        ]
+      },
+      "correct_within_tight": {
+        "value": 0.2866666666666667,
+        "ci95": [
+          0.17333333333333334,
+          0.41333333333333333
+        ]
+      },
+      "correct_within_loose": {
+        "value": 0.8333333333333334,
+        "ci95": [
+          0.7333333333333333,
+          0.9266666666666666
+        ]
+      },
+      "correct_within_tight_per_gpu_s": {
+        "value": 0.3298372535689567,
+        "ci95": [
+          0.18743993277255572,
+          0.5003604612325602
+        ]
+      },
+      "correct_within_loose_per_gpu_s": {
+        "value": 0.9588292254911533,
+        "ci95": [
+          0.8067474620392519,
+          1.1300134766745344
+        ]
+      }
+    },
+    {
+      "rate": "mid-low",
+      "n": 4,
+      "budget": 0,
+      "jobs": 150,
+      "questions": 50,
+      "seeds": [
+        20261116,
+        20261117,
+        20261118
+      ],
+      "statuses": {
+        "completed": 146,
+        "no_answer": 4,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_gpu_s": 183.0868016171563,
+      "accuracy": {
+        "value": 0.8666666666666667,
+        "ci95": [
+          0.78,
+          0.9466666666666667
+        ]
+      },
+      "correct_within_tight": {
+        "value": 0.7733333333333333,
+        "ci95": [
+          0.6533333333333333,
+          0.88
+        ]
+      },
+      "correct_within_loose": {
+        "value": 0.8666666666666667,
+        "ci95": [
+          0.78,
+          0.94
+        ]
+      },
+      "correct_within_tight_per_gpu_s": {
+        "value": 0.6335792584468313,
+        "ci95": [
+          0.4425220302865147,
+          0.8889889388065867
+        ]
+      },
+      "correct_within_loose_per_gpu_s": {
+        "value": 0.710045720673173,
+        "ci95": [
+          0.5327785722268205,
+          0.9454681459309989
+        ]
+      }
+    },
+    {
+      "rate": "mid-high",
+      "n": 1,
+      "budget": 0,
+      "jobs": 150,
+      "questions": 50,
+      "seeds": [
+        20261116,
+        20261117,
+        20261118
+      ],
+      "statuses": {
+        "completed": 144,
+        "no_answer": 6,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_gpu_s": 40.66750661389891,
+      "accuracy": {
+        "value": 0.8266666666666667,
+        "ci95": [
+          0.72,
+          0.9133333333333333
+        ]
+      },
+      "correct_within_tight": {
+        "value": 0.7666666666666667,
+        "ci95": [
+          0.66,
+          0.86
+        ]
+      },
+      "correct_within_loose": {
+        "value": 0.8266666666666667,
+        "ci95": [
+          0.7333333333333333,
+          0.9133333333333333
+        ]
+      },
+      "correct_within_tight_per_gpu_s": {
+        "value": 2.827810445617448,
+        "ci95": [
+          2.0286361624586204,
+          4.026269609354599
+        ]
+      },
+      "correct_within_loose_per_gpu_s": {
+        "value": 3.0491173500570747,
+        "ci95": [
+          2.236002228011688,
+          4.230035524170322
+        ]
+      }
+    },
+    {
+      "rate": "mid-high",
+      "n": 1,
+      "budget": 2048,
+      "jobs": 150,
+      "questions": 50,
+      "seeds": [
+        20261116,
+        20261117,
+        20261118
+      ],
+      "statuses": {
+        "completed": 150,
+        "no_answer": 0,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_gpu_s": 110.48847848699576,
+      "accuracy": {
+        "value": 0.8066666666666666,
+        "ci95": [
+          0.7066666666666667,
+          0.9
+        ]
+      },
+      "correct_within_tight": {
+        "value": 0.16,
+        "ci95": [
+          0.08,
+          0.24666666666666667
+        ]
+      },
+      "correct_within_loose": {
+        "value": 0.56,
+        "ci95": [
+          0.44666666666666666,
+          0.6666666666666666
+        ]
+      },
+      "correct_within_tight_per_gpu_s": {
+        "value": 0.2172172187421763,
+        "ci95": [
+          0.10963161268752754,
+          0.36273422898813895
+        ]
+      },
+      "correct_within_loose_per_gpu_s": {
+        "value": 0.7602602655976171,
+        "ci95": [
+          0.5667278670409349,
+          0.986203599574037
+        ]
+      }
+    },
+    {
+      "rate": "mid-high",
+      "n": 4,
+      "budget": 0,
+      "jobs": 150,
+      "questions": 50,
+      "seeds": [
+        20261116,
+        20261117,
+        20261118
+      ],
+      "statuses": {
+        "completed": 149,
+        "no_answer": 1,
+        "timeout": 0,
+        "error": 0,
+        "censored": 0,
+        "drop": 0
+      },
+      "target_gpu_s": 154.61927038289411,
+      "accuracy": {
+        "value": 0.8533333333333334,
+        "ci95": [
+          0.76,
+          0.94
+        ]
+      },
+      "correct_within_tight": {
+        "value": 0.6866666666666666,
+        "ci95": [
+          0.5666666666666667,
+          0.8066666666666666
+        ]
+      },
+      "correct_within_loose": {
+        "value": 0.8133333333333334,
+        "ci95": [
+          0.7133333333333334,
+          0.9066666666666666
+        ]
+      },
+      "correct_within_tight_per_gpu_s": {
+        "value": 0.6661524125998923,
+        "ci95": [
+          0.4628126426980475,
+          0.9821981619393946
+        ]
+      },
+      "correct_within_loose_per_gpu_s": {
+        "value": 0.7890348964775424,
+        "ci95": [
+          0.5651947401537066,
+          1.0747433033967966
+        ]
+      }
+    }
+  ],
+  "paired_differences": [
+    {
+      "rate": "mid-low",
+      "metric": "correct_within_loose",
+      "action": [
+        1,
+        0
+      ],
+      "minus": [
+        1,
+        2048
+      ],
+      "questions": 50,
+      "value": -0.00666666666666671,
+      "ci95": [
+        -0.07333333333333336,
+        0.06000000000000005
+      ]
+    },
+    {
+      "rate": "mid-low",
+      "metric": "correct_within_tight",
+      "action": [
+        1,
+        0
+      ],
+      "minus": [
+        1,
+        2048
+      ],
+      "questions": 50,
+      "value": 0.5133333333333334,
+      "ci95": [
+        0.38666666666666666,
+        0.6333333333333333
+      ]
+    },
+    {
+      "rate": "mid-low",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": [
+        1,
+        0
+      ],
+      "minus": [
+        1,
+        2048
+      ],
+      "questions": 50,
+      "value": 1.6088792173486164,
+      "ci95": [
+        1.0596529409684021,
+        2.4144752366572986
+      ]
+    },
+    {
+      "rate": "mid-low",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": [
+        1,
+        0
+      ],
+      "minus": [
+        1,
+        2048
+      ],
+      "questions": 50,
+      "value": 2.1550418846630786,
+      "ci95": [
+        1.5442840521529404,
+        3.0261047390103903
+      ]
+    },
+    {
+      "rate": "mid-low",
+      "metric": "correct_within_loose",
+      "action": [
+        1,
+        0
+      ],
+      "minus": [
+        4,
+        0
+      ],
+      "questions": 50,
+      "value": -0.040000000000000036,
+      "ci95": [
+        -0.08666666666666667,
+        0.0
+      ]
+    },
+    {
+      "rate": "mid-low",
+      "metric": "correct_within_tight",
+      "action": [
+        1,
+        0
+      ],
+      "minus": [
+        4,
+        0
+      ],
+      "questions": 50,
+      "value": 0.026666666666666727,
+      "ci95": [
+        0.006666666666666599,
+        0.053333333333333344
+      ]
+    },
+    {
+      "rate": "mid-low",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": [
+        1,
+        0
+      ],
+      "minus": [
+        4,
+        0
+      ],
+      "questions": 50,
+      "value": 1.857662722166597,
+      "ci95": [
+        1.3641675873555497,
+        2.491573386723022
+      ]
+    },
+    {
+      "rate": "mid-low",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": [
+        1,
+        0
+      ],
+      "minus": [
+        4,
+        0
+      ],
+      "questions": 50,
+      "value": 1.8512998797852043,
+      "ci95": [
+        1.3469433239759092,
+        2.543638558665784
+      ]
+    },
+    {
+      "rate": "mid-low",
+      "metric": "correct_within_loose",
+      "action": [
+        1,
+        2048
+      ],
+      "minus": [
+        4,
+        0
+      ],
+      "questions": 50,
+      "value": -0.033333333333333326,
+      "ci95": [
+        -0.09333333333333338,
+        0.020000000000000018
+      ]
+    },
+    {
+      "rate": "mid-low",
+      "metric": "correct_within_tight",
+      "action": [
+        1,
+        2048
+      ],
+      "minus": [
+        4,
+        0
+      ],
+      "questions": 50,
+      "value": -0.48666666666666664,
+      "ci95": [
+        -0.6066666666666667,
+        -0.36666666666666664
+      ]
+    },
+    {
+      "rate": "mid-low",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": [
+        1,
+        2048
+      ],
+      "minus": [
+        4,
+        0
+      ],
+      "questions": 50,
+      "value": 0.2487835048179804,
+      "ci95": [
+        0.08208116522321462,
+        0.35946159091533647
+      ]
+    },
+    {
+      "rate": "mid-low",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": [
+        1,
+        2048
+      ],
+      "minus": [
+        4,
+        0
+      ],
+      "questions": 50,
+      "value": -0.30374200487787456,
+      "ci95": [
+        -0.5194867517779658,
+        -0.13222403333163618
+      ]
+    },
+    {
+      "rate": "mid-high",
+      "metric": "correct_within_loose",
+      "action": [
+        1,
+        0
+      ],
+      "minus": [
+        1,
+        2048
+      ],
+      "questions": 50,
+      "value": 0.2666666666666666,
+      "ci95": [
+        0.18000000000000005,
+        0.35999999999999993
+      ]
+    },
+    {
+      "rate": "mid-high",
+      "metric": "correct_within_tight",
+      "action": [
+        1,
+        0
+      ],
+      "minus": [
+        1,
+        2048
+      ],
+      "questions": 50,
+      "value": 0.6066666666666667,
+      "ci95": [
+        0.4933333333333333,
+        0.7133333333333334
+      ]
+    },
+    {
+      "rate": "mid-high",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": [
+        1,
+        0
+      ],
+      "minus": [
+        1,
+        2048
+      ],
+      "questions": 50,
+      "value": 2.288857084459458,
+      "ci95": [
+        1.5885272840975915,
+        3.2422752618580506
+      ]
+    },
+    {
+      "rate": "mid-high",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": [
+        1,
+        0
+      ],
+      "minus": [
+        1,
+        2048
+      ],
+      "questions": 50,
+      "value": 2.610593226875272,
+      "ci95": [
+        1.853387527085506,
+        3.6036818854569024
+      ]
+    },
+    {
+      "rate": "mid-high",
+      "metric": "correct_within_loose",
+      "action": [
+        1,
+        0
+      ],
+      "minus": [
+        4,
+        0
+      ],
+      "questions": 50,
+      "value": 0.013333333333333308,
+      "ci95": [
+        -0.033333333333333326,
+        0.06666666666666665
+      ]
+    },
+    {
+      "rate": "mid-high",
+      "metric": "correct_within_tight",
+      "action": [
+        1,
+        0
+      ],
+      "minus": [
+        4,
+        0
+      ],
+      "questions": 50,
+      "value": 0.08000000000000007,
+      "ci95": [
+        0.026666666666666616,
+        0.1399999999999999
+      ]
+    },
+    {
+      "rate": "mid-high",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": [
+        1,
+        0
+      ],
+      "minus": [
+        4,
+        0
+      ],
+      "questions": 50,
+      "value": 2.2600824535795323,
+      "ci95": [
+        1.6744974667368986,
+        3.058582687847413
+      ]
+    },
+    {
+      "rate": "mid-high",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": [
+        1,
+        0
+      ],
+      "minus": [
+        4,
+        0
+      ],
+      "questions": 50,
+      "value": 2.161658033017556,
+      "ci95": [
+        1.548127172001892,
+        2.940318992152948
+      ]
+    },
+    {
+      "rate": "mid-high",
+      "metric": "correct_within_loose",
+      "action": [
+        1,
+        2048
+      ],
+      "minus": [
+        4,
+        0
+      ],
+      "questions": 50,
+      "value": -0.2533333333333333,
+      "ci95": [
+        -0.3466666666666667,
+        -0.17333333333333334
+      ]
+    },
+    {
+      "rate": "mid-high",
+      "metric": "correct_within_tight",
+      "action": [
+        1,
+        2048
+      ],
+      "minus": [
+        4,
+        0
+      ],
+      "questions": 50,
+      "value": -0.5266666666666666,
+      "ci95": [
+        -0.6466666666666666,
+        -0.41333333333333333
+      ]
+    },
+    {
+      "rate": "mid-high",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": [
+        1,
+        2048
+      ],
+      "minus": [
+        4,
+        0
+      ],
+      "questions": 50,
+      "value": -0.028774630879925378,
+      "ci95": [
+        -0.2611250408846659,
+        0.14155034795893218
+      ]
+    },
+    {
+      "rate": "mid-high",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": [
+        1,
+        2048
+      ],
+      "minus": [
+        4,
+        0
+      ],
+      "questions": 50,
+      "value": -0.448935193857716,
+      "ci95": [
+        -0.7146681588787923,
+        -0.2533379711723843
+      ]
+    }
+  ],
+  "definitions": {
+    "correct_within_target": "target job completed, majority answer verified correct, and job latency (scheduled arrival to last sample) within the target; every scheduled job is in the denominator",
+    "per_gpu_s": "correct-within-target jobs divided by the GPU seconds attributed to target jobs: cell wall time (one GPU) times the job share of all tokens generated in the cell; prompt processing is not attributed separately",
+    "goodput_per_gpu_s": "per cell: (target jobs correct within target + background requests completed within target) / cell wall seconds",
+    "ci95": "percentile bootstrap, 2000 resamples of questions with replacement; seeds of a question are kept together; paired differences resample the same questions for both actions"
+  },
+  "caveat": "one machine; fixed actions only, no router; intervals reflect question sampling and seed-level noise only as far as the seeds run"
+}

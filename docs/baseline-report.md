@@ -13,7 +13,7 @@ python 16_make_baseline_report.py \
   --output docs/results/<date>-<name>
 ```
 
-Every input is optional, but at least one is required. The output directory must not exist. It receives:
+Every input is optional, but at least one is required. `--matched` can be repeated for runs at other background rates; with three or more distinct rates the report adds `matched-load-curve.png`, correct answers within the loose target against the background rate. The output directory must not exist. It receives:
 
 - `README.md`: what was measured, what was not, the figures, and every table.
 - `figures/*.png`: the calibration ladder, per-action background latency and preemptions, per-token decode time against running sequences, the timeline of the worst profiling cell, and correct answers within the target per action.
