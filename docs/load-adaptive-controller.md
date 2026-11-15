@@ -26,6 +26,19 @@ A policy file is a JSON list. Each policy gets its own cell.
 
 The numbers in the example are placeholders, not recommendations.
 
+## Freezing thresholds
+
+`18_freeze_policy.py` derives the thresholds from earlier matched runs instead of choosing them by hand:
+
+```sh
+python 18_freeze_policy.py --runs /absolute/path/matched-run-A /absolute/path/matched-run-B \
+  --prefer 1:2048 4:0 --output /absolute/path/new-policy-directory
+```
+
+For every target job of a fixed action it looks up KV-cache usage when the job arrived and whether the job finished within the loose target. Jobs are grouped into usage bins of width 0.1. An action is allowed below the start of the first bin whose on-time rate is under 0.90 or that holds fewer than 20 jobs; bins below the lowest well-populated one count as affordable. The output holds `policies.json` (ready for `run --policies`) and `freeze.json` (the rule, the full table, the source runs and their seeds).
+
+The policy must then be evaluated on seeds that are not listed in `freeze.json`.
+
 ## Rules for a valid comparison
 
 - Thresholds and mixture shares are frozen before the run and copied into the manifest. They must come from earlier runs with other seeds (calibration, profiling, earlier matched runs), never from the run being reported.

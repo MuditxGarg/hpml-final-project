@@ -102,3 +102,41 @@ def test_policy_cells_run_and_score_against_fake_server(fake_server, tmp_path, m
     names = {(str(d['action']), str(d['minus'])) for d in summary['paired_differences']}
     assert ('[1, 0]', 'always-deep') in names and ('always-deep', 'never') in names and len(names) == 6
     assert 'policies' in summary['caveat']
+
+
+def test_freeze_threshold_stops_at_the_first_late_or_thin_bin():
+    row = lambda action, start, jobs, rate: dict(action=action, kv_from=start, kv_to=round(start + .1, 6), jobs=jobs, on_time_rate=rate)
+    table = [row('1:2048', 0., 3, 1.), row('1:2048', .1, 30, 1.), row('1:2048', .2, 40, .95), row('1:2048', .3, 40, .6), row('1:2048', .4, 40, 1.),
+             row('4:0', .1, 30, 1.), row('4:0', .2, 5, 1.), row('4:0', .3, 50, 1.),
+             row('8:0', .1, 30, .5), row('9:0', .1, 30, 1.), row('9:0', .3, 30, 1.)]
+    assert lp.freeze_threshold(table, '1:2048', .9, 20) == .3  # the thin lowest bin is passed, the late bin stops it
+    assert lp.freeze_threshold(table, '4:0', .9, 20) == .2  # too few jobs to judge
+    assert lp.freeze_threshold(table, '8:0', .9, 20) == 0 and lp.freeze_threshold(table, '2:0', .9, 20) == 0
+    assert lp.freeze_threshold(table, '9:0', .9, 20) == .2  # a gap in the bins is not evidence
+
+
+def test_freeze_reads_runs_and_writes_a_valid_policy(tmp_path):
+    run = tmp_path / 'run'
+    (run / 'seed-3-light').mkdir(parents=True)
+    (run / 'manifest.json').write_text(json.dumps(dict(completed=['seed-3-light'], latency_targets_s=[5, 10])))
+    cells = [dict(cell='cell-0-N1-B2048', n=1, budget=2048, control=False, seed=3), dict(cell='cell-1-N0-B0', n=0, budget=0, control=True, seed=3),
+             dict(cell='cell-2-P-x', n=None, budget=None, control=False, policy='x', seed=3)]
+    (run / 'seed-3-light' / 'cells.json').write_text(json.dumps(cells))
+    samples = [dict(at_s=float(t), metrics={KV[0]: .25 if t < 10 else .65}) for t in range(20)]
+    # Four jobs arrive at low KV usage and are on time; four arrive at high usage and are late or fail.
+    rows = [dict(stream='target', measured=True, at_s=t + .5, status='completed', latency_s=4.) for t in range(4)]
+    rows += [dict(stream='target', measured=True, at_s=t + .5, status='completed', latency_s=30.) for t in range(10, 13)]
+    rows += [dict(stream='target', measured=True, at_s=13.5, status='timeout'), dict(stream='background', measured=True, at_s=1., status='completed', latency_s=1.)]
+    for cell in cells:
+        (run / 'seed-3-light' / f'{cell["cell"]}.jsonl').write_text('\n'.join(map(json.dumps, rows)))
+        (run / 'seed-3-light' / f'{cell["cell"]}-server.jsonl').write_text('\n'.join(map(json.dumps, samples)))
+    table = lp.arrival_table([run])
+    assert [(r['action'], r['kv_from'], r['jobs'], r['on_time']) for r in table] == [('1:2048', .2, 4, 4), ('1:2048', .6, 4, 0)]
+    out = tmp_path / 'frozen'
+    lp.freeze(['--runs', str(run), '--prefer', '1:2048', '4:0', '--min-jobs', '4', '--output', str(out)])
+    specs, policies = lp.load_policies(out / 'policies.json')
+    assert specs == [dict(kind='threshold', name='kv-ladder', fallback='1:0', rules=[dict(action='1:2048', kv_below=.3)])]
+    record = json.loads((out / 'freeze.json').read_text())
+    assert record['seeds_used'] == [3] and len(record['sources']) == 1 and record['thresholds'][1] == dict(action='4:0', kv_below=0.)
+    with pytest.raises(FileExistsError):
+        lp.freeze(['--runs', str(run), '--prefer', '1:2048', '--output', str(out)])

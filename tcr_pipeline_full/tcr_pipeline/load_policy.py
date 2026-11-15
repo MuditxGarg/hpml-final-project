@@ -88,3 +88,79 @@ def load_policies(path):
     if len(set(names)) != len(names) or any(not name or not name.replace('-', '').isalnum() for name in names):
         raise ValueError('policy names must be distinct and use only letters, digits and hyphens')
     return specs, policies
+
+
+def arrival_table(runs, width=.1):
+    """On-time rate of target jobs of each fixed action, by KV-cache usage at the job's arrival.
+
+    `runs` are matched real-answer run directories. On time means completed within the loose
+    latency target of that run, whether or not the answer was right; failures count as late.
+    """
+    bins = {}
+    for run in map(Path, runs):
+        manifest = json.loads((run / 'manifest.json').read_text())
+        loose = max(manifest['latency_targets_s'])
+        for block in manifest['completed']:
+            for cell in json.loads((run / block / 'cells.json').read_text()):
+                if cell['control'] or cell.get('policy'):
+                    continue
+                samples = [json.loads(line) for line in (run / block / f'{cell["cell"]}-server.jsonl').read_text().splitlines()]
+                for line in (run / block / f'{cell["cell"]}.jsonl').read_text().splitlines():
+                    row = json.loads(line)
+                    if row['stream'] != 'target' or not row.get('measured'):
+                        continue
+                    signal = read_signal([s for s in samples if s['at_s'] <= row['at_s']], row['at_s'])
+                    if signal is None:
+                        continue
+                    key = (f'{cell["n"]}:{cell["budget"]}', min(int(signal['kv'] / width), int(round(1 / width)) - 1))
+                    entry = bins.setdefault(key, dict(jobs=0, on_time=0))
+                    entry['jobs'] += 1
+                    entry['on_time'] += int(row['status'] in ('completed', 'no_answer') and row['latency_s'] <= loose)
+    return [dict(action=action, kv_from=round(index * width, 6), kv_to=round((index + 1) * width, 6), **entry,
+                 on_time_rate=entry['on_time'] / entry['jobs']) for (action, index), entry in sorted(bins.items())]
+
+
+def freeze_threshold(table, action, min_on_time, min_jobs):
+    """Upper KV limit for an action: the start of the first bin that is too late or too thin to judge.
+
+    Bins below the lowest well-populated one are taken as affordable: a lighter server is assumed not to be slower.
+    """
+    rows = sorted((r for r in table if r['action'] == action), key=lambda r: r['kv_from'])
+    while rows and rows[0]['jobs'] < min_jobs:
+        rows.pop(0)
+    limit = rows[0]['kv_from'] if rows else 0.
+    for row in rows:
+        if row['kv_from'] > limit + 1e-9 or row['jobs'] < min_jobs or row['on_time_rate'] < min_on_time:
+            break
+        limit = row['kv_to']
+    return limit if rows and limit > rows[0]['kv_from'] else 0.
+
+
+def freeze(argv=None):
+    import argparse
+    import hashlib as h
+    p = argparse.ArgumentParser(description='Freeze a KV-threshold policy from earlier matched runs (other seeds than the run it will be used in).')
+    p.add_argument('--runs', nargs='+', required=True, help='matched real-answer run directories')
+    p.add_argument('--prefer', nargs='+', required=True, help='actions in order of preference, for example 1:2048 4:0')
+    p.add_argument('--fallback', default='1:0')
+    p.add_argument('--name', default='kv-ladder')
+    p.add_argument('--min-on-time', type=float, default=.9)
+    p.add_argument('--min-jobs', type=int, default=20)
+    p.add_argument('--bin-width', type=float, default=.1)
+    p.add_argument('--output', required=True)
+    args = p.parse_args(argv)
+    table = arrival_table(args.runs, args.bin_width)
+    rules = [dict(action=a, kv_below=freeze_threshold(table, a, args.min_on_time, args.min_jobs)) for a in args.prefer]
+    policy = dict(kind='threshold', name=args.name, fallback=args.fallback, rules=[r for r in rules if r['kv_below'] > 0])
+    Threshold(policy)  # reject a malformed result before writing anything
+    out = Path(args.output)
+    out.mkdir(parents=True, exist_ok=False)
+    (out / 'policies.json').write_text(json.dumps([policy], indent=2) + '\n')
+    (out / 'freeze.json').write_text(json.dumps(dict(
+        rule='an action is allowed below the start of the first KV-usage bin whose on-time rate is under min_on_time or that holds fewer than min_jobs jobs; bins below the lowest well-populated bin count as affordable',
+        arguments=vars(args), thresholds=rules, table=table,
+        sources={str(Path(r).resolve()): h.sha256((Path(r) / 'manifest.json').read_bytes()).hexdigest() for r in args.runs},
+        seeds_used=sorted({json.loads((Path(r) / b / 'cells.json').read_text())[0]['seed'] for r in args.runs
+                           for b in json.loads((Path(r) / 'manifest.json').read_text())['completed']}),
+        caveat='thresholds describe these runs on this machine; evaluate the policy on other seeds only'), indent=2) + '\n')
+    print(out / 'policies.json')
