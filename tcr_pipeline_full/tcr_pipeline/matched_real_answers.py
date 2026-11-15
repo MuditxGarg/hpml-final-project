@@ -35,15 +35,23 @@ def load_tokenizer():
     return AutoTokenizer.from_pretrained(MODEL, revision=REVISION)
 
 
-def select_questions(rows, count, seed):
-    """Equal numbers per difficulty level, drawn with a seeded generator from id-sorted pools."""
-    if count % len(LEVELS):
+def select_questions(rows, count, seed, proportional=False):
+    """Seeded sample from id-sorted pools per difficulty level: equal counts, or counts proportional to the pools."""
+    pools = {level: sorted((r for r in rows if int(r['level']) == level), key=lambda r: r['id']) for level in LEVELS}
+    if proportional:
+        exact = {level: count * len(pool) / len(rows) for level, pool in pools.items()}
+        sizes = {level: int(value) for level, value in exact.items()}
+        # Largest remainders take the questions left over after rounding down.
+        for level in sorted(LEVELS, key=lambda l: (sizes[l] - exact[l], l))[:count - sum(sizes.values())]:
+            sizes[level] += 1
+    elif count % len(LEVELS):
         raise ValueError(f'question count must be a multiple of {len(LEVELS)}')
+    else:
+        sizes = dict.fromkeys(LEVELS, count // len(LEVELS))
     rng = random.Random(seed)
     cohort = []
     for level in LEVELS:
-        pool = sorted((r for r in rows if int(r['level']) == level), key=lambda r: r['id'])
-        cohort += rng.sample(pool, count // len(LEVELS))
+        cohort += rng.sample(pools[level], sizes[level])
     return cohort
 
 
@@ -53,12 +61,13 @@ def prepare(args):
     labels = {r['id']: r for path in chunks for r in json.loads(path.read_text())}
     if {p['id'] for p in prompts} != set(labels):
         raise ValueError('prompt and label question ids differ')
-    cohort = select_questions([dict(p, level=labels[p['id']]['level']) for p in prompts], args.questions, args.seed)
+    cohort = select_questions([dict(p, level=labels[p['id']]['level']) for p in prompts], args.questions, args.seed, args.proportional)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=False)
     write_json(out / 'plan.json', dict(
         name='matched real-answer comparison', model=MODEL, revision=REVISION, seed=args.seed, questions=cohort,
-        selection='equal count per MATH level, seeded sample from id-sorted pools; chosen before any run, never from outcomes',
+        selection=('count per MATH level proportional to the full set' if args.proportional else 'equal count per MATH level')
+        + ', seeded sample from id-sorted pools; chosen before any run, never from outcomes',
         vote_rule='plurality of valid normalized boxes; ties by lowest sample index; all N transports must complete',
         prompts_sha256=hashlib.sha256(Path(args.prompts).read_bytes()).hexdigest(),
         label_sha256={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in chunks}))
@@ -325,6 +334,7 @@ def main(argv=None):
         p.add_argument('--' + name, required=True)
     p.add_argument('--questions', type=int, default=50)
     p.add_argument('--seed', type=int, default=20261115)
+    p.add_argument('--proportional', action='store_true', help='keep the level mix of the full question set instead of equal counts')
     p.set_defaults(fn=prepare)
     p = sub.add_parser('run')
     for name in ('plan', 'calibration', 'lengths', 'prompts', 'hardware-json', 'out'):

@@ -21,6 +21,9 @@ def test_cohort_is_stratified_and_fixed_by_seed():
     assert cohort != m.select_questions(rows, 20, 8)
     with pytest.raises(ValueError):
         m.select_questions(rows, 12, 7)
+    uneven = [dict(id=f'u{i:03d}', level=1 if i < 10 else 2 if i < 40 else 3 if i < 60 else 4 if i < 75 else 5) for i in range(100)]
+    mix = m.select_questions(uneven, 21, 7, proportional=True)  # exact shares 2.1, 6.3, 4.2, 3.15, 5.25
+    assert [sum(r['level'] == level for r in mix) for level in (1, 2, 3, 4, 5)] == [2, 7, 4, 3, 5] and len({r['id'] for r in mix}) == 21
 
 
 def test_target_schedule_is_identical_across_background_rates():
