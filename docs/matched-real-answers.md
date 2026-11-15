@@ -14,6 +14,10 @@ The logic is in `matched_real_answers.py`. It reuses the trace generator, cell o
 - **Other background rates.** `run --rates LABEL=RPS ...` replaces the frozen pair with the named rates, for example two rates between them, to locate where an action stops being affordable. The target schedule still follows the calibrated contended rate, so it is identical to the schedule of a run at the frozen pair. Rates given this way are chosen by hand and must be reported as such.
 - All traces and cell orders are written before the first cell runs. The server must be idle before and after every cell. `--deadline-epoch` stops the run before a block that could not finish; only complete blocks are scored.
 
+## Per-job policies
+
+`run --policies FILE` adds one cell per policy to every block. A policy sets the action of each target job on arrival, from server load or from fixed shares. See [load-adaptive controller](load-adaptive-controller.md).
+
 ## Metrics (`score`)
 
 Scoring is offline and requires `math_verify`, the grader used for the labels.
