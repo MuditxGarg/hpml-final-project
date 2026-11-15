@@ -1,0 +1,13 @@
+{
+  "files": {
+    "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-20261115/summary.json": "7dd9ca5da38889c04850d81c5f306bd59f9bd713be38efd69b61913105622ca6",
+    "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-20261115/manifest.json": "9133d36c9aba545625fe5a4e6d710f6e7ca5b88fc28e1482267603bf5cbc4b1a",
+    "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-ladder-20261115/summary.json": "60f9dc8897fcc9ea18a32606c88e8aa31823cf6c330918532bdbd30ec143b72a",
+    "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-ladder-20261115/manifest.json": "68275fc0564b7f8b4702c2aa5557f17835ebf1ace11b9ebe9ddaea7aff352c54"
+  },
+  "figures": [
+    "matched-actions.png",
+    "matched-actions-2.png",
+    "matched-load-curve.png"
+  ]
+}
