@@ -1,4 +1,4 @@
-> Updated evaluation: see [docs/evaluation.md](../../docs/evaluation.md). 07/08 now use nested evaluation; historical scripts are in legacy/. The original measurement-stage description below is retained for provenance.
+> Updated evaluation: see [docs/evaluation.md](../../docs/evaluation.md). 07/08 now use nested evaluation; historical scripts are in legacy/. Matched E1 replay is documented in [docs/matched-serving.md](../../docs/matched-serving.md). The original measurement-stage description below is retained for provenance.
 
 # tcr_pipeline: measurement stage for load-aware test-time compute routing
 

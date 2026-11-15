@@ -1,0 +1,162 @@
+{
+  "name": "Real Answer Completion Validation",
+  "model": "Qwen/Qwen3-1.7B",
+  "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "seed": 20261115,
+  "slo_s": 87,
+  "observation_timeout_s": 180,
+  "blocks": [
+    {
+      "id": "test/geometry/226.json",
+      "level": 1,
+      "actions": [
+        [
+          4,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          2048
+        ]
+      ]
+    },
+    {
+      "id": "test/algebra/1349.json",
+      "level": 2,
+      "actions": [
+        [
+          1,
+          2048
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "id": "test/number_theory/183.json",
+      "level": 3,
+      "actions": [
+        [
+          1,
+          2048
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ]
+    },
+    {
+      "id": "test/counting_and_probability/430.json",
+      "level": 4,
+      "actions": [
+        [
+          1,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          1,
+          2048
+        ]
+      ]
+    },
+    {
+      "id": "test/intermediate_algebra/966.json",
+      "level": 5,
+      "actions": [
+        [
+          4,
+          0
+        ],
+        [
+          1,
+          2048
+        ],
+        [
+          1,
+          0
+        ]
+      ]
+    }
+  ],
+  "prompts": [
+    {
+      "id": "test/geometry/226.json",
+      "thinking": "<|im_start|>user\nSolve the following math problem carefully. Think through the steps internally. After finishing your thinking, give ONLY the final answer formatted as \\boxed{ANSWER}, with no additional explanation in the final response.\n\nIn circle $J$, $HO$ and $HN$ are tangent to the circle at $O$ and $N$. Find the number of degrees in the sum of $m\\angle J$ and $m\\angle H$. [asy]\nsize(150);\nimport graph;\npair J = (0,0), H = (6,0), O, N;\npath circ = Circle(J,3);\npair M = midpoint(J--H);\npath secCirc = Circle(M,3);\npair[] tangentPoints = intersectionpoints(circ,secCirc);\nO = tangentPoints[0]; N = tangentPoints[1];\ndraw(J--N--H--O--cycle);\ndraw(circ);\nlabel(\"$H$\",H,E);\nlabel(\"$J$\",J,W);\nlabel(\"$N$\",N,S);\nlabel(\"$O$\",O,NE);\n[/asy]<|im_end|>\n<|im_start|>assistant\n",
+      "nothinking": "<|im_start|>user\nSolve the following math problem carefully. Think through the steps internally. After finishing your thinking, give ONLY the final answer formatted as \\boxed{ANSWER}, with no additional explanation in the final response.\n\nIn circle $J$, $HO$ and $HN$ are tangent to the circle at $O$ and $N$. Find the number of degrees in the sum of $m\\angle J$ and $m\\angle H$. [asy]\nsize(150);\nimport graph;\npair J = (0,0), H = (6,0), O, N;\npath circ = Circle(J,3);\npair M = midpoint(J--H);\npath secCirc = Circle(M,3);\npair[] tangentPoints = intersectionpoints(circ,secCirc);\nO = tangentPoints[0]; N = tangentPoints[1];\ndraw(J--N--H--O--cycle);\ndraw(circ);\nlabel(\"$H$\",H,E);\nlabel(\"$J$\",J,W);\nlabel(\"$N$\",N,S);\nlabel(\"$O$\",O,NE);\n[/asy]<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+      "level": 1
+    },
+    {
+      "id": "test/algebra/1349.json",
+      "thinking": "<|im_start|>user\nSolve the following math problem carefully. Think through the steps internally. After finishing your thinking, give ONLY the final answer formatted as \\boxed{ANSWER}, with no additional explanation in the final response.\n\nThe results of a cross-country team's training run are graphed below. Which student has the greatest average speed? [asy]\nfor ( int i = 1; i <= 7; ++i )\n{\n\ndraw((i,0)--(i,6));\n}\n\nfor ( int i = 1; i <= 5; ++i )\n{\n\ndraw((0,i)--(8,i));\n}\ndraw((-0.5,0)--(8,0), linewidth(1));\ndraw((0,-0.5)--(0,6), linewidth(1));\nlabel(\"$O$\", (0,0), SW);\nlabel(scale(.85)*rotate(90)*\"distance\", (0, 3), W);\nlabel(scale(.85)*\"time\", (4, 0), S);\ndot((1.25, 4.5));\nlabel(scale(.85)*\"Evelyn\", (1.25, 4.8), N);\ndot((2.5, 2.2));\nlabel(scale(.85)*\"Briana\", (2.5, 2.2), S);\ndot((4.25,5.2));\nlabel(scale(.85)*\"Carla\", (4.25, 5.2), SE);\ndot((5.6, 2.8));\nlabel(scale(.85)*\"Debra\", (5.6, 2.8), N);\ndot((6.8, 1.4));\nlabel(scale(.85)*\"Angela\", (6.8, 1.4), E);\n[/asy]<|im_end|>\n<|im_start|>assistant\n",
+      "nothinking": "<|im_start|>user\nSolve the following math problem carefully. Think through the steps internally. After finishing your thinking, give ONLY the final answer formatted as \\boxed{ANSWER}, with no additional explanation in the final response.\n\nThe results of a cross-country team's training run are graphed below. Which student has the greatest average speed? [asy]\nfor ( int i = 1; i <= 7; ++i )\n{\n\ndraw((i,0)--(i,6));\n}\n\nfor ( int i = 1; i <= 5; ++i )\n{\n\ndraw((0,i)--(8,i));\n}\ndraw((-0.5,0)--(8,0), linewidth(1));\ndraw((0,-0.5)--(0,6), linewidth(1));\nlabel(\"$O$\", (0,0), SW);\nlabel(scale(.85)*rotate(90)*\"distance\", (0, 3), W);\nlabel(scale(.85)*\"time\", (4, 0), S);\ndot((1.25, 4.5));\nlabel(scale(.85)*\"Evelyn\", (1.25, 4.8), N);\ndot((2.5, 2.2));\nlabel(scale(.85)*\"Briana\", (2.5, 2.2), S);\ndot((4.25,5.2));\nlabel(scale(.85)*\"Carla\", (4.25, 5.2), SE);\ndot((5.6, 2.8));\nlabel(scale(.85)*\"Debra\", (5.6, 2.8), N);\ndot((6.8, 1.4));\nlabel(scale(.85)*\"Angela\", (6.8, 1.4), E);\n[/asy]<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+      "level": 2
+    },
+    {
+      "id": "test/number_theory/183.json",
+      "thinking": "<|im_start|>user\nSolve the following math problem carefully. Think through the steps internally. After finishing your thinking, give ONLY the final answer formatted as \\boxed{ANSWER}, with no additional explanation in the final response.\n\nWhat is the sum of the digits in the terminating decimal representation of the fraction $\\frac{4321}{5^7\\cdot2^8}$?<|im_end|>\n<|im_start|>assistant\n",
+      "nothinking": "<|im_start|>user\nSolve the following math problem carefully. Think through the steps internally. After finishing your thinking, give ONLY the final answer formatted as \\boxed{ANSWER}, with no additional explanation in the final response.\n\nWhat is the sum of the digits in the terminating decimal representation of the fraction $\\frac{4321}{5^7\\cdot2^8}$?<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+      "level": 3
+    },
+    {
+      "id": "test/counting_and_probability/430.json",
+      "thinking": "<|im_start|>user\nSolve the following math problem carefully. Think through the steps internally. After finishing your thinking, give ONLY the final answer formatted as \\boxed{ANSWER}, with no additional explanation in the final response.\n\nBob and Alice each have a bag that contains one ball of each of the colors,  blue, green, orange, red, and violet. Alice randomly selects one ball from her bag and puts it into Bob's bag. Bob then randomly selects one ball from his bag and  puts it into Alice's bag. What is the probability that after this process the contents of the two bags are the same?<|im_end|>\n<|im_start|>assistant\n",
+      "nothinking": "<|im_start|>user\nSolve the following math problem carefully. Think through the steps internally. After finishing your thinking, give ONLY the final answer formatted as \\boxed{ANSWER}, with no additional explanation in the final response.\n\nBob and Alice each have a bag that contains one ball of each of the colors,  blue, green, orange, red, and violet. Alice randomly selects one ball from her bag and puts it into Bob's bag. Bob then randomly selects one ball from his bag and  puts it into Alice's bag. What is the probability that after this process the contents of the two bags are the same?<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+      "level": 4
+    },
+    {
+      "id": "test/intermediate_algebra/966.json",
+      "thinking": "<|im_start|>user\nSolve the following math problem carefully. Think through the steps internally. After finishing your thinking, give ONLY the final answer formatted as \\boxed{ANSWER}, with no additional explanation in the final response.\n\nLet $x,$ $y,$ and $z$ be positive real numbers such that $xyz = 2.$  Find the minimum value of\n\\[x^4 + 4y^2 + 4z^4.\\]<|im_end|>\n<|im_start|>assistant\n",
+      "nothinking": "<|im_start|>user\nSolve the following math problem carefully. Think through the steps internally. After finishing your thinking, give ONLY the final answer formatted as \\boxed{ANSWER}, with no additional explanation in the final response.\n\nLet $x,$ $y,$ and $z$ be positive real numbers such that $xyz = 2.$  Find the minimum value of\n\\[x^4 + 4y^2 + 4z^4.\\]<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+      "level": 5
+    }
+  ],
+  "vote_rule": "plurality of valid normalized boxes; ties by lowest sample index; all N transports must complete",
+  "scope": "five-question idle diagnostic; no routing or population accuracy claim",
+  "prompt_sha256": "80bbfd16d10071e24a5fd537f24fdb1fd2d71d78e24259937e6d92f87a2f7995",
+  "label_hashes": {
+    "chunk_000.json": "a2c28215b18b0cc5e6ad30e46f34455557596a1ad5c037a88a789f8b63490983",
+    "chunk_001.json": "bf87aed20e5f6e10058b01b85a8d95fc8d462ae32c67305f8c122a4fbc980abb",
+    "chunk_002.json": "90bfb7cb6e9956bd25ea2b3842507319ce03f22109c8967029a8df7c94c4c620",
+    "chunk_003.json": "356dbbd3170a969e05de12808818ae1d94d84e248106b0905be811776c3e5544",
+    "chunk_004.json": "e008cc3e0567fff3420a5bcf9c9a0c2c8534dc166168095246d77dca4def2524",
+    "chunk_005.json": "c27a8d7fb542b1adbf5a76b43f6bff5170757ca469e9d3598fcc98865f6e0e61",
+    "chunk_006.json": "55dadc9796177d59a9b6c5d8e401ac359af98f69fe364d13e7cc9f5ccc7504f8",
+    "chunk_007.json": "3548b80542a462c82a6247bc52087a1bed03303d9ce5ab217e73d1368e393f9e",
+    "chunk_008.json": "19ff6c1e3638eb06bbd5d7ba3b43e6f81c01bc23b58899190c68cff41e89fe56",
+    "chunk_009.json": "21f44094494f7469e14c0f07fdc300d9012076419ee2f344d92d81f88c4d8f85",
+    "chunk_010.json": "d42178aa080e5cdf3eae7f3e9e80a220fc018ab012d6e59ba7af33f4b0d8e4d5",
+    "chunk_011.json": "58597f3a4ec8a84340fcf9d9e2c2cc3138eea2bd718f098851187aaa07ea3d61",
+    "chunk_012.json": "da51fcc7e47c72ee75d864e9719845b24a24e6e8d572df5cd40b9d760297b2e0",
+    "chunk_013.json": "05f107c9a5e9d921d809f010eecf73b361282dc3f76607fd1220e3fb43154473",
+    "chunk_014.json": "7148053f7162e67853c76ac21b59fc2f035345cf4a186722d373eeb5ec48fed6",
+    "chunk_015.json": "c7fa9a34aded059ccf38fbc74fda64b8fb46b7499f229b95a11ef08d0a2767e1",
+    "chunk_016.json": "70b881eae564d5d82d4b074de7fa374f36572a0d453a7904bce4ef6d69125e81",
+    "chunk_017.json": "8e82f01af0dc8bc2cff59ba23215cbe28cbb3f58f678546b539f48dca7129a52",
+    "chunk_018.json": "c7b665f98b9fd87abf53aa04203c08a4578626905c9111cd396207cd56a940f0",
+    "chunk_019.json": "a9a9bb7fa2751b756988c694c4834fb85dc65a9a0a4ddbbdc9b903782ba5f391",
+    "chunk_020.json": "abb98a5035a393fb3795776b9223a8ac2ab408974e52282754e88bc4858fcd31",
+    "chunk_021.json": "74000ff3d1caef3b2e74a4b65268d3952c10a2653be952b85946b9b9c8057d41",
+    "chunk_022.json": "caf9d1f465c017cd1b6be1c32e315a254ccdf36ae901256b5ad69903469101dc",
+    "chunk_023.json": "c9083877e8b13a5d000801fd81e19f125cd8ada7109349d5e34193c06958ad6c",
+    "chunk_024.json": "7c60b39775e98218182fb7d6604d0532774efdcc79ce870d09080edbe4590daa"
+  }
+}

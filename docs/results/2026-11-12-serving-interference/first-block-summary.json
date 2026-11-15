@@ -1,0 +1,159 @@
+{
+  "cells": [
+    {
+      "n": 4,
+      "budget": 0,
+      "control": false,
+      "control_definition": null,
+      "idle_before": {
+        "vllm:num_requests_running": 0.0,
+        "vllm:num_requests_waiting": 0.0,
+        "vllm:kv_cache_usage_perc": 0.0,
+        "vllm:prompt_tokens_total": 6460.0,
+        "vllm:generation_tokens_total": 58148.0
+      },
+      "telemetry_samples": 185,
+      "metrics": {
+        "background": {
+          "scheduled": 26,
+          "not_offered_control": 0,
+          "statuses": {
+            "completed": 26,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "slo_attainment": 1.0,
+          "completed_p95_s": 54.865507732133665,
+          "unconditional_p95_lower_s": 54.865507732133665,
+          "unconditional_p95_upper_s": 54.865507732133665,
+          "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+          "dispatch_lag_p95_s": 0.0016643764413544204
+        },
+        "target": {
+          "scheduled": 6,
+          "not_offered_control": 0,
+          "statuses": {
+            "completed": 5,
+            "drop": 0,
+            "timeout": 1,
+            "error": 0,
+            "censored": 0
+          },
+          "slo_attainment": 0.8333333333333334,
+          "completed_p95_s": 50.846795502726934,
+          "unconditional_p95_lower_s": null,
+          "unconditional_p95_upper_s": null,
+          "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+          "dispatch_lag_p95_s": 0.0038227683557465753
+        }
+      },
+      "observed_slo_feasible": false
+    },
+    {
+      "n": 0,
+      "budget": 0,
+      "control": true,
+      "control_definition": "background_only",
+      "idle_before": {
+        "vllm:num_requests_running": 0.0,
+        "vllm:num_requests_waiting": 0.0,
+        "vllm:kv_cache_usage_perc": 0.0,
+        "vllm:prompt_tokens_total": 13655.0,
+        "vllm:generation_tokens_total": 111318.0
+      },
+      "telemetry_samples": 164,
+      "metrics": {
+        "background": {
+          "scheduled": 26,
+          "not_offered_control": 0,
+          "statuses": {
+            "completed": 26,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "slo_attainment": 1.0,
+          "completed_p95_s": 39.40740279644139,
+          "unconditional_p95_lower_s": 39.40740279644139,
+          "unconditional_p95_upper_s": 39.40740279644139,
+          "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+          "dispatch_lag_p95_s": 0.0011742654315725076
+        },
+        "target": {
+          "scheduled": 0,
+          "not_offered_control": 6,
+          "statuses": {
+            "completed": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "slo_attainment": null,
+          "completed_p95_s": null,
+          "unconditional_p95_lower_s": null,
+          "unconditional_p95_upper_s": null,
+          "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+          "dispatch_lag_p95_s": null
+        }
+      },
+      "observed_slo_feasible": true
+    },
+    {
+      "n": 4,
+      "budget": 2048,
+      "control": false,
+      "control_definition": null,
+      "idle_before": {
+        "vllm:num_requests_running": 0.0,
+        "vllm:num_requests_waiting": 0.0,
+        "vllm:kv_cache_usage_perc": 0.0,
+        "vllm:prompt_tokens_total": 17870.0,
+        "vllm:generation_tokens_total": 146403.0
+      },
+      "telemetry_samples": 231,
+      "metrics": {
+        "background": {
+          "scheduled": 26,
+          "not_offered_control": 0,
+          "statuses": {
+            "completed": 26,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "slo_attainment": 1.0,
+          "completed_p95_s": 85.00013557536393,
+          "unconditional_p95_lower_s": 85.00013557536393,
+          "unconditional_p95_upper_s": 85.00013557536393,
+          "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+          "dispatch_lag_p95_s": 0.0008867599877930843
+        },
+        "target": {
+          "scheduled": 6,
+          "not_offered_control": 0,
+          "statuses": {
+            "completed": 0,
+            "drop": 0,
+            "timeout": 6,
+            "error": 0,
+            "censored": 0
+          },
+          "slo_attainment": 0.0,
+          "completed_p95_s": null,
+          "unconditional_p95_lower_s": null,
+          "unconditional_p95_upper_s": null,
+          "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+          "dispatch_lag_p95_s": 0.00977478208629634
+        }
+      },
+      "observed_slo_feasible": false
+    }
+  ],
+  "any_observed_feasible": false,
+  "inference": "observed cohort only; no confidence/quality claim"
+}

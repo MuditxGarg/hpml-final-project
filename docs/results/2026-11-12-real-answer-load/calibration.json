@@ -1,0 +1,24 @@
+{
+  "definition": "finite-burst throughput proxy, not established steady-state capacity",
+  "trials": [
+    {
+      "count": 64,
+      "elapsed_s": 34.86375133699039,
+      "requests_per_s": 1.8357175446032996,
+      "no_answer": 3
+    },
+    {
+      "count": 64,
+      "elapsed_s": 19.17390413300018,
+      "requests_per_s": 3.337870031896618,
+      "no_answer": 6
+    },
+    {
+      "count": 64,
+      "elapsed_s": 20.237211430008756,
+      "requests_per_s": 3.1624910487962574,
+      "no_answer": 4
+    }
+  ],
+  "requests_per_s": 3.1624910487962574
+}

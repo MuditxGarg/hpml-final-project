@@ -1,0 +1,110 @@
+[
+  {
+    "block": "seed20261113-rho0.5",
+    "cell": "cell-000-N4-B0",
+    "records": 42,
+    "exact_trace_match": true,
+    "measured_gauge_max": {
+      "vllm:num_requests_waiting": 0.0,
+      "vllm:num_requests_running": 22.0,
+      "vllm:kv_cache_usage_perc": 0.15511892450879006
+    },
+    "metrics_errors": 0
+  },
+  {
+    "block": "seed20261113-rho0.5",
+    "cell": "cell-001-N0-B0",
+    "records": 42,
+    "exact_trace_match": true,
+    "measured_gauge_max": {
+      "vllm:num_requests_waiting": 0.0,
+      "vllm:num_requests_running": 12.0,
+      "vllm:kv_cache_usage_perc": 0.10713547052740435
+    },
+    "metrics_errors": 0
+  },
+  {
+    "block": "seed20261113-rho0.5",
+    "cell": "cell-002-N4-B2048",
+    "records": 42,
+    "exact_trace_match": true,
+    "measured_gauge_max": {
+      "vllm:num_requests_waiting": 0.0,
+      "vllm:num_requests_running": 35.0,
+      "vllm:kv_cache_usage_perc": 0.3274043433298862
+    },
+    "metrics_errors": 0
+  },
+  {
+    "block": "seed20261113-rho0.8",
+    "cell": "cell-000-N4-B0",
+    "records": 61,
+    "exact_trace_match": true,
+    "measured_gauge_max": {
+      "vllm:num_requests_waiting": 0.0,
+      "vllm:num_requests_running": 35.0,
+      "vllm:kv_cache_usage_perc": 0.2397104446742503
+    },
+    "metrics_errors": 0
+  },
+  {
+    "block": "seed20261113-rho0.8",
+    "cell": "cell-001-N4-B2048",
+    "records": 61,
+    "exact_trace_match": true,
+    "measured_gauge_max": {
+      "vllm:num_requests_waiting": 0.0,
+      "vllm:num_requests_running": 42.0,
+      "vllm:kv_cache_usage_perc": 0.36856256463288517
+    },
+    "metrics_errors": 0
+  },
+  {
+    "block": "seed20261113-rho0.8",
+    "cell": "cell-002-N0-B0",
+    "records": 61,
+    "exact_trace_match": true,
+    "measured_gauge_max": {
+      "vllm:num_requests_waiting": 0.0,
+      "vllm:num_requests_running": 21.0,
+      "vllm:kv_cache_usage_perc": 0.18055842812823164
+    },
+    "metrics_errors": 0
+  },
+  {
+    "block": "seed20261114-rho0.8",
+    "cell": "cell-000-N4-B0",
+    "records": 45,
+    "exact_trace_match": true,
+    "measured_gauge_max": {
+      "vllm:num_requests_waiting": 0.0,
+      "vllm:num_requests_running": 30.0,
+      "vllm:kv_cache_usage_perc": 0.26059979317476734
+    },
+    "metrics_errors": 0
+  },
+  {
+    "block": "seed20261114-rho0.8",
+    "cell": "cell-001-N4-B2048",
+    "records": 45,
+    "exact_trace_match": true,
+    "measured_gauge_max": {
+      "vllm:num_requests_waiting": 0.0,
+      "vllm:num_requests_running": 45.0,
+      "vllm:kv_cache_usage_perc": 0.40413650465356776
+    },
+    "metrics_errors": 0
+  },
+  {
+    "block": "seed20261114-rho0.8",
+    "cell": "cell-002-N0-B0",
+    "records": 45,
+    "exact_trace_match": true,
+    "measured_gauge_max": {
+      "vllm:num_requests_waiting": 0.0,
+      "vllm:num_requests_running": 15.0,
+      "vllm:kv_cache_usage_perc": 0.13609100310237854
+    },
+    "metrics_errors": 0
+  }
+]

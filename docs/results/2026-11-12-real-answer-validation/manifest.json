@@ -1,0 +1,25 @@
+{
+  "source_commit": "7c23a36",
+  "job_id": "13888804",
+  "gpu": "NVIDIA RTX A6000 48 GiB",
+  "allocation_parent_seconds": 3405,
+  "allocation_with_cleanup_seconds": 3497,
+  "authorized_seconds": 7200,
+  "runtime_torchcodec_override": "0.17.0+cpu",
+  "torchcodec_wheel_sha256": "d859426bd2fed833ed0826c6d3fefa7a261178cd550420bd536e9f073e7eea56",
+  "files": {
+    "README.md": "e98b41a000e51e3c434929e4e8e04d473fc07724b301fc389c7f5877fd03c461",
+    "accounting.txt": "e2d09abee8a663d739ba8d91efbb30938e6c7ac078df614820598a296d9d091d",
+    "environment.json": "0581397c5289d6f6b7716874e22c30c934193b83aab9b6364f5c1476f21d5941",
+    "environment.txt": "21eec28402c8cae7ade52142d8d226de1e3bfd82e78fbb24eca76cf9e5ea96ba",
+    "executed.sbatch": "c88b5ee1d57f64a5dff211903456e8a0a610140a6fd375b0a7266f679d2525a3",
+    "gold.json": "24ce9f005d1196048f69d4eabc248d39c19d99403798094d23b28dac46a05bbc",
+    "hardware.txt": "0c644bd374909dc880e2c7860fe664df22fdd9455544cd4ed57ae12a12a715c4",
+    "plan.json": "818b9fe512394a49cf0534a4496b2d454241d70597c2bcae53dc00a60c308df2",
+    "raw-evidence.zip": "6ccfc4b3086020d333fb8df8b03cf5e21feafc79c1946031606a4f8188614a04",
+    "server_command.txt": "60537e087f55c027679b47a62af6a297c2e367250d4ff0872f9239857370b655",
+    "status.json": "9131ec9c350a5998a440132459c77cd447159101efa7d967aebc40e1fc8067bf",
+    "summary.json": "6188f684b75f02b1d18bc0f31512a6a8640c1c15ae52b6418eb1861e9c75adc1",
+    "trial-results.json": "19111d69bb082b8a757799033427f24455a4bee7c2363047361c36d02cc396bf"
+  }
+}

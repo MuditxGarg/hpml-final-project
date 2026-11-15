@@ -1,0 +1,35 @@
+Traceback (most recent call last):
+  File "/tmp/latte-load-ps3558-13889319/code/real_answer_load.py", line 217, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/tmp/latte-load-ps3558-13889319/code/real_answer_load.py", line 215, in main
+    args=parser.parse_args();args.fn(args)
+                             ^^^^^^^^^^^^^
+  File "/tmp/latte-load-ps3558-13889319/code/real_answer_load.py", line 126, in run
+    write_json(out/'manifest.json',state)
+  File "/tmp/latte-load-ps3558-13889319/code/real_answer_validation.py", line 117, in write_json
+    tmp.write_text(json.dumps(obj,indent=2)+'\n'); tmp.replace(path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/insomnia001/shared/apps/anaconda/2023.09/lib/python3.11/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "/insomnia001/shared/apps/anaconda/2023.09/lib/python3.11/json/encoder.py", line 202, in encode
+    chunks = list(chunks)
+             ^^^^^^^^^^^^
+  File "/insomnia001/shared/apps/anaconda/2023.09/lib/python3.11/json/encoder.py", line 432, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "/insomnia001/shared/apps/anaconda/2023.09/lib/python3.11/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/insomnia001/shared/apps/anaconda/2023.09/lib/python3.11/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/insomnia001/shared/apps/anaconda/2023.09/lib/python3.11/json/encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "/insomnia001/shared/apps/anaconda/2023.09/lib/python3.11/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type function is not JSON serializable
+JobID|State|Elapsed|ExitCode
+13889319|FAILED|00:03:30|1:0
+13889319.batch|FAILED|00:03:30|1:0
+13889319.extern|COMPLETED|00:03:30|0:0
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)

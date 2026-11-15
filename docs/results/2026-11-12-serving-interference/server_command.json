@@ -1,0 +1,28 @@
+{
+  "argv": [
+    "vllm",
+    "serve",
+    "Qwen/Qwen3-1.7B",
+    "--revision",
+    "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "--dtype",
+    "half",
+    "--max-model-len",
+    "5120",
+    "--gpu-memory-utilization",
+    "0.85",
+    "--max-num-seqs",
+    "64",
+    "--served-model-name",
+    "m",
+    "--port",
+    "8001",
+    "--host",
+    "127.0.0.1",
+    "--no-enable-prefix-caching"
+  ],
+  "pid": 6267,
+  "session_start": "2026-11-12T22:11:32+00:00",
+  "deadline": "2026-11-12T23:07:32+00:00",
+  "auto_release": "2026-11-12T23:09:32+00:00"
+}

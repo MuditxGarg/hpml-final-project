@@ -1,0 +1,26 @@
+{
+  "argv": [
+    "/usr/bin/python3",
+    "-u",
+    "colab_run_replay.py",
+    "--seeds",
+    "20261113",
+    "20261114",
+    "--loads",
+    ".5",
+    ".8",
+    "--actions",
+    "4:0",
+    "4:2048",
+    "--warmup",
+    "30",
+    "--duration",
+    "120",
+    "--randomize-control",
+    "--target-count",
+    "6",
+    "--output",
+    "/content/t4-b-repeat-run1"
+  ],
+  "deadline": "2026-11-12T23:07:32+00:00"
+}

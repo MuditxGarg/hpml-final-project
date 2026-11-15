@@ -1,0 +1,1016 @@
+{
+  "blocks": [
+    {
+      "block": "seed-20261116-load-0.5",
+      "paired_complete": true,
+      "cells": [
+        {
+          "n": 1,
+          "budget": 2048,
+          "metrics": {
+            "background": {
+              "scheduled": 165,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 149,
+                "no_answer": 16,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 0.9030303030303031,
+              "completed_p95_s": 14.198676561327474,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0003650104915635666
+            },
+            "target": {
+              "scheduled": 5,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 5,
+                "no_answer": 0,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 1.0,
+              "completed_p95_s": 19.120994167024037,
+              "unconditional_p95_lower_s": 19.120994167024037,
+              "unconditional_p95_upper_s": 19.120994167024037,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0003311100008431822,
+              "correct": 2,
+              "correct_within_slo": 2
+            },
+            "observed_delivery_feasible": false
+          },
+          "telemetry": {
+            "samples": 100,
+            "scrape_errors": 0,
+            "waiting_max": 0.0,
+            "waiting_mean": 0.0,
+            "waiting_positive_fraction": 0.0,
+            "cache_usage_max": 0.05084745762711862,
+            "note": "measured arrival window only; missing telemetry is not zero load"
+          }
+        },
+        {
+          "n": 1,
+          "budget": 0,
+          "metrics": {
+            "background": {
+              "scheduled": 165,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 152,
+                "no_answer": 13,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 0.9212121212121213,
+              "completed_p95_s": 13.96048343236697,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0005036927831696403
+            },
+            "target": {
+              "scheduled": 5,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 5,
+                "no_answer": 0,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 1.0,
+              "completed_p95_s": 8.036768670979654,
+              "unconditional_p95_lower_s": 8.036768670979654,
+              "unconditional_p95_upper_s": 8.036768670979654,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0004185599973425269,
+              "correct": 2,
+              "correct_within_slo": 2
+            },
+            "observed_delivery_feasible": false
+          },
+          "telemetry": {
+            "samples": 100,
+            "scrape_errors": 0,
+            "waiting_max": 0.0,
+            "waiting_mean": 0.0,
+            "waiting_positive_fraction": 0.0,
+            "cache_usage_max": 0.06524003408768109,
+            "note": "measured arrival window only; missing telemetry is not zero load"
+          }
+        },
+        {
+          "n": 4,
+          "budget": 0,
+          "metrics": {
+            "background": {
+              "scheduled": 165,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 155,
+                "no_answer": 10,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 0.9393939393939394,
+              "completed_p95_s": 15.350536462282314,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.00040467110830633146
+            },
+            "target": {
+              "scheduled": 5,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 5,
+                "no_answer": 0,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 1.0,
+              "completed_p95_s": 19.692433969001286,
+              "unconditional_p95_lower_s": 19.692433969001286,
+              "unconditional_p95_upper_s": 19.692433969001286,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.00034897399018518627,
+              "correct": 4,
+              "correct_within_slo": 4
+            },
+            "observed_delivery_feasible": false
+          },
+          "telemetry": {
+            "samples": 100,
+            "scrape_errors": 0,
+            "waiting_max": 0.0,
+            "waiting_mean": 0.0,
+            "waiting_positive_fraction": 0.0,
+            "cache_usage_max": 0.06850677019221663,
+            "note": "measured arrival window only; missing telemetry is not zero load"
+          }
+        },
+        {
+          "n": 0,
+          "budget": 0,
+          "metrics": {
+            "background": {
+              "scheduled": 165,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 151,
+                "no_answer": 14,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 0.9151515151515152,
+              "completed_p95_s": 13.209506264956879,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0003720211211764024
+            },
+            "target": {
+              "scheduled": 0,
+              "not_offered_control": 5,
+              "statuses": {
+                "completed": 0,
+                "no_answer": 0,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": null,
+              "completed_p95_s": null,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": null,
+              "correct": 0,
+              "correct_within_slo": 0
+            },
+            "observed_delivery_feasible": false
+          },
+          "telemetry": {
+            "samples": 100,
+            "scrape_errors": 0,
+            "waiting_max": 0.0,
+            "waiting_mean": 0.0,
+            "waiting_positive_fraction": 0.0,
+            "cache_usage_max": 0.05766499384527979,
+            "note": "measured arrival window only; missing telemetry is not zero load"
+          }
+        }
+      ]
+    },
+    {
+      "block": "seed-20261116-load-0.9",
+      "paired_complete": true,
+      "cells": [
+        {
+          "n": 1,
+          "budget": 2048,
+          "metrics": {
+            "background": {
+              "scheduled": 263,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 245,
+                "no_answer": 18,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 0.9315589353612167,
+              "completed_p95_s": 17.165401839269677,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0005467021656642146
+            },
+            "target": {
+              "scheduled": 5,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 5,
+                "no_answer": 0,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 1.0,
+              "completed_p95_s": 22.66249724800582,
+              "unconditional_p95_lower_s": 22.66249724800582,
+              "unconditional_p95_upper_s": 22.66249724800582,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.00034131002030335367,
+              "correct": 3,
+              "correct_within_slo": 3
+            },
+            "observed_delivery_feasible": false
+          },
+          "telemetry": {
+            "samples": 100,
+            "scrape_errors": 0,
+            "waiting_max": 0.0,
+            "waiting_mean": 0.0,
+            "waiting_positive_fraction": 0.0,
+            "cache_usage_max": 0.08853328283306505,
+            "note": "measured arrival window only; missing telemetry is not zero load"
+          }
+        },
+        {
+          "n": 4,
+          "budget": 0,
+          "metrics": {
+            "background": {
+              "scheduled": 263,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 250,
+                "no_answer": 13,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 0.9505703422053232,
+              "completed_p95_s": 17.442045604165372,
+              "unconditional_p95_lower_s": 22.16330293494812,
+              "unconditional_p95_upper_s": 22.16330293494812,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0004936494732064034
+            },
+            "target": {
+              "scheduled": 5,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 5,
+                "no_answer": 0,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 1.0,
+              "completed_p95_s": 23.708169257995905,
+              "unconditional_p95_lower_s": 23.708169257995905,
+              "unconditional_p95_upper_s": 23.708169257995905,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.00047613299102522433,
+              "correct": 3,
+              "correct_within_slo": 3
+            },
+            "observed_delivery_feasible": true
+          },
+          "telemetry": {
+            "samples": 100,
+            "scrape_errors": 0,
+            "waiting_max": 0.0,
+            "waiting_mean": 0.0,
+            "waiting_positive_fraction": 0.0,
+            "cache_usage_max": 0.09265221096487075,
+            "note": "measured arrival window only; missing telemetry is not zero load"
+          }
+        },
+        {
+          "n": 1,
+          "budget": 0,
+          "metrics": {
+            "background": {
+              "scheduled": 263,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 245,
+                "no_answer": 18,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 0.9315589353612167,
+              "completed_p95_s": 16.345354575402197,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.00044527024910223645
+            },
+            "target": {
+              "scheduled": 5,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 5,
+                "no_answer": 0,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 1.0,
+              "completed_p95_s": 8.86904286200297,
+              "unconditional_p95_lower_s": 8.86904286200297,
+              "unconditional_p95_upper_s": 8.86904286200297,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0003279130032751709,
+              "correct": 2,
+              "correct_within_slo": 2
+            },
+            "observed_delivery_feasible": false
+          },
+          "telemetry": {
+            "samples": 100,
+            "scrape_errors": 0,
+            "waiting_max": 0.0,
+            "waiting_mean": 0.0,
+            "waiting_positive_fraction": 0.0,
+            "cache_usage_max": 0.07556102641795281,
+            "note": "measured arrival window only; missing telemetry is not zero load"
+          }
+        },
+        {
+          "n": 0,
+          "budget": 0,
+          "metrics": {
+            "background": {
+              "scheduled": 263,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 249,
+                "no_answer": 14,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 0.9467680608365019,
+              "completed_p95_s": 16.406824678386656,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0003820548623707509
+            },
+            "target": {
+              "scheduled": 0,
+              "not_offered_control": 5,
+              "statuses": {
+                "completed": 0,
+                "no_answer": 0,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": null,
+              "completed_p95_s": null,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": null,
+              "correct": 0,
+              "correct_within_slo": 0
+            },
+            "observed_delivery_feasible": false
+          },
+          "telemetry": {
+            "samples": 100,
+            "scrape_errors": 0,
+            "waiting_max": 0.0,
+            "waiting_mean": 0.0,
+            "waiting_positive_fraction": 0.0,
+            "cache_usage_max": 0.07953792254521352,
+            "note": "measured arrival window only; missing telemetry is not zero load"
+          }
+        }
+      ]
+    },
+    {
+      "block": "seed-20261117-load-0.5",
+      "paired_complete": true,
+      "cells": [
+        {
+          "n": 1,
+          "budget": 2048,
+          "metrics": {
+            "background": {
+              "scheduled": 157,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 145,
+                "no_answer": 12,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 0.9235668789808917,
+              "completed_p95_s": 11.809715583284465,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0003680903355132159
+            },
+            "target": {
+              "scheduled": 5,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 5,
+                "no_answer": 0,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 1.0,
+              "completed_p95_s": 17.22691698401468,
+              "unconditional_p95_lower_s": 17.22691698401468,
+              "unconditional_p95_upper_s": 17.22691698401468,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0003182130167260766,
+              "correct": 3,
+              "correct_within_slo": 3
+            },
+            "observed_delivery_feasible": false
+          },
+          "telemetry": {
+            "samples": 100,
+            "scrape_errors": 0,
+            "waiting_max": 0.0,
+            "waiting_mean": 0.0,
+            "waiting_positive_fraction": 0.0,
+            "cache_usage_max": 0.04393523340592742,
+            "note": "measured arrival window only; missing telemetry is not zero load"
+          }
+        },
+        {
+          "n": 0,
+          "budget": 0,
+          "metrics": {
+            "background": {
+              "scheduled": 157,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 144,
+                "no_answer": 13,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 0.9171974522292994,
+              "completed_p95_s": 11.66577228745389,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.00047777041493191064
+            },
+            "target": {
+              "scheduled": 0,
+              "not_offered_control": 5,
+              "statuses": {
+                "completed": 0,
+                "no_answer": 0,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": null,
+              "completed_p95_s": null,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": null,
+              "correct": 0,
+              "correct_within_slo": 0
+            },
+            "observed_delivery_feasible": false
+          },
+          "telemetry": {
+            "samples": 100,
+            "scrape_errors": 0,
+            "waiting_max": 0.0,
+            "waiting_mean": 0.0,
+            "waiting_positive_fraction": 0.0,
+            "cache_usage_max": 0.03924817725594165,
+            "note": "measured arrival window only; missing telemetry is not zero load"
+          }
+        },
+        {
+          "n": 1,
+          "budget": 0,
+          "metrics": {
+            "background": {
+              "scheduled": 157,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 146,
+                "no_answer": 11,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 0.9299363057324841,
+              "completed_p95_s": 12.36388053239206,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0003971248976384345
+            },
+            "target": {
+              "scheduled": 5,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 5,
+                "no_answer": 0,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 1.0,
+              "completed_p95_s": 13.608622902014758,
+              "unconditional_p95_lower_s": 13.608622902014758,
+              "unconditional_p95_upper_s": 13.608622902014758,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0003662490053102374,
+              "correct": 3,
+              "correct_within_slo": 3
+            },
+            "observed_delivery_feasible": false
+          },
+          "telemetry": {
+            "samples": 100,
+            "scrape_errors": 0,
+            "waiting_max": 0.0,
+            "waiting_mean": 0.0,
+            "waiting_positive_fraction": 0.0,
+            "cache_usage_max": 0.04071584130290695,
+            "note": "measured arrival window only; missing telemetry is not zero load"
+          }
+        },
+        {
+          "n": 4,
+          "budget": 0,
+          "metrics": {
+            "background": {
+              "scheduled": 157,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 145,
+                "no_answer": 12,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 0.9235668789808917,
+              "completed_p95_s": 12.029262026868082,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.00038073191205967305
+            },
+            "target": {
+              "scheduled": 5,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 5,
+                "no_answer": 0,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 1.0,
+              "completed_p95_s": 14.854817036975874,
+              "unconditional_p95_lower_s": 14.854817036975874,
+              "unconditional_p95_upper_s": 14.854817036975874,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0003725089773070067,
+              "correct": 3,
+              "correct_within_slo": 3
+            },
+            "observed_delivery_feasible": false
+          },
+          "telemetry": {
+            "samples": 100,
+            "scrape_errors": 0,
+            "waiting_max": 0.0,
+            "waiting_mean": 0.0,
+            "waiting_positive_fraction": 0.0,
+            "cache_usage_max": 0.04933244957863836,
+            "note": "measured arrival window only; missing telemetry is not zero load"
+          }
+        }
+      ]
+    },
+    {
+      "block": "seed-20261117-load-0.9",
+      "paired_complete": true,
+      "cells": [
+        {
+          "n": 1,
+          "budget": 0,
+          "metrics": {
+            "background": {
+              "scheduled": 269,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 253,
+                "no_answer": 16,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 0.9405204460966543,
+              "completed_p95_s": 14.211818478063037,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0004510642258992448
+            },
+            "target": {
+              "scheduled": 5,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 5,
+                "no_answer": 0,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 1.0,
+              "completed_p95_s": 17.351866887998767,
+              "unconditional_p95_lower_s": 17.351866887998767,
+              "unconditional_p95_upper_s": 17.351866887998767,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.00037617600173689425,
+              "correct": 1,
+              "correct_within_slo": 1
+            },
+            "observed_delivery_feasible": false
+          },
+          "telemetry": {
+            "samples": 100,
+            "scrape_errors": 0,
+            "waiting_max": 0.0,
+            "waiting_mean": 0.0,
+            "waiting_positive_fraction": 0.0,
+            "cache_usage_max": 0.06524003408768109,
+            "note": "measured arrival window only; missing telemetry is not zero load"
+          }
+        },
+        {
+          "n": 4,
+          "budget": 0,
+          "metrics": {
+            "background": {
+              "scheduled": 269,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 250,
+                "no_answer": 19,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 0.929368029739777,
+              "completed_p95_s": 15.171836792634224,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0003937876273525376
+            },
+            "target": {
+              "scheduled": 5,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 5,
+                "no_answer": 0,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 1.0,
+              "completed_p95_s": 19.069780958991032,
+              "unconditional_p95_lower_s": 19.069780958991032,
+              "unconditional_p95_upper_s": 19.069780958991032,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.00032292999094352126,
+              "correct": 2,
+              "correct_within_slo": 2
+            },
+            "observed_delivery_feasible": false
+          },
+          "telemetry": {
+            "samples": 100,
+            "scrape_errors": 0,
+            "waiting_max": 0.0,
+            "waiting_mean": 0.0,
+            "waiting_positive_fraction": 0.0,
+            "cache_usage_max": 0.0684120821891866,
+            "note": "measured arrival window only; missing telemetry is not zero load"
+          }
+        },
+        {
+          "n": 0,
+          "budget": 0,
+          "metrics": {
+            "background": {
+              "scheduled": 269,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 252,
+                "no_answer": 17,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 0.9368029739776952,
+              "completed_p95_s": 14.582162742872939,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0004081905063060276
+            },
+            "target": {
+              "scheduled": 0,
+              "not_offered_control": 5,
+              "statuses": {
+                "completed": 0,
+                "no_answer": 0,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": null,
+              "completed_p95_s": null,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": null,
+              "correct": 0,
+              "correct_within_slo": 0
+            },
+            "observed_delivery_feasible": false
+          },
+          "telemetry": {
+            "samples": 100,
+            "scrape_errors": 0,
+            "waiting_max": 0.0,
+            "waiting_mean": 0.0,
+            "waiting_positive_fraction": 0.0,
+            "cache_usage_max": 0.06746520215888652,
+            "note": "measured arrival window only; missing telemetry is not zero load"
+          }
+        },
+        {
+          "n": 1,
+          "budget": 2048,
+          "metrics": {
+            "background": {
+              "scheduled": 269,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 253,
+                "no_answer": 16,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 0.9405204460966543,
+              "completed_p95_s": 14.49034383375318,
+              "unconditional_p95_lower_s": null,
+              "unconditional_p95_upper_s": null,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.0004752487154746632
+            },
+            "target": {
+              "scheduled": 5,
+              "not_offered_control": 0,
+              "statuses": {
+                "completed": 5,
+                "no_answer": 0,
+                "drop": 0,
+                "timeout": 0,
+                "error": 0,
+                "censored": 0
+              },
+              "slo_attainment": 1.0,
+              "completed_p95_s": 21.453934627003036,
+              "unconditional_p95_lower_s": 21.453934627003036,
+              "unconditional_p95_upper_s": 21.453934627003036,
+              "unconditional_bound_note": "null means unbounded/infinite or empty cohort; drops/errors/timeouts are infinite misses; censored latency lies in [observed, infinity)",
+              "dispatch_lag_p95_s": 0.00036917300894856453,
+              "correct": 2,
+              "correct_within_slo": 2
+            },
+            "observed_delivery_feasible": false
+          },
+          "telemetry": {
+            "samples": 100,
+            "scrape_errors": 0,
+            "waiting_max": 0.0,
+            "waiting_mean": 0.0,
+            "waiting_positive_fraction": 0.0,
+            "cache_usage_max": 0.07068459426190699,
+            "note": "measured arrival window only; missing telemetry is not zero load"
+          }
+        }
+      ]
+    }
+  ],
+  "paired_differences": [
+    {
+      "block": "seed-20261116-load-0.5",
+      "n": 1,
+      "budget": 2048,
+      "background_slo_delta": -0.012121212121212088,
+      "background_p95_delta_s": null,
+      "target_correct_within_slo": 2,
+      "target_scheduled": 5,
+      "p95_note": "paired p95 difference omitted if either background cohort contains failures"
+    },
+    {
+      "block": "seed-20261116-load-0.5",
+      "n": 1,
+      "budget": 0,
+      "background_slo_delta": 0.0060606060606061,
+      "background_p95_delta_s": null,
+      "target_correct_within_slo": 2,
+      "target_scheduled": 5,
+      "p95_note": "paired p95 difference omitted if either background cohort contains failures"
+    },
+    {
+      "block": "seed-20261116-load-0.5",
+      "n": 4,
+      "budget": 0,
+      "background_slo_delta": 0.024242424242424288,
+      "background_p95_delta_s": null,
+      "target_correct_within_slo": 4,
+      "target_scheduled": 5,
+      "p95_note": "paired p95 difference omitted if either background cohort contains failures"
+    },
+    {
+      "block": "seed-20261116-load-0.9",
+      "n": 1,
+      "budget": 2048,
+      "background_slo_delta": -0.01520912547528519,
+      "background_p95_delta_s": null,
+      "target_correct_within_slo": 3,
+      "target_scheduled": 5,
+      "p95_note": "paired p95 difference omitted if either background cohort contains failures"
+    },
+    {
+      "block": "seed-20261116-load-0.9",
+      "n": 4,
+      "budget": 0,
+      "background_slo_delta": 0.0038022813688213253,
+      "background_p95_delta_s": null,
+      "target_correct_within_slo": 3,
+      "target_scheduled": 5,
+      "p95_note": "paired p95 difference omitted if either background cohort contains failures"
+    },
+    {
+      "block": "seed-20261116-load-0.9",
+      "n": 1,
+      "budget": 0,
+      "background_slo_delta": -0.01520912547528519,
+      "background_p95_delta_s": null,
+      "target_correct_within_slo": 2,
+      "target_scheduled": 5,
+      "p95_note": "paired p95 difference omitted if either background cohort contains failures"
+    },
+    {
+      "block": "seed-20261117-load-0.5",
+      "n": 1,
+      "budget": 2048,
+      "background_slo_delta": 0.006369426751592355,
+      "background_p95_delta_s": null,
+      "target_correct_within_slo": 3,
+      "target_scheduled": 5,
+      "p95_note": "paired p95 difference omitted if either background cohort contains failures"
+    },
+    {
+      "block": "seed-20261117-load-0.5",
+      "n": 1,
+      "budget": 0,
+      "background_slo_delta": 0.01273885350318471,
+      "background_p95_delta_s": null,
+      "target_correct_within_slo": 3,
+      "target_scheduled": 5,
+      "p95_note": "paired p95 difference omitted if either background cohort contains failures"
+    },
+    {
+      "block": "seed-20261117-load-0.5",
+      "n": 4,
+      "budget": 0,
+      "background_slo_delta": 0.006369426751592355,
+      "background_p95_delta_s": null,
+      "target_correct_within_slo": 3,
+      "target_scheduled": 5,
+      "p95_note": "paired p95 difference omitted if either background cohort contains failures"
+    },
+    {
+      "block": "seed-20261117-load-0.9",
+      "n": 1,
+      "budget": 0,
+      "background_slo_delta": 0.0037174721189591198,
+      "background_p95_delta_s": null,
+      "target_correct_within_slo": 1,
+      "target_scheduled": 5,
+      "p95_note": "paired p95 difference omitted if either background cohort contains failures"
+    },
+    {
+      "block": "seed-20261117-load-0.9",
+      "n": 4,
+      "budget": 0,
+      "background_slo_delta": -0.0074349442379182396,
+      "background_p95_delta_s": null,
+      "target_correct_within_slo": 2,
+      "target_scheduled": 5,
+      "p95_note": "paired p95 difference omitted if either background cohort contains failures"
+    },
+    {
+      "block": "seed-20261117-load-0.9",
+      "n": 1,
+      "budget": 2048,
+      "background_slo_delta": 0.0037174721189591198,
+      "background_p95_delta_s": null,
+      "target_correct_within_slo": 2,
+      "target_scheduled": 5,
+      "p95_note": "paired p95 difference omitted if either background cohort contains failures"
+    }
+  ],
+  "status": "complete",
+  "caveat": "two seeds/five questions; descriptive paired comparisons only; no routing benefit claim"
+}

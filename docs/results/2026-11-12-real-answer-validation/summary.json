@@ -1,0 +1,53 @@
+{
+  "actions": [
+    {
+      "n": 1,
+      "budget": 0,
+      "observed": 5,
+      "planned": 5,
+      "completed": 4,
+      "correct": 1,
+      "within_slo": 4,
+      "correct_within_slo": 1,
+      "completed_p95_s": 3.8409224259958137
+    },
+    {
+      "n": 4,
+      "budget": 0,
+      "observed": 5,
+      "planned": 5,
+      "completed": 5,
+      "correct": 3,
+      "within_slo": 5,
+      "correct_within_slo": 3,
+      "completed_p95_s": 16.00179940101225
+    },
+    {
+      "n": 1,
+      "budget": 2048,
+      "observed": 5,
+      "planned": 5,
+      "completed": 5,
+      "correct": 3,
+      "within_slo": 5,
+      "correct_within_slo": 3,
+      "completed_p95_s": 13.629882187990006
+    }
+  ],
+  "math_verify": "0.9.0",
+  "scope": "five-question idle diagnostic; no routing or population accuracy claim",
+  "status": {
+    "status": "complete",
+    "completed_blocks": [
+      "test/geometry/226.json",
+      "test/algebra/1349.json",
+      "test/number_theory/183.json",
+      "test/counting_and_probability/430.json",
+      "test/intermediate_algebra/966.json"
+    ],
+    "skipped_blocks": [],
+    "started_utc": "2026-11-13T02:41:25.343019+00:00",
+    "ended_utc": "2026-11-13T02:44:19.406771+00:00"
+  },
+  "note": "Counts use all observed attempts, including failures. Unoffered blocks are not failures; see planned/observed counts. Completed-only p95 excludes failures. No throughput estimate from serial idle trials."
+}

@@ -1,0 +1,27 @@
+# Matched Real-Answer Load Comparison Implementation Plan
+
+> Implement inline with superpowers:executing-plans.
+
+**Goal:** Run the accepted low/high-load real-answer diagnostic with matched background traffic.
+**Architecture:** Optional scheduler callback reuses tested scheduling; standalone driver handles calibration, fixed traces, paired cells and offline scoring.
+**Tech Stack:** Python, existing vLLM HTTP client, transformers, math-verify, Slurm offline cache.
+**Spec:** ../specs/2026-11-12-real-answer-load-design.md
+
+## Constraints and review focus
+No new GPU until approved. Preserve old synthetic scheduler tests. Match background requests and target seeds; exclude control targets. Scheduled-arrival latency must include dispatch lag and both deep stages. Persist failures before idle checks. Refuse blocks that cannot fit deadline. Do not call finite-burst throughput steady-state capacity.
+
+- [x] Add meaningful tests for callback/control handling, matched deterministic traces, no-answer/late scoring and whole-block time guard; observe failure.
+- [x] Implement optional callback and real_answer_load.py; run fake HTTP integration and existing tests.
+- [x] Prepare bounded same-node offline batch and 495-background-prompt bundle; verify hashes and resource estimate.
+- [x] Review implementation and fix material findings; commit runnable assets.
+- [x] Request120min free cluster allocation, then execute only when approved, download/audit results and confirm release.
+
+Local implementation complete:41tests pass including HTTP integration; batch syntax and git diff checks pass. Independent reviewer found missing paired deltas/queue summaries; regression observed RED then GREEN and full suite passed after fix. Input bundle has5targets,495disjoint backgrounds, hashes and exactcode. GPU not requested/allocated yet; request120min once reviewable assets committed.
+
+2026-11-12 22:23 America/New_York: user authorized a new cumulative120min free single-GPU allocation. Uploaded hash-verified bundle to /insomnia001/depts/edu/users/ps3558/latte-real-load-20261112 and submitted job13889319, fixed ins091,120min hard limit, no requeue. Initially pending due node resources; scheduler estimate23:03 (not guaranteed). No GPU time consumed while pending. Heartbeat follow-latte-real-answer-load-experiment checks this single job every10min, retrieves/audits terminal results, and pauses after completion or required user action; it may not submit replacement jobs. Results remain pending.
+
+Heartbeat audit: job13889319 FAILED after3m30s; server/warmup succeeded but CLI manifest serialized argparse fn callback. No calibration/comparison ran. Downloaded logs and confirmed emptyqueue/GPUrelease. Added actualCLI regression, reproduced TypeError, excludedfn from manifest;42tests pass. Failure report docs/results/2026-11-12-real-answer-load-attempt/README.md. No replacementjob submitted; terminal-job heartbeat removed.
+
+User authorized corrected retry within remaining116m30s of original cumulative120min. Uploaded fresh hash-verified bundle to /insomnia001/depts/edu/users/ps3558/latte-real-load-retry-20261112, code e5f0706,42tests pass. Submitted13889524. Slurm rounded submitted01:56:30 to01:57:00, so immediately reduced pending job with scontrol TimeLimit=115; confirmed effective01:55:00. Previous3m30s+115min=118m30s parent cap, leaving90sec cleanup margin. Submitted script/internaldeadline remain original retry copy (113m30s internal); Slurm TERM signal at113min ensures earlier exit/save. No additional job authorized. Heartbeat follow-latte-corrected-load-experiment monitors this retry only and deletes itself after terminal handling or required user action.
+
+Completed13889524 exit0 in40m40s; cumulative44m10s with failedattempt. All4blocks/16cells/60targets audited; matchinginputs/controlabsence/transportcompletion verified. Waitingzero in1600samples, KVmax9.27%;232/3416 measuredbackground outputs missingboxes, allcap2048; noactual87s transportmisses. Report docs/results/2026-11-12-real-answer-load/README.md, rawarchive downloaded and verified. GPUreleased; no new allocation. Terminal heartbeat deleted after result delivery.
