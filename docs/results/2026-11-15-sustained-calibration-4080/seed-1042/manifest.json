@@ -1,0 +1,128 @@
+{
+  "experiment": "sustained calibration: background-only open-loop rate ladder; synthetic lengths, no answer-quality claim",
+  "status": "complete",
+  "configuration": {
+    "url": "http://127.0.0.1:8001",
+    "model": "m",
+    "lengths": "tcr_results/main/lengths_v2.json",
+    "prompts": "../../evaluation-resources/sustained-calibration-4080/prompts.json",
+    "hardware_json": "../../evaluation-resources/sustained-calibration-4080/hardware.json",
+    "output": "../../evaluation-results/sustained-calibration-4080-20261115-seed1042",
+    "reference_budget": 1024,
+    "rates": null,
+    "fractions": [
+      0.3,
+      0.5,
+      0.7,
+      0.85,
+      1.0,
+      1.15,
+      1.3
+    ],
+    "anchor_burst": 64,
+    "idle_reps": 24,
+    "target_multipliers": [
+      2.0,
+      4.0
+    ],
+    "seed": 1042,
+    "warmup": 60.0,
+    "duration": 180.0,
+    "timeout": 300,
+    "drain": 300,
+    "idle_timeout": 600,
+    "idle_stable": 1,
+    "max_inflight": 512,
+    "metrics_interval": 1,
+    "min_completion": 0.99,
+    "max_backlog_growth": 0.05,
+    "light_max_ratio": 0.6,
+    "stop_after_unstable": 1
+  },
+  "hardware_user_supplied": {
+    "gpu_model": "NVIDIA GeForce RTX 4080 Laptop GPU (12 GB)",
+    "gpu_count": 1,
+    "driver": "617.42",
+    "host": "HP Omen laptop, i9-13900HX, WSL2 (6.18.54.1-microsoft-standard-WSL2)",
+    "vllm_version": "0.32.0",
+    "torch_version": "2.13.0+cu130",
+    "model": "Qwen/Qwen3-1.7B",
+    "model_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "tokenizer_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "server_command": "vllm serve Qwen/Qwen3-1.7B --dtype bfloat16 --max-model-len 5120 --gpu-memory-utilization 0.85 --enable-prefix-caching --max-num-seqs 128 --port 8001 --served-model-name m --seed 20261104 (VLLM_USE_FLASHINFER_SAMPLER=0)",
+    "kv_cache_tokens": 55664,
+    "prefix_caching_enabled": true,
+    "other_clients": "none",
+    "prompt_provenance": "500 MATH-500 questions, Qwen3 chat template, replay convention of colab_recover_features.py (no extra <think> suffix)",
+    "length_provenance": "tcr_results/main/lengths_v2.json, budget 1024 pool"
+  },
+  "environment": {
+    "git_commit": "25d6f830a4646f0cba9df4b18e59f2bbf843db2d",
+    "git_dirty": false,
+    "client_platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "python": "3.12.2",
+    "nvidia_smi": "NVIDIA GeForce RTX 4080 Laptop GPU, 12282 MiB, 617.42",
+    "server_version": {
+      "version": "0.32.0"
+    },
+    "server_models": {
+      "object": "list",
+      "data": [
+        {
+          "id": "m",
+          "object": "model",
+          "created": 1794726386,
+          "owned_by": "vllm",
+          "root": "Qwen/Qwen3-1.7B",
+          "parent": null,
+          "max_model_len": 5120,
+          "permission": [
+            {
+              "id": "modelperm-8f23f6a8744f1c8e",
+              "object": "model_permission",
+              "created": 1794726386,
+              "allow_create_engine": false,
+              "allow_sampling": true,
+              "allow_logprobs": true,
+              "allow_search_indices": false,
+              "allow_view": true,
+              "allow_fine_tuning": false,
+              "organization": "*",
+              "group": null,
+              "is_blocking": false
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "sources": {
+    "lengths": "/root/hpml-final-project/tcr_pipeline_full/tcr_pipeline/tcr_results/main/lengths_v2.json",
+    "prompts": "/root/hpml-final-project/evaluation-resources/sustained-calibration-4080/prompts.json"
+  },
+  "lengths_sha256": "481985f997557d7f79fb14411cb5b435ca6be5fb3f2b9ad84d91956519cc3c23",
+  "prompts_sha256": "ebc248cc3bfefd01eb7a2620cdebdddd6dc6ce213f7f8f437957be6cdc782dca",
+  "started_unix_s": 1794726386.6002848,
+  "ladder_order": "ascending; each rung starts and ends on an idle server",
+  "rungs_run": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "rungs_skipped": [
+    6
+  ],
+  "ladder_rps": [
+    0.7388966150833163,
+    1.2314943584721938,
+    1.7240921018610713,
+    2.0935404094027295,
+    2.4629887169443876,
+    2.8324370244860457,
+    3.201885332027704
+  ],
+  "finished_unix_s": 1794728197.8578708
+}

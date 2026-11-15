@@ -1,0 +1,159 @@
+{
+  "definition": "sequential single reference requests on an idle server; first request discarded; nearest-rank percentiles",
+  "reference_budget": 1024,
+  "reps": 24,
+  "p50_s": 10.004988755999875,
+  "p95_s": 10.425135052000314,
+  "samples": [
+    {
+      "index": 0,
+      "warmup": true,
+      "max_tokens": 1031,
+      "latency_s": 10.14379408700006
+    },
+    {
+      "index": 1,
+      "warmup": false,
+      "max_tokens": 1029,
+      "latency_s": 9.904161187999762
+    },
+    {
+      "index": 2,
+      "warmup": false,
+      "max_tokens": 1029,
+      "latency_s": 9.891788545000054
+    },
+    {
+      "index": 3,
+      "warmup": false,
+      "max_tokens": 1029,
+      "latency_s": 9.927920008000001
+    },
+    {
+      "index": 4,
+      "warmup": false,
+      "max_tokens": 1030,
+      "latency_s": 9.906135418000304
+    },
+    {
+      "index": 5,
+      "warmup": false,
+      "max_tokens": 1072,
+      "latency_s": 10.313819687999967
+    },
+    {
+      "index": 6,
+      "warmup": false,
+      "max_tokens": 1029,
+      "latency_s": 9.90545593800016
+    },
+    {
+      "index": 7,
+      "warmup": false,
+      "max_tokens": 1033,
+      "latency_s": 9.9797688069998
+    },
+    {
+      "index": 8,
+      "warmup": false,
+      "max_tokens": 1029,
+      "latency_s": 9.90954925799997
+    },
+    {
+      "index": 9,
+      "warmup": false,
+      "max_tokens": 921,
+      "latency_s": 8.90143935299966
+    },
+    {
+      "index": 10,
+      "warmup": false,
+      "max_tokens": 1028,
+      "latency_s": 10.015198688000055
+    },
+    {
+      "index": 11,
+      "warmup": false,
+      "max_tokens": 1071,
+      "latency_s": 10.43353761599974
+    },
+    {
+      "index": 12,
+      "warmup": false,
+      "max_tokens": 1030,
+      "latency_s": 10.012187069999982
+    },
+    {
+      "index": 13,
+      "warmup": false,
+      "max_tokens": 1030,
+      "latency_s": 10.036048206000032
+    },
+    {
+      "index": 14,
+      "warmup": false,
+      "max_tokens": 1029,
+      "latency_s": 10.030048078000164
+    },
+    {
+      "index": 15,
+      "warmup": false,
+      "max_tokens": 1034,
+      "latency_s": 10.060981052999978
+    },
+    {
+      "index": 16,
+      "warmup": false,
+      "max_tokens": 1029,
+      "latency_s": 10.089512269000352
+    },
+    {
+      "index": 17,
+      "warmup": false,
+      "max_tokens": 1032,
+      "latency_s": 10.021321427999737
+    },
+    {
+      "index": 18,
+      "warmup": false,
+      "max_tokens": 1030,
+      "latency_s": 10.004988755999875
+    },
+    {
+      "index": 19,
+      "warmup": false,
+      "max_tokens": 1028,
+      "latency_s": 9.983137346000149
+    },
+    {
+      "index": 20,
+      "warmup": false,
+      "max_tokens": 1029,
+      "latency_s": 9.995161999000175
+    },
+    {
+      "index": 21,
+      "warmup": false,
+      "max_tokens": 1029,
+      "latency_s": 9.975561424999796
+    },
+    {
+      "index": 22,
+      "warmup": false,
+      "max_tokens": 1072,
+      "latency_s": 10.425135052000314
+    },
+    {
+      "index": 23,
+      "warmup": false,
+      "max_tokens": 1044,
+      "latency_s": 10.176164125000014
+    },
+    {
+      "index": 24,
+      "warmup": false,
+      "max_tokens": 1032,
+      "latency_s": 10.104787254999792
+    }
+  ]
+}
