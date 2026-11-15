@@ -1,0 +1,35 @@
+{
+  "model": "Qwen/Qwen3-1.7B",
+  "model_revision": null,
+  "dataset": "HuggingFaceH4/MATH-500",
+  "dataset_fingerprint": "f3124375297911ba",
+  "questions": 500,
+  "layers": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    28
+  ],
+  "shape": [
+    500,
+    8,
+    2048
+  ],
+  "dtype": "float16",
+  "gpu": "Tesla T4",
+  "python": "3.13.16",
+  "torch": "2.14.1+cu130",
+  "transformers": "5.22.1",
+  "prompt_template": "Solve the following math problem carefully. Think through the steps internally. After finishing your thinking, give ONLY the final answer formatted as \\boxed{ANSWER}, with no additional explanation in the final response.\n\n{problem}",
+  "prompt_mode": "enable_thinking=True",
+  "median_prefill_ms": 49.058093000041936,
+  "extraction_seconds": 28.940887312999962,
+  "provenance": "Regenerated on free T4; differs in precision/backend from original RTX4080 features",
+  "hidden_sha256": "3c233d694110d23989ce9fc301ca8953d35e74fd412cbb4b0a5dd7de2fdb614f",
+  "resolved_snapshot_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "revision_evidence": "Colab Hugging Face model cache snapshot observed after feature extraction"
+}

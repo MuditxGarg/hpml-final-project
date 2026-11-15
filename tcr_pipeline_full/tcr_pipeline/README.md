@@ -1,3 +1,5 @@
+> Updated evaluation: see [docs/evaluation.md](../../docs/evaluation.md). 07/08 now use nested evaluation; historical scripts are in legacy/. The original measurement-stage description below is retained for provenance.
+
 # tcr_pipeline: measurement stage for load-aware test-time compute routing
 
 Measures two things for Qwen3-1.7B on MATH-500, then writes one report:
