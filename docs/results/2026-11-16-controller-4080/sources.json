@@ -1,0 +1,10 @@
+{
+  "files": {
+    "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-controller-20261116/summary.json": "feb92ae27ab7b2b78c70f6536e0365940af876480745126322294943397e164d",
+    "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-controller-20261116/manifest.json": "69eb3d56da81d5b59cd1f1a521afc92771f9c94a549dba8b9cbc498b0a0d5db3"
+  },
+  "figures": [
+    "matched-actions.png",
+    "matched-load-curve.png"
+  ]
+}
