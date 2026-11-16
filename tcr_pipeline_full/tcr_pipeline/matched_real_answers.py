@@ -261,6 +261,70 @@ def ratio(groups, top, bottom):
     return sum(r[top] for g in groups for r in g) / total if total else None
 
 
+PAIRED_METRICS = (('accuracy', 'correct', 'job'),
+                  ('correct_within_loose', 'correct_loose', 'job'), ('correct_within_tight', 'correct_tight', 'job'),
+                  ('correct_within_loose_per_gpu_s', 'correct_loose', 'gpu_s'),
+                  ('correct_within_tight_per_gpu_s', 'correct_tight', 'gpu_s'))
+
+
+def paired_differences(rate, groups, draws, name, label):
+    """Every pair of entries at one rate, first minus second, on the questions both have; the bootstrap resamples the same questions for both.
+
+    `groups` maps an entry key to {question: [records]}; `name` turns a key into what the output calls the entry and `label` into the seed of its interval."""
+    out = []
+    keys = sorted(groups)
+    for i, a in enumerate(keys):
+        for b in keys[i + 1:]:
+            shared = sorted(set(groups[a]) & set(groups[b]))
+            paired = {q: [(groups[a][q], groups[b][q])] for q in shared}
+            for key, top, bottom in PAIRED_METRICS:
+                def gap(sample, top=top, bottom=bottom):
+                    first = ratio([x for pair in sample for x, _ in pair], top, bottom)
+                    second = ratio([y for pair in sample for _, y in pair], top, bottom)
+                    return None if first is None or second is None else first - second
+                out.append(dict(rate=rate, metric=key, action=name(a), minus=name(b), questions=len(shared),
+                                value=gap(list(paired.values())), ci95=bootstrap(paired, gap, draws, f'{rate}:{label(a)}:{label(b)}:{key}')))
+    return out
+
+
+def compare(args):
+    """Paired differences between entries of several scored runs that share questions, seeds and latency targets.
+
+    A controller and its baseline mixture are often run separately on the same seeds, so their traces are identical but no single
+    `summary.json` pairs them. Entries are named `N:B` or by policy; pairs whose seeds differ are listed but not compared."""
+    runs = [Path(r) for r in args.runs]
+    summaries = [json.loads((r / 'summary.json').read_text()) for r in runs]
+    if len({json.dumps(s['latency_targets_s'], sort_keys=True) for s in summaries}) != 1:
+        sys.exit('runs have different latency targets and cannot be compared')
+    groups, origin = {}, {}
+    for index, run in enumerate(runs):
+        for r in (json.loads(line) for line in (run / 'scored.jsonl').read_text().splitlines()):
+            key = r.get('policy') or f"{r['n']}:{r['budget']}"
+            if origin.setdefault((r['rate'], key), index) != index:
+                sys.exit(f'{key} at rate {r["rate"]} appears in more than one run')
+            groups.setdefault(r['rate'], {}).setdefault(key, {}).setdefault(r['question'], []).append(r)
+    entries, differences, unpaired = [], [], []
+    for rate, by_key in sorted(groups.items()):
+        seeds = {key: sorted({r['seed'] for g in by_question.values() for r in g}) for key, by_question in by_key.items()}
+        for key, by_question in sorted(by_key.items()):
+            everything = list(by_question.values())
+            entries.append(dict(rate=rate, entry=key, run=runs[origin[(rate, key)]].name, jobs=sum(map(len, everything)), questions=len(by_question), seeds=seeds[key],
+                                **{m: ratio(everything, top, bottom) for m, top, bottom in PAIRED_METRICS}))
+        for key in sorted(by_key):
+            others = sorted(k for k in by_key if seeds[k] != seeds[key])
+            if others:
+                unpaired.append(dict(rate=rate, entry=key, seeds=seeds[key], not_compared_with=others))
+        for same in {tuple(v): [k for k in by_key if seeds[k] == v] for v in seeds.values()}.values():
+            differences += paired_differences(rate, {k: by_key[k] for k in same}, args.draws, str, str)
+    write_json(Path(args.output), dict(
+        runs=[str(r) for r in runs], latency_targets_s=summaries[0]['latency_targets_s'], entries=entries, paired_differences=differences,
+        not_compared=unpaired,
+        definitions=dict(ci95=f'percentile bootstrap, {args.draws} resamples of questions with replacement; seeds of a question are kept together; '
+                         'paired differences resample the same questions for both entries and are computed only between entries run on the same seeds',
+                         caveat='entries from different runs share questions, seeds and background traces but were run at different times on the same machine')))
+    print(args.output)
+
+
 def score(args, verifier=None):
     if verifier is None:
         import math_verify  # noqa: F401  require the project's symbolic grader; no silent string fallback
@@ -333,23 +397,9 @@ def score(args, verifier=None):
                 entry[key] = dict(value=ratio(everything, top, bottom),
                                   ci95=bootstrap(by_question, lambda g, t=top, b_=bottom: ratio(g, t, b_), args.draws, f'{rate}:{policy}:{n}:{b}:{key}' if policy else f'{rate}:{n}:{b}:{key}'))
             actions.append(entry)
-        keys = sorted(groups)
-        for i, a in enumerate(keys):
-            for b in keys[i + 1:]:
-                shared = sorted(set(groups[a]) & set(groups[b]))
-                paired = {q: [(groups[a][q], groups[b][q])] for q in shared}
-                for key, top, bottom in (('accuracy', 'correct', 'job'),
-                                         ('correct_within_loose', 'correct_loose', 'job'), ('correct_within_tight', 'correct_tight', 'job'),
-                                         ('correct_within_loose_per_gpu_s', 'correct_loose', 'gpu_s'),
-                                         ('correct_within_tight_per_gpu_s', 'correct_tight', 'gpu_s')):
-                    def gap(sample, top=top, bottom=bottom):
-                        first = ratio([x for pair in sample for x, _ in pair], top, bottom)
-                        second = ratio([y for pair in sample for _, y in pair], top, bottom)
-                        return None if first is None or second is None else first - second
-                    name = lambda k: k[0] or list(k[1:])
-                    differences.append(dict(rate=rate, metric=key, action=name(a), minus=name(b), questions=len(shared),
-                                            value=gap(list(paired.values())),
-                                            ci95=bootstrap(paired, gap, args.draws, f'{rate}:{a[1:] if not a[0] else a}:{b[1:] if not b[0] else b}:{key}')))
+        name = lambda k: k[0] or list(k[1:])
+        label = lambda k: str(k[1:] if not k[0] else k)
+        differences += paired_differences(rate, groups, args.draws, name, label)
     write_rows(out / 'scored.jsonl', records)
     write_json(out / 'summary.json', dict(
         status=manifest['status'], blocks_scored=manifest['completed'], blocks_skipped=manifest.get('skipped', []),
@@ -400,6 +450,11 @@ def main(argv=None):
     p.add_argument('--gold', required=True)
     p.add_argument('--draws', type=int, default=2000)
     p.set_defaults(fn=score)
+    p = sub.add_parser('compare', help='paired differences between entries of several scored runs on the same seeds')
+    p.add_argument('--runs', nargs='+', required=True, metavar='DIR')
+    p.add_argument('--output', required=True, help='JSON file to write')
+    p.add_argument('--draws', type=int, default=2000)
+    p.set_defaults(fn=compare)
     args = parser.parse_args(argv)
     args.fn(args)
 

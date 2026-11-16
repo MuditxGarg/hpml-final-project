@@ -145,3 +145,34 @@ def test_freeze_reads_runs_and_writes_a_valid_policy(tmp_path):
     assert record['seeds_used'] == [3] and len(record['sources']) == 1 and record['thresholds'][1] == dict(action='4:0', kv_below=0.)
     with pytest.raises(FileExistsError):
         lp.freeze(['--runs', str(run), '--prefer', '1:2048', '--output', str(out)])
+
+
+def test_compare_pairs_entries_of_separate_runs_on_shared_seeds(tmp_path):
+    def run(name, entries, seeds):
+        d = tmp_path / name
+        d.mkdir()
+        (d / 'summary.json').write_text(json.dumps(dict(latency_targets_s=dict(tight=1., loose=2.))))
+        rows = [dict(rate='light', n=None if ':' not in e and e else int(e.split(':')[0]) if ':' in e else None,
+                     budget=int(e.split(':')[1]) if ':' in e else None, policy=None if ':' in e else e, seed=s, question=f'q{i}',
+                     status='completed', job=1, correct=int(i % 2 == 0 or e == 'ctrl'), correct_tight=0, correct_loose=int(i % 2 == 0 or e == 'ctrl'),
+                     tokens=10, gpu_s=1.)
+                for e in entries for s in seeds for i in range(4)]
+        (d / 'scored.jsonl').write_text('\n'.join(json.dumps(r) for r in rows) + '\n')
+        return d
+    first = run('fixed', ['1:0', '4:0'], [1, 2])
+    second = run('ctrl', ['ctrl'], [1, 2])
+    third = run('other-seeds', ['mix'], [3])
+    out = tmp_path / 'comparison.json'
+    m.main(['compare', '--runs', str(first), str(second), str(third), '--output', str(out), '--draws', '50'])
+    comparison = json.loads(out.read_text())
+    assert [(e['entry'], e['run'], e['jobs']) for e in comparison['entries']] == [('1:0', 'fixed', 8), ('4:0', 'fixed', 8), ('ctrl', 'ctrl', 8), ('mix', 'other-seeds', 4)]
+    pairs = {(d['action'], d['minus']) for d in comparison['paired_differences']}
+    assert pairs == {('1:0', '4:0'), ('1:0', 'ctrl'), ('4:0', 'ctrl')}  # mix ran on other seeds and is listed, not compared
+    assert comparison['not_compared'] == [dict(rate='light', entry='1:0', seeds=[1, 2], not_compared_with=['mix']),
+                                          dict(rate='light', entry='4:0', seeds=[1, 2], not_compared_with=['mix']),
+                                          dict(rate='light', entry='ctrl', seeds=[1, 2], not_compared_with=['mix']),
+                                          dict(rate='light', entry='mix', seeds=[3], not_compared_with=['1:0', '4:0', 'ctrl'])]
+    gap = next(d for d in comparison['paired_differences'] if d['metric'] == 'correct_within_loose' and (d['action'], d['minus']) == ('1:0', 'ctrl'))
+    assert gap['value'] == -.5 and gap['questions'] == 4 and gap['ci95'][0] <= -.5 <= gap['ci95'][1]
+    with pytest.raises(SystemExit, match='more than one run'):
+        m.main(['compare', '--runs', str(first), str(first), '--output', str(tmp_path / 'x.json')])
