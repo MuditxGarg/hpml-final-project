@@ -54,6 +54,7 @@ def test_tables_are_formatted_from_logged_values(tmp_path):
     assert '| light | correct_within_loose | (1,0) | (4,2048) | 5 | +0.1000 | [+0.0200, +0.2000] | yes |' in text
     assert '| light | correct_within_tight | (1,0) | (4,2048) | 5 | +0.1000 | [-0.1000, +0.3000] | no |' in text
     assert 'test machine' in text and 'What was not measured' in text and 'Plots were not requested.' in text
+    assert '**Per-job policies** (`ladder`)' in text and 'No learned router' in text and 'No router or controller' not in text
     sources = json.loads((out / 'sources.json').read_text())
     assert len(sources['files']) == 6 and all(len(digest) == 64 for digest in sources['files'].values())
     with pytest.raises(FileExistsError):

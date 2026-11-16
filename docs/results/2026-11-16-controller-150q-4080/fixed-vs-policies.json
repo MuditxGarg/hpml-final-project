@@ -1,0 +1,1369 @@
+{
+  "runs": [
+    "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-150q-rerun-seed20261116",
+    "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-150q-policies-seed20261116"
+  ],
+  "latency_targets_s": {
+    "tight": 20.91757719599991,
+    "loose": 41.83515439199982
+  },
+  "entries": [
+    {
+      "rate": "contended",
+      "entry": "1:0",
+      "run": "matched-real-answers-4080-150q-rerun-seed20261116",
+      "jobs": 150,
+      "questions": 150,
+      "seeds": [
+        20261116
+      ],
+      "accuracy": 0.7133333333333334,
+      "correct_within_loose": 0.7066666666666667,
+      "correct_within_tight": 0.6266666666666667,
+      "correct_within_loose_per_gpu_s": 2.340768949639511,
+      "correct_within_tight_per_gpu_s": 2.0757762383595666
+    },
+    {
+      "rate": "contended",
+      "entry": "1:2048",
+      "run": "matched-real-answers-4080-150q-rerun-seed20261116",
+      "jobs": 150,
+      "questions": 150,
+      "seeds": [
+        20261116
+      ],
+      "accuracy": 0.72,
+      "correct_within_loose": 0.12666666666666668,
+      "correct_within_tight": 0.0,
+      "correct_within_loose_per_gpu_s": 0.18935369558635023,
+      "correct_within_tight_per_gpu_s": 0.0
+    },
+    {
+      "rate": "contended",
+      "entry": "4:0",
+      "run": "matched-real-answers-4080-150q-rerun-seed20261116",
+      "jobs": 150,
+      "questions": 150,
+      "seeds": [
+        20261116
+      ],
+      "accuracy": 0.7333333333333333,
+      "correct_within_loose": 0.4,
+      "correct_within_tight": 0.10666666666666667,
+      "correct_within_loose_per_gpu_s": 0.3571360483504673,
+      "correct_within_tight_per_gpu_s": 0.09523627956012462
+    },
+    {
+      "rate": "contended",
+      "entry": "kv-ladder",
+      "run": "matched-real-answers-4080-150q-policies-seed20261116",
+      "jobs": 150,
+      "questions": 150,
+      "seeds": [
+        20261116
+      ],
+      "accuracy": 0.7333333333333333,
+      "correct_within_loose": 0.68,
+      "correct_within_tight": 0.54,
+      "correct_within_loose_per_gpu_s": 0.9344176007939784,
+      "correct_within_tight_per_gpu_s": 0.7420375065128652
+    },
+    {
+      "rate": "contended",
+      "entry": "mix-kv-ladder",
+      "run": "matched-real-answers-4080-150q-policies-seed20261116",
+      "jobs": 150,
+      "questions": 150,
+      "seeds": [
+        20261116
+      ],
+      "accuracy": 0.7333333333333333,
+      "correct_within_loose": 0.14666666666666667,
+      "correct_within_tight": 0.02,
+      "correct_within_loose_per_gpu_s": 0.1754794074239483,
+      "correct_within_tight_per_gpu_s": 0.023929010103265678
+    },
+    {
+      "rate": "light",
+      "entry": "1:0",
+      "run": "matched-real-answers-4080-150q-rerun-seed20261116",
+      "jobs": 150,
+      "questions": 150,
+      "seeds": [
+        20261116
+      ],
+      "accuracy": 0.72,
+      "correct_within_loose": 0.72,
+      "correct_within_tight": 0.7,
+      "correct_within_loose_per_gpu_s": 1.2484354199217866,
+      "correct_within_tight_per_gpu_s": 1.2137566582572927
+    },
+    {
+      "rate": "light",
+      "entry": "1:2048",
+      "run": "matched-real-answers-4080-150q-rerun-seed20261116",
+      "jobs": 150,
+      "questions": 150,
+      "seeds": [
+        20261116
+      ],
+      "accuracy": 0.7466666666666667,
+      "correct_within_loose": 0.7466666666666667,
+      "correct_within_tight": 0.20666666666666667,
+      "correct_within_loose_per_gpu_s": 0.6062677743620708,
+      "correct_within_tight_per_gpu_s": 0.16780625897521603
+    },
+    {
+      "rate": "light",
+      "entry": "4:0",
+      "run": "matched-real-answers-4080-150q-rerun-seed20261116",
+      "jobs": 150,
+      "questions": 150,
+      "seeds": [
+        20261116
+      ],
+      "accuracy": 0.74,
+      "correct_within_loose": 0.74,
+      "correct_within_tight": 0.6533333333333333,
+      "correct_within_loose_per_gpu_s": 0.38576565521316414,
+      "correct_within_tight_per_gpu_s": 0.3405858937918026
+    },
+    {
+      "rate": "light",
+      "entry": "kv-ladder",
+      "run": "matched-real-answers-4080-150q-policies-seed20261116",
+      "jobs": 150,
+      "questions": 150,
+      "seeds": [
+        20261116
+      ],
+      "accuracy": 0.76,
+      "correct_within_loose": 0.76,
+      "correct_within_tight": 0.20666666666666667,
+      "correct_within_loose_per_gpu_s": 0.6213963516087055,
+      "correct_within_tight_per_gpu_s": 0.1689762008760515
+    },
+    {
+      "rate": "light",
+      "entry": "mix-kv-ladder",
+      "run": "matched-real-answers-4080-150q-policies-seed20261116",
+      "jobs": 150,
+      "questions": 150,
+      "seeds": [
+        20261116
+      ],
+      "accuracy": 0.7533333333333333,
+      "correct_within_loose": 0.7533333333333333,
+      "correct_within_tight": 0.3933333333333333,
+      "correct_within_loose_per_gpu_s": 0.5093467851979683,
+      "correct_within_tight_per_gpu_s": 0.2659421267847799
+    }
+  ],
+  "paired_differences": [
+    {
+      "rate": "contended",
+      "metric": "accuracy",
+      "action": "1:0",
+      "minus": "1:2048",
+      "questions": 150,
+      "value": -0.006666666666666599,
+      "ci95": [
+        -0.08000000000000007,
+        0.06666666666666665
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose",
+      "action": "1:0",
+      "minus": "1:2048",
+      "questions": 150,
+      "value": 0.58,
+      "ci95": [
+        0.5066666666666666,
+        0.6533333333333334
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight",
+      "action": "1:0",
+      "minus": "1:2048",
+      "questions": 150,
+      "value": 0.6266666666666667,
+      "ci95": [
+        0.5533333333333333,
+        0.7066666666666667
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "1:0",
+      "minus": "1:2048",
+      "questions": 150,
+      "value": 2.151415254053161,
+      "ci95": [
+        1.7358462173475209,
+        2.663017761994128
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "1:0",
+      "minus": "1:2048",
+      "questions": 150,
+      "value": 2.0757762383595666,
+      "ci95": [
+        1.6293775140791562,
+        2.605746897060316
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "accuracy",
+      "action": "1:0",
+      "minus": "4:0",
+      "questions": 150,
+      "value": -0.019999999999999907,
+      "ci95": [
+        -0.06666666666666665,
+        0.026666666666666727
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose",
+      "action": "1:0",
+      "minus": "4:0",
+      "questions": 150,
+      "value": 0.30666666666666664,
+      "ci95": [
+        0.23333333333333328,
+        0.38666666666666666
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight",
+      "action": "1:0",
+      "minus": "4:0",
+      "questions": 150,
+      "value": 0.52,
+      "ci95": [
+        0.44666666666666666,
+        0.6
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "1:0",
+      "minus": "4:0",
+      "questions": 150,
+      "value": 1.983632901289044,
+      "ci95": [
+        1.6045507229979807,
+        2.4483258461576396
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "1:0",
+      "minus": "4:0",
+      "questions": 150,
+      "value": 1.980539958799442,
+      "ci95": [
+        1.5265791667175064,
+        2.501600338228096
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "accuracy",
+      "action": "1:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.019999999999999907,
+      "ci95": [
+        -0.07333333333333336,
+        0.033333333333333326
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose",
+      "action": "1:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": 0.026666666666666616,
+      "ci95": [
+        -0.026666666666666616,
+        0.08666666666666667
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight",
+      "action": "1:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": 0.08666666666666667,
+      "ci95": [
+        0.033333333333333326,
+        0.14666666666666667
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "1:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": 1.4063513488455328,
+      "ci95": [
+        1.0950175903342825,
+        1.7696794107000393
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "1:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": 1.3337387318467013,
+      "ci95": [
+        1.0359161582908092,
+        1.7036431604242315
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "accuracy",
+      "action": "1:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": -0.019999999999999907,
+      "ci95": [
+        -0.08666666666666667,
+        0.046666666666666634
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose",
+      "action": "1:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.56,
+      "ci95": [
+        0.48,
+        0.64
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight",
+      "action": "1:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.6066666666666667,
+      "ci95": [
+        0.5333333333333333,
+        0.6866666666666666
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "1:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 2.1652895422155627,
+      "ci95": [
+        1.7465627117267957,
+        2.69721319319898
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "1:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 2.051847228256301,
+      "ci95": [
+        1.632943112412163,
+        2.5770473496381983
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "accuracy",
+      "action": "1:2048",
+      "minus": "4:0",
+      "questions": 150,
+      "value": -0.013333333333333308,
+      "ci95": [
+        -0.08666666666666667,
+        0.053333333333333344
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose",
+      "action": "1:2048",
+      "minus": "4:0",
+      "questions": 150,
+      "value": -0.2733333333333333,
+      "ci95": [
+        -0.35333333333333333,
+        -0.19333333333333333
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight",
+      "action": "1:2048",
+      "minus": "4:0",
+      "questions": 150,
+      "value": -0.10666666666666667,
+      "ci95": [
+        -0.16,
+        -0.06
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "1:2048",
+      "minus": "4:0",
+      "questions": 150,
+      "value": -0.16778235276411707,
+      "ci95": [
+        -0.27577245991980737,
+        -0.0686783714108039
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "1:2048",
+      "minus": "4:0",
+      "questions": 150,
+      "value": -0.09523627956012462,
+      "ci95": [
+        -0.14867912084138224,
+        -0.05106944823879052
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "accuracy",
+      "action": "1:2048",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.013333333333333308,
+      "ci95": [
+        -0.09333333333333327,
+        0.06666666666666665
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose",
+      "action": "1:2048",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.5533333333333333,
+      "ci95": [
+        -0.6333333333333333,
+        -0.4733333333333333
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight",
+      "action": "1:2048",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.54,
+      "ci95": [
+        -0.62,
+        -0.46
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "1:2048",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.7450639052076282,
+      "ci95": [
+        -0.9896913921620096,
+        -0.5549362558920077
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "1:2048",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.7420375065128652,
+      "ci95": [
+        -0.964913833802178,
+        -0.5662807437703046
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "accuracy",
+      "action": "1:2048",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": -0.013333333333333308,
+      "ci95": [
+        -0.07333333333333336,
+        0.053333333333333344
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose",
+      "action": "1:2048",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": -0.01999999999999999,
+      "ci95": [
+        -0.08666666666666667,
+        0.039999999999999994
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight",
+      "action": "1:2048",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": -0.02,
+      "ci95": [
+        -0.04666666666666667,
+        0.0
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "1:2048",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.013874288162401938,
+      "ci95": [
+        -0.07176143018184732,
+        0.0968703537382953
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "1:2048",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": -0.023929010103265678,
+      "ci95": [
+        -0.05635318863276206,
+        0.0
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "accuracy",
+      "action": "4:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": 0.0,
+      "ci95": [
+        -0.053333333333333344,
+        0.053333333333333344
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose",
+      "action": "4:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.28,
+      "ci95": [
+        -0.36666666666666664,
+        -0.2
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight",
+      "action": "4:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.43333333333333335,
+      "ci95": [
+        -0.5133333333333333,
+        -0.35333333333333333
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "4:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.5772815524435111,
+      "ci95": [
+        -0.7849867196342638,
+        -0.4232295948385875
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "4:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.6468012269527406,
+      "ci95": [
+        -0.8598815524772433,
+        -0.4811044611097131
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "accuracy",
+      "action": "4:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.0,
+      "ci95": [
+        -0.06000000000000005,
+        0.06000000000000005
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose",
+      "action": "4:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.25333333333333335,
+      "ci95": [
+        0.16666666666666669,
+        0.33333333333333337
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight",
+      "action": "4:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.08666666666666667,
+      "ci95": [
+        0.04,
+        0.13333333333333333
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "4:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.181656640926519,
+      "ci95": [
+        0.08954868300223001,
+        0.28895965407799373
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "4:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.07130726945685895,
+      "ci95": [
+        0.03128604042753482,
+        0.12008973103063668
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "accuracy",
+      "action": "kv-ladder",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.0,
+      "ci95": [
+        -0.06666666666666665,
+        0.06666666666666665
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose",
+      "action": "kv-ladder",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.5333333333333334,
+      "ci95": [
+        0.44666666666666666,
+        0.6133333333333334
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight",
+      "action": "kv-ladder",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.52,
+      "ci95": [
+        0.44,
+        0.6
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "kv-ladder",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.7589381933700301,
+      "ci95": [
+        0.5732905863119528,
+        0.9986335693797211
+      ]
+    },
+    {
+      "rate": "contended",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "kv-ladder",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.7181084964095995,
+      "ci95": [
+        0.5461372413759702,
+        0.9487330309968429
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "accuracy",
+      "action": "1:0",
+      "minus": "1:2048",
+      "questions": 150,
+      "value": -0.026666666666666727,
+      "ci95": [
+        -0.10000000000000009,
+        0.053333333333333344
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose",
+      "action": "1:0",
+      "minus": "1:2048",
+      "questions": 150,
+      "value": -0.026666666666666727,
+      "ci95": [
+        -0.10666666666666669,
+        0.046666666666666745
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight",
+      "action": "1:0",
+      "minus": "1:2048",
+      "questions": 150,
+      "value": 0.4933333333333333,
+      "ci95": [
+        0.41333333333333333,
+        0.5733333333333334
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "1:0",
+      "minus": "1:2048",
+      "questions": 150,
+      "value": 0.6421676455597158,
+      "ci95": [
+        0.43581904612343525,
+        0.8863002426685026
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "1:0",
+      "minus": "1:2048",
+      "questions": 150,
+      "value": 1.0459503992820767,
+      "ci95": [
+        0.8174002279825907,
+        1.3088586077366142
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "accuracy",
+      "action": "1:0",
+      "minus": "4:0",
+      "questions": 150,
+      "value": -0.020000000000000018,
+      "ci95": [
+        -0.07333333333333336,
+        0.033333333333333326
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose",
+      "action": "1:0",
+      "minus": "4:0",
+      "questions": 150,
+      "value": -0.020000000000000018,
+      "ci95": [
+        -0.07333333333333336,
+        0.033333333333333326
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight",
+      "action": "1:0",
+      "minus": "4:0",
+      "questions": 150,
+      "value": 0.046666666666666634,
+      "ci95": [
+        -0.006666666666666599,
+        0.09999999999999998
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "1:0",
+      "minus": "4:0",
+      "questions": 150,
+      "value": 0.8626697647086226,
+      "ci95": [
+        0.7044516296424093,
+        1.0634798238923677
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "1:0",
+      "minus": "4:0",
+      "questions": 150,
+      "value": 0.8731707644654901,
+      "ci95": [
+        0.7003078935961932,
+        1.0800887018260172
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "accuracy",
+      "action": "1:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.040000000000000036,
+      "ci95": [
+        -0.12,
+        0.033333333333333326
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose",
+      "action": "1:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.040000000000000036,
+      "ci95": [
+        -0.1133333333333334,
+        0.033333333333333326
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight",
+      "action": "1:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": 0.4933333333333333,
+      "ci95": [
+        0.4133333333333333,
+        0.5733333333333334
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "1:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": 0.6270390683130811,
+      "ci95": [
+        0.4350693421979295,
+        0.8474093856890028
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "1:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": 1.0447804573812411,
+      "ci95": [
+        0.8283297624401165,
+        1.299364066434094
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "accuracy",
+      "action": "1:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": -0.033333333333333326,
+      "ci95": [
+        -0.09333333333333338,
+        0.026666666666666727
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose",
+      "action": "1:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": -0.033333333333333326,
+      "ci95": [
+        -0.09333333333333338,
+        0.026666666666666727
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight",
+      "action": "1:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.30666666666666664,
+      "ci95": [
+        0.22000000000000003,
+        0.39999999999999997
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "1:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.7390886347238184,
+      "ci95": [
+        0.5640017691344041,
+        0.9473551470097912
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "1:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.9478145314725128,
+      "ci95": [
+        0.7468843766703506,
+        1.194254911474716
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "accuracy",
+      "action": "1:2048",
+      "minus": "4:0",
+      "questions": 150,
+      "value": 0.00666666666666671,
+      "ci95": [
+        -0.06666666666666665,
+        0.07999999999999996
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose",
+      "action": "1:2048",
+      "minus": "4:0",
+      "questions": 150,
+      "value": 0.00666666666666671,
+      "ci95": [
+        -0.07333333333333325,
+        0.07999999999999996
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight",
+      "action": "1:2048",
+      "minus": "4:0",
+      "questions": 150,
+      "value": -0.44666666666666666,
+      "ci95": [
+        -0.5266666666666667,
+        -0.3666666666666667
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "1:2048",
+      "minus": "4:0",
+      "questions": 150,
+      "value": 0.22050211914890666,
+      "ci95": [
+        0.15377390034734395,
+        0.2795235935403558
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "1:2048",
+      "minus": "4:0",
+      "questions": 150,
+      "value": -0.17277963481658656,
+      "ci95": [
+        -0.24935716948504247,
+        -0.10456637481806672
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "accuracy",
+      "action": "1:2048",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.013333333333333308,
+      "ci95": [
+        -0.06000000000000005,
+        0.03333333333333344
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose",
+      "action": "1:2048",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.013333333333333308,
+      "ci95": [
+        -0.06000000000000005,
+        0.039999999999999925
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight",
+      "action": "1:2048",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": 0.0,
+      "ci95": [
+        -0.05999999999999997,
+        0.053333333333333316
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "1:2048",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.015128577246634745,
+      "ci95": [
+        -0.05995438768585082,
+        0.0300592072711231
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "1:2048",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.0011699419008354695,
+      "ci95": [
+        -0.04872809686367913,
+        0.04373861080869024
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "accuracy",
+      "action": "1:2048",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": -0.006666666666666599,
+      "ci95": [
+        -0.06000000000000005,
+        0.053333333333333344
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose",
+      "action": "1:2048",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": -0.006666666666666599,
+      "ci95": [
+        -0.06666666666666665,
+        0.053333333333333344
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight",
+      "action": "1:2048",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": -0.18666666666666665,
+      "ci95": [
+        -0.26666666666666666,
+        -0.12
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "1:2048",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.09692098916410252,
+      "ci95": [
+        0.023845967854060124,
+        0.1640790966266319
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "1:2048",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": -0.09813586780956388,
+      "ci95": [
+        -0.16854263511382342,
+        -0.03417979022706463
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "accuracy",
+      "action": "4:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.020000000000000018,
+      "ci95": [
+        -0.09333333333333327,
+        0.053333333333333344
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose",
+      "action": "4:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.020000000000000018,
+      "ci95": [
+        -0.09333333333333338,
+        0.05999999999999994
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight",
+      "action": "4:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": 0.44666666666666666,
+      "ci95": [
+        0.3666666666666667,
+        0.5266666666666666
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "4:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": -0.2356306963955414,
+      "ci95": [
+        -0.28999684620646393,
+        -0.17571719416800335
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "4:0",
+      "minus": "kv-ladder",
+      "questions": 150,
+      "value": 0.1716096929157511,
+      "ci95": [
+        0.10451846611180843,
+        0.24955207481426342
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "accuracy",
+      "action": "4:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": -0.013333333333333308,
+      "ci95": [
+        -0.07999999999999996,
+        0.046666666666666745
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose",
+      "action": "4:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": -0.013333333333333308,
+      "ci95": [
+        -0.07333333333333336,
+        0.053333333333333344
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight",
+      "action": "4:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.26,
+      "ci95": [
+        0.18666666666666665,
+        0.33999999999999997
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "4:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": -0.12358112998480414,
+      "ci95": [
+        -0.18548266059594426,
+        -0.0665865341276462
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "4:0",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.07464376700702269,
+      "ci95": [
+        0.014596259950703738,
+        0.1364415731153542
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "accuracy",
+      "action": "kv-ladder",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.00666666666666671,
+      "ci95": [
+        -0.053333333333333344,
+        0.06666666666666665
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose",
+      "action": "kv-ladder",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.00666666666666671,
+      "ci95": [
+        -0.046666666666666634,
+        0.06000000000000005
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight",
+      "action": "kv-ladder",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": -0.18666666666666665,
+      "ci95": [
+        -0.26,
+        -0.11333333333333331
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_loose_per_gpu_s",
+      "action": "kv-ladder",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": 0.11204956641073727,
+      "ci95": [
+        0.0406896585231441,
+        0.17413641488968706
+      ]
+    },
+    {
+      "rate": "light",
+      "metric": "correct_within_tight_per_gpu_s",
+      "action": "kv-ladder",
+      "minus": "mix-kv-ladder",
+      "questions": 150,
+      "value": -0.0969659259087284,
+      "ci95": [
+        -0.16112325314383008,
+        -0.036698763047240374
+      ]
+    }
+  ],
+  "not_compared": [],
+  "definitions": {
+    "ci95": "percentile bootstrap, 2000 resamples of questions with replacement; seeds of a question are kept together; paired differences resample the same questions for both entries and are computed only between entries run on the same seeds",
+    "caveat": "entries from different runs share questions, seeds and background traces but were run at different times on the same machine"
+  }
+}
