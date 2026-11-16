@@ -55,7 +55,7 @@ python 15_matched_real_answers.py score \
 - One machine. Intervals come from resampling questions; with three seeds they say little about run-to-run variation of the server itself.
 - The background is synthetic, so the comparison says how an action behaves next to calibrated traffic, not next to other users' real answers.
 - The GPU-second attribution is by generated tokens. Two actions with the same token count but different batch shapes are charged the same.
-- Fixed actions only. A result here cannot be described as a routing gain.
+- Fixed actions and frozen per-job policies only; no learned router. A policy result is a gain over a fixed action only where the paired interval against that action excludes zero.
 - Target jobs are spaced evenly, not Poisson, so target-on-target bursts are not exercised.
 
 ## Tests
