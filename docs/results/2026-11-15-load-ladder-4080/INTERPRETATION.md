@@ -34,7 +34,8 @@ So a long thinking trace misses the target through slower decoding with many run
 
 ## Cautions
 
-- The third seed's 2.09 req/s block ran slower than the other two even without target jobs (control background p95 26.9 s against 20.4 s and 20.5 s). Run-to-run variation of the server is not covered by the intervals, which resample questions.
+- **Correction, 2026-11-16: the last six cells ran at reduced GPU power.** Mean power was 84 to 91 W in the whole 2.09 req/s block of seed 20261118 and in the last two cells of its 1.72 req/s block (control and `(1,0)`), against 117 to 132 W in the other eighteen cells (`power.draw` in the `cells.json` of the raw run). That is why this block was slower even without target jobs (control background p95 26.9 s against 20.4 s and 20.5 s), and why it is the only one with preemptions. The cause is outside the experiment. The pooled 2.09 req/s values above include this block; the two normal-power seeds alone give 33 and 30 of 50 correct on time for `(1,2048)` against 40 and 41 for `(4,0)`, so the conclusion stands.
+- Run-to-run variation of the server is not covered by the intervals, which resample questions.
 - Per-GPU-second values are comparable between actions at one rate only (see the frozen-rate interpretation).
 - The load curve joins measured points with straight lines. `(4,2048)` was measured at the two outer rates only.
 - 50 questions with equal numbers per MATH level; synthetic background; evenly spaced target jobs; WSL2 laptop.
