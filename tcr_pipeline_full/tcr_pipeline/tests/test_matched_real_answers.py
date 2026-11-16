@@ -147,3 +147,40 @@ def test_run_refuses_an_incomplete_calibration(tmp_path):
     with pytest.raises(SystemExit, match='not complete'):
         m.main(argv)
     assert not (tmp_path / 'run').exists()
+
+
+def test_assemble_gathers_blocks_of_several_runs_for_one_score(fake_server, tmp_path, monkeypatch):  # noqa: F811
+    monkeypatch.setattr(m, 'load_tokenizer', lambda: Tokenizer())
+    cohort = questions()
+    files = dict(plan=dict(questions=cohort), prompts=cohort + [dict(id='b0', thinking='bg', nothinking='bg')],
+                 lengths={'200': [200]}, hardware={'device': 'fake CPU HTTP server'},
+                 calibration=dict(status='complete', reference_budget=200, latency_targets_s=[.4, 8.],
+                                  light_rate_rps=3., contended_rate_rps=10.),
+                 gold={q['id']: '1' for q in cohort})
+    for name, value in files.items():
+        (tmp_path / f'{name}.json').write_text(json.dumps(value))
+    common = ['--url', fake_server, '--model', 'fake', '--no-gpu', '--actions', '1:0', '--rates', 'mid=6', '--target-fraction', '.5',
+              '--warmup', '.3', '--timeout', '30', '--idle-timeout', '30', '--idle-stable', '.1', '--metrics-interval', '.05',
+              '--hardware-json', str(tmp_path / 'hardware.json')]
+    for name in ('plan', 'calibration', 'lengths', 'prompts'):
+        common += ['--' + name, str(tmp_path / f'{name}.json')]
+    m.main(['run', '--out', str(tmp_path / 'first'), '--seeds', '5', '6'] + common)
+    m.main(['run', '--out', str(tmp_path / 'second'), '--seeds', '6'] + common)
+    out = tmp_path / 'assembled'
+    m.main(['assemble', '--out', str(out), '--blocks', f'{tmp_path}/first/seed-5-mid', f'{tmp_path}/second/seed-6-mid'])
+    manifest = json.loads((out / 'manifest.json').read_text())
+    assert manifest['completed'] == ['seed-5-mid', 'seed-6-mid'] and manifest['status'] == 'complete' and manifest['window_s'] == 1.
+    assert [(a['run'], a['block']) for a in manifest['assembled_from']] == [(f'{tmp_path}/first', 'seed-5-mid'), (f'{tmp_path}/second', 'seed-6-mid')]
+    assert (out / 'seed-6-mid' / 'cells.json').read_text() == (tmp_path / 'second' / 'seed-6-mid' / 'cells.json').read_text()
+    m.score(types.SimpleNamespace(out=str(out), gold=str(tmp_path / 'gold.json'), draws=50), verifier=lambda gold, pred: gold == pred)
+    summary = json.loads((out / 'summary.json').read_text())
+    assert summary['actions'][0]['seeds'] == [5, 6] and summary['actions'][0]['jobs'] == 10 and len(summary['cells']) == 4
+    with pytest.raises(SystemExit, match='given twice'):
+        m.main(['assemble', '--out', str(tmp_path / 'x'), '--blocks', f'{tmp_path}/first/seed-5-mid', f'{tmp_path}/first/seed-5-mid'])
+    with pytest.raises(SystemExit, match='not a complete block'):
+        m.main(['assemble', '--out', str(tmp_path / 'y'), '--blocks', f'{tmp_path}/first/seed-7-mid'])
+    other = json.loads((tmp_path / 'second' / 'manifest.json').read_text())
+    (tmp_path / 'second' / 'manifest.json').write_text(json.dumps(dict(other, window_s=2.)))
+    with pytest.raises(SystemExit, match='differs'):
+        m.main(['assemble', '--out', str(tmp_path / 'z'), '--blocks', f'{tmp_path}/first/seed-5-mid', f'{tmp_path}/second/seed-6-mid'])
+    assert not (tmp_path / 'z').exists()
