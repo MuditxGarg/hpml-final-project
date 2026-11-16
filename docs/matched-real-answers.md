@@ -16,7 +16,7 @@ The logic is in `matched_real_answers.py`. It reuses the trace generator, cell o
 
 ## Per-job policies
 
-`run --policies FILE` adds one cell per policy to every block. A policy sets the action of each target job on arrival, from server load or from fixed shares. See [load-adaptive controller](load-adaptive-controller.md).
+`run --policies FILE` adds one cell per policy to every block; with an empty `--actions` the block holds the control and the policies only, which is how a baseline mixture is run on the seeds of an earlier controller run. A policy sets the action of each target job on arrival, from server load or from fixed shares. See [load-adaptive controller](load-adaptive-controller.md).
 
 ## Metrics (`score`)
 

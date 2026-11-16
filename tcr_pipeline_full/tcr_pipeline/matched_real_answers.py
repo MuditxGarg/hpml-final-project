@@ -159,6 +159,8 @@ def run(args):
     background = [p for p in json.loads(Path(args.prompts).read_text()) if p['id'] not in chosen]
     actions = [tuple(map(int, a.split(':'))) for a in args.actions]
     policy_specs, policies = load_policies(args.policies) if args.policies else ([], [])
+    if not actions and not policies:
+        sys.exit('nothing to run: give at least one action or a policy file')
     by_name = {p.name: p for p in policies}
     hardware = json.loads(Path(args.hardware_json).read_text())
     out = Path(args.out)
@@ -377,7 +379,8 @@ def main(argv=None):
         p.add_argument('--' + name, required=True)
     p.add_argument('--url', default='http://127.0.0.1:8001')
     p.add_argument('--model', default='m')
-    p.add_argument('--actions', nargs='+', default=['1:0', '4:0', '1:2048', '4:2048'])
+    p.add_argument('--actions', nargs='*', default=['1:0', '4:0', '1:2048', '4:2048'],
+                   help='fixed actions N:B; may be empty when --policies is given, so a baseline policy can run on its own')
     p.add_argument('--seeds', type=int, nargs='+', default=[20261116, 20261117, 20261118])
     p.add_argument('--target-fraction', type=float, default=.05, help='target job rate as a fraction of the contended rate')
     p.add_argument('--policies', default=None, help='JSON list of per-job policies (load_policy.py); each gets its own cell')

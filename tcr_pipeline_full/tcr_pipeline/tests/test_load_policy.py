@@ -71,7 +71,7 @@ def test_policy_cells_run_and_score_against_fake_server(fake_server, tmp_path, m
         (tmp_path / f'{name}.json').write_text(json.dumps(value))
     out = tmp_path / 'run'
     argv = ['run', '--url', fake_server, '--model', 'fake', '--out', str(out), '--no-gpu', '--seeds', '5',
-            '--actions', '1:0', '--rates', 'mid=6', '--target-fraction', '.25', '--warmup', '.5', '--timeout', '30',
+            '--actions', '--rates', 'mid=6', '--target-fraction', '.25', '--warmup', '.5', '--timeout', '30',
             '--idle-timeout', '30', '--idle-stable', '.1', '--metrics-interval', '.05',
             '--hardware-json', str(tmp_path / 'hardware.json')]
     for name in ('plan', 'calibration', 'lengths', 'prompts', 'policies'):
@@ -81,7 +81,7 @@ def test_policy_cells_run_and_score_against_fake_server(fake_server, tmp_path, m
     manifest = json.loads((out / 'manifest.json').read_text())
     assert manifest['status'] == 'complete' and manifest['policies'] == policies
     order = json.loads((out / 'seed-5-mid' / 'order.json').read_text())
-    assert sorted(map(str, order)) == sorted(map(str, [[0, 0], [1, 0], 'always-deep', 'never', 'mix']))
+    assert sorted(map(str, order)) == sorted(map(str, [[0, 0], 'always-deep', 'never', 'mix']))  # no fixed action: control and policies only
     cells = json.loads((out / 'seed-5-mid' / 'cells.json').read_text())
     deep = next(c for c in cells if c['policy'] == 'always-deep')
     assert deep['n'] is None and deep['cell'].endswith('P-always-deep')
@@ -94,13 +94,18 @@ def test_policy_cells_run_and_score_against_fake_server(fake_server, tmp_path, m
     m.score(types.SimpleNamespace(out=str(out), gold=str(tmp_path / 'gold.json'), draws=50), verifier=lambda gold, pred: gold == pred)
     summary = json.loads((out / 'summary.json').read_text())
     by_name = {a['policy'] or (a['n'], a['budget']): a for a in summary['actions']}
-    assert list(by_name) == [(1, 0), 'always-deep', 'mix', 'never']  # fixed actions first, then policies by name
+    assert list(by_name) == ['always-deep', 'mix', 'never']  # policies by name
     assert by_name['always-deep']['chosen'] == {'2:400': 5} and by_name['never']['chosen'] == {'1:0': 5}
     assert by_name['never']['reasons'] == {'fallback': 5} and sum(by_name['mix']['chosen'].values()) == 5
     assert all(a['jobs'] == 5 and a['accuracy']['value'] == 1 for a in summary['actions'])
     assert by_name['always-deep']['target_gpu_s'] > by_name['never']['target_gpu_s']
     names = {(str(d['action']), str(d['minus'])) for d in summary['paired_differences']}
-    assert ('[1, 0]', 'always-deep') in names and ('always-deep', 'never') in names and len(names) == 6
+    assert ('always-deep', 'mix') in names and ('always-deep', 'never') in names and len(names) == 3
+    without_policies = [a for a in argv if a != '--policies' and not a.endswith('policies.json')]
+    without_policies[without_policies.index('--out') + 1] = str(tmp_path / 'none')
+    with pytest.raises(SystemExit, match='nothing to run'):
+        m.main(without_policies)
+    assert not (tmp_path / 'none').exists()
     assert 'policies' in summary['caveat']
 
 
