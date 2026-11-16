@@ -119,8 +119,8 @@ def matched_section(directory, sources):
                 interval(a['correct_within_tight_per_gpu_s'], 4), interval(a['correct_within_loose_per_gpu_s'], 4)] for a in summary['actions']]
     cells = [[c['block'], action_name(c['n'], c['budget']), c['target_jobs'], c['target_correct'], c['target_correct_tight'], c['target_correct_loose'],
               fmt(c['target_latency_p95_s']), c['background_jobs'], c['background_within_tight'], c['background_within_loose'], fmt(c['background_p95_s']),
-              fmt(c['waiting_max'], 0), fmt(c['kv_cache_max'], 2), fmt(c['preemptions'], 0), fmt(c['goodput_tight_per_gpu_s'], 3),
-              fmt(c['goodput_loose_per_gpu_s'], 3)] for c in summary['cells']]
+              fmt(c['waiting_max'], 0), fmt(c['kv_cache_max'], 2), fmt(c['preemptions'], 0), fmt(c.get('gpu_power_mean_w')),
+              fmt(c['goodput_tight_per_gpu_s'], 3), fmt(c['goodput_loose_per_gpu_s'], 3)] for c in summary['cells']]
     gaps = [[d['rate'], d['metric'], action_name(*d['action']), action_name(*d['minus']), d['questions'],
              '-' if d['value'] is None else f'{d["value"]:+.4f}', '-' if not d['ci95'] else f'[{d["ci95"][0]:+.4f}, {d["ci95"][1]:+.4f}]',
              '-' if not d['ci95'] else 'no' if d['ci95'][0] <= 0 <= d['ci95'][1] else 'yes'] for d in summary['paired_differences']]
@@ -134,7 +134,7 @@ def matched_section(directory, sources):
                    'Target GPU-s', 'Correct within tight per GPU-s', 'Correct within loose per GPU-s'], actions), '',
             'Per cell:', '',
             table(['Block', 'Action', 'Target jobs', 'Correct', 'Correct within tight', 'Correct within loose', 'Target p95 (s)', 'Background requests',
-                   'Background within tight', 'Background within loose', 'Background p95 (s)', 'Waiting max', 'KV cache max', 'Preemptions',
+                   'Background within tight', 'Background within loose', 'Background p95 (s)', 'Waiting max', 'KV cache max', 'Preemptions', 'GPU power mean (W)',
                    'Goodput tight per GPU-s', 'Goodput loose per GPU-s'], cells), '',
             'Paired differences between actions at the same rate (first minus second):', '',
             table(['Rate', 'Metric', 'Action', 'Minus', 'Questions', 'Difference', '95% interval', 'Interval excludes zero'], gaps), '',

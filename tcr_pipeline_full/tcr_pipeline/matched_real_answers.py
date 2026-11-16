@@ -304,7 +304,9 @@ def score(args, verifier=None):
                 goodput_tight_per_gpu_s=(sum(r['correct_tight'] for r in mine) + good(tight)) / cell['cell_wall_s'] if cell['cell_wall_s'] else None,
                 goodput_loose_per_gpu_s=(sum(r['correct_loose'] for r in mine) + good(loose)) / cell['cell_wall_s'] if cell['cell_wall_s'] else None,
                 waiting_max=cell['server']['waiting']['max'], kv_cache_max=cell['server']['kv_cache']['max'],
-                preemptions=cell['server']['counters']['preemptions']))
+                preemptions=cell['server']['counters']['preemptions'],
+                # Mean GPU power in the cell: a drop against other cells means the machine itself ran slower.
+                gpu_power_mean_w=((cell.get('gpu') or {}).get('power.draw') or {}).get('mean')))
     actions, differences = [], []
     for rate in sorted({r['rate'] for r in records}, key=lambda label: (manifest['rates_rps'][label], label)):
         groups = {}
@@ -334,7 +336,8 @@ def score(args, verifier=None):
             for b in keys[i + 1:]:
                 shared = sorted(set(groups[a]) & set(groups[b]))
                 paired = {q: [(groups[a][q], groups[b][q])] for q in shared}
-                for key, top, bottom in (('correct_within_loose', 'correct_loose', 'job'), ('correct_within_tight', 'correct_tight', 'job'),
+                for key, top, bottom in (('accuracy', 'correct', 'job'),
+                                         ('correct_within_loose', 'correct_loose', 'job'), ('correct_within_tight', 'correct_tight', 'job'),
                                          ('correct_within_loose_per_gpu_s', 'correct_loose', 'gpu_s'),
                                          ('correct_within_tight_per_gpu_s', 'correct_tight', 'gpu_s')):
                     def gap(sample, top=top, bottom=bottom):
