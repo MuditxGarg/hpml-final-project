@@ -105,6 +105,8 @@ def test_run_and_score_against_fake_server(fake_server, tmp_path, monkeypatch): 
         assert cell['target_correct'] == (0 if cell['n'] == 0 else 4)
     gaps = [d for d in summary['paired_differences'] if d['metric'] == 'correct_within_loose']
     assert len(gaps) == 2 and all(d['value'] == 0 and d['questions'] == 5 for d in gaps)
+    assert sum(d['metric'] == 'accuracy' for d in summary['paired_differences']) == 2
+    assert all(c['gpu_power_mean_w'] is None for c in summary['cells'])  # the run used --no-gpu
     with pytest.raises(FileExistsError):
         m.main(argv)
 

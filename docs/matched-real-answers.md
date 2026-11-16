@@ -24,7 +24,7 @@ Scoring is offline and requires `math_verify`, the grader used for the labels.
 - Both are reported at the tight and the loose target (2x and 4x idle p95 from the calibration).
 - **Intervals:** percentile bootstrap over questions. All seeds of a question are resampled together. Differences between two actions resample the same questions for both.
 
-`summary.json` holds per-cell counts, per-rate and per-action results with intervals, and all pairwise action differences per rate. `scored.jsonl` holds one record per target job.
+`summary.json` holds per-cell counts and the mean GPU power of each cell, per-rate and per-action results with intervals, and all pairwise action differences per rate. `scored.jsonl` holds one record per target job.
 
 ## Commands
 
@@ -47,6 +47,7 @@ python 15_matched_real_answers.py score \
 
 ## Limitations
 
+- A cell that ran at lower GPU power than the others (laptop power state, thermal limits) is slower for reasons outside the experiment. Check the power column before using latency results.
 - One machine. Intervals come from resampling questions; with three seeds they say little about run-to-run variation of the server itself.
 - The background is synthetic, so the comparison says how an action behaves next to calibrated traffic, not next to other users' real answers.
 - The GPU-second attribution is by generated tokens. Two actions with the same token count but different batch shapes are charged the same.
