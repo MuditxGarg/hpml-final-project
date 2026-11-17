@@ -5,7 +5,7 @@ When an LLM server is busy, a request that "thinks more" (longer reasoning, or m
 
 **Status:** labels, cap-check measurements, load sweep and exploratory routing scripts are available. A corrected nested evaluation and matched-replay harness are now implemented; live end-to-end routing gains remain unproven.
 
-Start with [independent evaluation](docs/evaluation.md) and [matched serving](docs/matched-serving.md). Historical numerical results below are exploratory. The latest original scripts had test-set operating-point selection; the corrected 07/08 entry points invoke 09_evaluate.py, with historical code archived in legacy/.
+The latest measured results on the RTX 4080 are the [assembled three-seed 150-question run](docs/results/2026-11-16-representative-cohort-assembled-4080/INTERPRETATION.md) and the [50-question baseline](docs/results/2026-11-15-baseline-4080/INTERPRETATION.md); every logged run is also in Weights & Biases at [forge.coreweave.com/wandb/hpml-final-project-team24/latte](https://forge.coreweave.com/wandb/hpml-final-project-team24/latte) (public, tag `rtx4080-laptop`). Start with [independent evaluation](docs/evaluation.md) and [matched serving](docs/matched-serving.md). Per-machine light and contended background rates come from the [sustained calibration](docs/sustained-calibration.md). Historical numerical results below are exploratory. The latest original scripts had test-set operating-point selection; the corrected 07/08 entry points invoke 09_evaluate.py, with historical code archived in legacy/.
 
 ## Repository layout
 
@@ -76,5 +76,10 @@ Read these in order; each report includes raw evidence, configuration and limita
 1. [Matched Serving Interference Study](docs/results/2026-11-12-serving-interference/README.md): forced-length T4 replay shows load-sensitive background interference, but deep targets timed out; it does not measure answer quality.
 2. [Real Answer Completion Validation](docs/results/2026-11-12-real-answer-validation/README.md): five-question idle A6000 diagnostic validates EOS-aware shallow sampling and two-stage deep answers.
 3. [Matched Real-Answer Load Comparison](docs/results/2026-11-12-real-answer-load/README.md): four complete paired blocks, 16 cells and 60 target decisions. Higher arrival rates increased latency, but no queueing was observed; background delivery misses came from output caps. Load-aware routing gains remain unproven.
+4. [Mid-point baseline, RTX 4080](docs/results/2026-11-15-baseline-4080/INTERPRETATION.md): 50 questions, 3 seeds, real queueing at calibrated light and contended rates. `(1,0)` is best per GPU-second at both rates; the cheaper of width and depth flips with load.
+5. [Load ladder](docs/results/2026-11-15-load-ladder-4080/INTERPRETATION.md): the same cohort at four background rates, locating where depth stops being affordable.
+6. [Representative 150-question cohort, assembled three seeds](docs/results/2026-11-16-representative-cohort-assembled-4080/INTERPRETATION.md): extra compute is worth 6 to 8 accuracy points; by correct on-time answers the best fixed action changes with load (intervals exclude zero); per GPU-second `(1,0)` still wins. The [original run](docs/results/2026-11-16-representative-cohort-4080/INTERPRETATION.md) is kept as the record of the GPU power problem.
+
+Each W&B run holds metrics and settings only; questions, model outputs and per-job records stay in the committed `summary.json` and `scored.jsonl` files of each folder.
 
 Reproduction: [matched replay](docs/matched-serving.md), [idle real answers](docs/real-answer-validation.md), and [real-answer load comparison](docs/real-answer-load.md). The reports retain the failed setup attempt and final allocation accounting. GPU experiments require an explicitly provisioned server; the local tests do not allocate GPUs.
