@@ -16,6 +16,7 @@ import hashlib
 import json
 from pathlib import Path
 import random
+import shutil
 import socket
 import sys
 import time
@@ -325,6 +326,56 @@ def compare(args):
     print(args.output)
 
 
+SHARED = ('experiment', 'configuration', 'hardware_user_supplied', 'plan_sha256', 'calibration_sha256', 'calibration_source', 'rates_rps',
+          'target_rate_rps', 'window_s', 'reference_budget', 'latency_targets_s', 'questions', 'background_prompts', 'lengths_sha256', 'control_definition')
+MUST_MATCH = ('plan_sha256', 'calibration_sha256', 'rates_rps', 'target_rate_rps', 'window_s', 'latency_targets_s', 'questions', 'lengths_sha256')
+
+
+def assemble(args):
+    """Gather complete blocks of several runs of one protocol into a new directory that `score` reads like a single run.
+
+    Use it when blocks had to be repeated (a block run while the machine was in a different state, say): the kept blocks of the
+    original run and the repeated blocks of later runs are copied unchanged, and the manifest records where each block came from.
+    Every source must share the plan, calibration, window and latency targets, and the rate of every block it contributes must have
+    the same value in every source that ran it (a repeated block run with `--rates` carries only its own rate). Block names must be distinct."""
+    out = Path(args.out)
+    sources, blocks = {}, []
+    for item in args.blocks:
+        run, _, block = item.rpartition('/')
+        if run not in sources:
+            sources[run] = json.loads((Path(run) / 'manifest.json').read_text())
+        if block not in sources[run]['completed']:
+            sys.exit(f'{block} is not a complete block of {run}')
+        if block in [b for _, b in blocks]:
+            sys.exit(f'block {block} given twice')
+        blocks.append((run, block))
+    first = next(iter(sources.values()))
+    for run, manifest in sources.items():
+        for key in MUST_MATCH:
+            if key != 'rates_rps' and manifest.get(key) != first.get(key):
+                sys.exit(f'{run} differs from {next(iter(sources))} in {key}; blocks of different protocols cannot be assembled')
+    rates = {}
+    for run, block in blocks:
+        label = block.split('-', 2)[2]  # blocks are named seed-<seed>-<rate label>
+        value = sources[run]['rates_rps'].get(label)
+        if value is None:
+            sys.exit(f'{run} has no rate {label} for block {block}')
+        if rates.setdefault(label, value) != value:
+            sys.exit(f'{run} differs from the other runs in rates_rps for {label}; blocks of different protocols cannot be assembled')
+    out.mkdir(parents=True, exist_ok=False)
+    for run, block in blocks:
+        shutil.copytree(Path(run) / block, out / block)
+    shutil.copy(Path(next(iter(sources))) / 'plan.json', out / 'plan.json')
+    write_json(out / 'manifest.json', dict(
+        {k: first.get(k) for k in SHARED}, rates_rps=rates, status='complete', completed=[b for _, b in blocks], skipped=[],
+        experiment=first['experiment'] + '; assembled from the complete blocks of several runs',
+        environment=dict(assembled_at_unix_s=time.time(), **{k: v for k, v in environment('').items() if not k.startswith('server')}),
+        assembled_from=[dict(run=run, block=block, git_commit=sources[run]['environment'].get('git_commit'),
+                             started_unix_s=sources[run].get('started_unix_s'), hardware=sources[run].get('hardware_user_supplied'))
+                        for run, block in blocks]))
+    print(out / 'manifest.json')
+
+
 def score(args, verifier=None):
     if verifier is None:
         import math_verify  # noqa: F401  require the project's symbolic grader; no silent string fallback
@@ -445,6 +496,10 @@ def main(argv=None):
     p.add_argument('--deadline-epoch', type=float, default=None, help='do not start a block that cannot finish before this time')
     p.add_argument('--no-gpu', action='store_true')
     p.set_defaults(fn=run)
+    p = sub.add_parser('assemble', help='gather complete blocks of several runs of one protocol into a new directory for score')
+    p.add_argument('--blocks', nargs='+', required=True, metavar='RUN_DIR/BLOCK')
+    p.add_argument('--out', required=True)
+    p.set_defaults(fn=assemble)
     p = sub.add_parser('score')
     p.add_argument('--out', required=True)
     p.add_argument('--gold', required=True)

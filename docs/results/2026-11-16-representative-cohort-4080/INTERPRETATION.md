@@ -2,6 +2,8 @@
 
 This file is written by hand. Every number is copied from the generated [README.md](README.md) in this folder, which is built only from logged runs, unless it is marked as arithmetic on two of its columns. Hardware: HP Omen laptop, RTX 4080 Laptop GPU (12 GB), WSL2, vLLM 0.32.0, Qwen3-1.7B in BF16. Do not pool with another machine.
 
+**Superseded on 2026-11-16** by the [assembled three-seed run](../2026-11-16-representative-cohort-assembled-4080/INTERPRETATION.md), in which the twelve reduced-power cells were repeated at normal power. Quote that folder; this one is kept as the record of the original run and of the power problem.
+
 ## What was run
 
 - 150 questions drawn with the MATH level mix of the full 500 (13, 27, 32, 38 and 40 questions for levels 1 to 5), fixed before the run. The earlier 50-question cohort had ten per level and could not detect accuracy differences.
