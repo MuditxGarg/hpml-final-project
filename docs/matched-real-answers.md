@@ -47,7 +47,7 @@ python 15_matched_real_answers.py score \
 
 ## Repeating blocks
 
-A block that ran while the machine was in a different state (for example at reduced GPU power) is repeated with `run --seeds SEED --rates LABEL=RPS` under a new output name, never by overwriting. `assemble --blocks RUN_DIR/BLOCK ... --out NEW_DIR` then copies the kept blocks of the original run and the repeated blocks into one directory that `score` reads like a single run. Every source must share the plan, calibration, rates, window and latency targets; the manifest lists the run, commit and start time of every block, and the interpretation must say which blocks were repeated and why.
+A block that ran while the machine was in a different state (for example at reduced GPU power) is repeated with `run --seeds SEED --rates LABEL=RPS` under a new output name, never by overwriting. `assemble --blocks RUN_DIR/BLOCK ... --out NEW_DIR` then copies the kept blocks of the original run and the repeated blocks into one directory that `score` reads like a single run. Every source must share the plan, calibration, window and latency targets, and a repeated block must use the frozen value of its rate; the manifest lists the run, commit and start time of every block, and the interpretation must say which blocks were repeated and why.
 
 ## Limitations
 

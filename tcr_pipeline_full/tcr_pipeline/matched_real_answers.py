@@ -248,7 +248,8 @@ def assemble(args):
 
     Use it when blocks had to be repeated (a block run while the machine was in a different state, say): the kept blocks of the
     original run and the repeated blocks of later runs are copied unchanged, and the manifest records where each block came from.
-    Every source must share the plan, calibration, rates, window and latency targets. Block names must be distinct."""
+    Every source must share the plan, calibration, window and latency targets, and the rate of every block it contributes must have
+    the same value in every source that ran it (a repeated block run with `--rates` carries only its own rate). Block names must be distinct."""
     out = Path(args.out)
     sources, blocks = {}, []
     for item in args.blocks:
@@ -263,14 +264,22 @@ def assemble(args):
     first = next(iter(sources.values()))
     for run, manifest in sources.items():
         for key in MUST_MATCH:
-            if manifest.get(key) != first.get(key):
+            if key != 'rates_rps' and manifest.get(key) != first.get(key):
                 sys.exit(f'{run} differs from {next(iter(sources))} in {key}; blocks of different protocols cannot be assembled')
+    rates = {}
+    for run, block in blocks:
+        label = block.split('-', 2)[2]  # blocks are named seed-<seed>-<rate label>
+        value = sources[run]['rates_rps'].get(label)
+        if value is None:
+            sys.exit(f'{run} has no rate {label} for block {block}')
+        if rates.setdefault(label, value) != value:
+            sys.exit(f'{run} differs from the other runs in rates_rps for {label}; blocks of different protocols cannot be assembled')
     out.mkdir(parents=True, exist_ok=False)
     for run, block in blocks:
         shutil.copytree(Path(run) / block, out / block)
     shutil.copy(Path(next(iter(sources))) / 'plan.json', out / 'plan.json')
     write_json(out / 'manifest.json', dict(
-        {k: first.get(k) for k in SHARED}, status='complete', completed=[b for _, b in blocks], skipped=[],
+        {k: first.get(k) for k in SHARED}, rates_rps=rates, status='complete', completed=[b for _, b in blocks], skipped=[],
         experiment=first['experiment'] + '; assembled from the complete blocks of several runs',
         environment=dict(assembled_at_unix_s=time.time(), **{k: v for k, v in environment('').items() if not k.startswith('server')}),
         assembled_from=[dict(run=run, block=block, git_commit=sources[run]['environment'].get('git_commit'),

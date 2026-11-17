@@ -165,11 +165,14 @@ def test_assemble_gathers_blocks_of_several_runs_for_one_score(fake_server, tmp_
     for name in ('plan', 'calibration', 'lengths', 'prompts'):
         common += ['--' + name, str(tmp_path / f'{name}.json')]
     m.main(['run', '--out', str(tmp_path / 'first'), '--seeds', '5', '6'] + common)
-    m.main(['run', '--out', str(tmp_path / 'second'), '--seeds', '6'] + common)
+    # The repeated block comes from a run that also ran another rate; only the rates of the blocks taken are kept.
+    two_rates = common[:common.index('mid=6') + 1] + ['other=7'] + common[common.index('mid=6') + 1:]
+    m.main(['run', '--out', str(tmp_path / 'second'), '--seeds', '6'] + two_rates)
     out = tmp_path / 'assembled'
     m.main(['assemble', '--out', str(out), '--blocks', f'{tmp_path}/first/seed-5-mid', f'{tmp_path}/second/seed-6-mid'])
     manifest = json.loads((out / 'manifest.json').read_text())
     assert manifest['completed'] == ['seed-5-mid', 'seed-6-mid'] and manifest['status'] == 'complete' and manifest['window_s'] == 1.
+    assert manifest['rates_rps'] == {'mid': 6.}
     assert [(a['run'], a['block']) for a in manifest['assembled_from']] == [(f'{tmp_path}/first', 'seed-5-mid'), (f'{tmp_path}/second', 'seed-6-mid')]
     assert (out / 'seed-6-mid' / 'cells.json').read_text() == (tmp_path / 'second' / 'seed-6-mid' / 'cells.json').read_text()
     m.score(types.SimpleNamespace(out=str(out), gold=str(tmp_path / 'gold.json'), draws=50), verifier=lambda gold, pred: gold == pred)
@@ -182,5 +185,8 @@ def test_assemble_gathers_blocks_of_several_runs_for_one_score(fake_server, tmp_
     other = json.loads((tmp_path / 'second' / 'manifest.json').read_text())
     (tmp_path / 'second' / 'manifest.json').write_text(json.dumps(dict(other, window_s=2.)))
     with pytest.raises(SystemExit, match='differs'):
+        m.main(['assemble', '--out', str(tmp_path / 'z'), '--blocks', f'{tmp_path}/first/seed-5-mid', f'{tmp_path}/second/seed-6-mid'])
+    (tmp_path / 'second' / 'manifest.json').write_text(json.dumps(dict(other, rates_rps={'mid': 5., 'other': 7.})))
+    with pytest.raises(SystemExit, match='rates_rps for mid'):
         m.main(['assemble', '--out', str(tmp_path / 'z'), '--blocks', f'{tmp_path}/first/seed-5-mid', f'{tmp_path}/second/seed-6-mid'])
     assert not (tmp_path / 'z').exists()
