@@ -222,3 +222,5 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+latte_e2/hf_cache/
+latte_e2/vllm.log
