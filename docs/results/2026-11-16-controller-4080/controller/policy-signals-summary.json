@@ -1,0 +1,55 @@
+{
+  "source_run": "matched-real-answers-4080-controller-20261116",
+  "source_sha256": {
+    "matched-real-answers-4080-controller-20261116/seed-20261120-contended/cell-3-P-kv-ladder.jsonl": "7d965bf3efe93ac81117ee00b340bd7a1e1f41bed65f5f1ac9e3404a922e905c",
+    "matched-real-answers-4080-controller-20261116/seed-20261120-contended/cell-3-P-kv-ladder-server.jsonl": "acbe765d5aa9ece99cd35cbc0c3609e9deb7828b89cc5578916f0cabd1b7b029",
+    "matched-real-answers-4080-controller-20261116/seed-20261120-light/cell-3-P-kv-ladder.jsonl": "909528d737133911e3fc3a68880187a467ba3449d641c12b65adb3fc00079d8b",
+    "matched-real-answers-4080-controller-20261116/seed-20261120-light/cell-3-P-kv-ladder-server.jsonl": "19e05436530aafefa7d886713620ad366f6b1468ed8668e79a0bb66b37a21979",
+    "matched-real-answers-4080-controller-20261116/seed-20261120-mid-high/cell-1-P-kv-ladder.jsonl": "b015bc07bc50954b9c0bfabb8d0596b19212de9d290abed12c321494be3b3881",
+    "matched-real-answers-4080-controller-20261116/seed-20261120-mid-high/cell-1-P-kv-ladder-server.jsonl": "a5a92745f286cef727d04a32d4978b4f696eee7e4f7493dbb9fbe8915aed62b1",
+    "matched-real-answers-4080-controller-20261116/seed-20261120-mid-low/cell-2-P-kv-ladder.jsonl": "3b6c22bcbf69508dacbae8733acbf37aacfc4de1b0a14488684b239101a4c152",
+    "matched-real-answers-4080-controller-20261116/seed-20261120-mid-low/cell-2-P-kv-ladder-server.jsonl": "9ec467ac6c2d8afc86086d3888879ab8f3ec936e0248c7a182432117671166a2",
+    "matched-real-answers-4080-controller-20261116/seed-20261121-contended/cell-0-P-kv-ladder.jsonl": "df2a011ed629493d6ae3a1ed83ce152f2fbd7d015d3447369afa1abe1726bce1",
+    "matched-real-answers-4080-controller-20261116/seed-20261121-contended/cell-0-P-kv-ladder-server.jsonl": "e45cc489c040a8aa5102161fba1e8724659f607d3d947d8ca6440583a77598dc",
+    "matched-real-answers-4080-controller-20261116/seed-20261121-light/cell-0-P-kv-ladder.jsonl": "9b1aa94e8bd7e278cec054917fa37aa86f6e33343a4fadb8177b2ff0f148c119",
+    "matched-real-answers-4080-controller-20261116/seed-20261121-light/cell-0-P-kv-ladder-server.jsonl": "a66e265f7ed0d9ad8a1d84f13add62070839a9a30f5be14b6eb82f2600afd915",
+    "matched-real-answers-4080-controller-20261116/seed-20261121-mid-high/cell-3-P-kv-ladder.jsonl": "561c9a94feb230faf490497d5f4a5d74e0edd54a0cc5119a4a1d3df4d65186fa",
+    "matched-real-answers-4080-controller-20261116/seed-20261121-mid-high/cell-3-P-kv-ladder-server.jsonl": "af5e26439e6c7b2530e1e33afe06227f104e10dc5e4bafbad13acd7c858aa0f5",
+    "matched-real-answers-4080-controller-20261116/seed-20261121-mid-low/cell-1-P-kv-ladder.jsonl": "e7663df19b1159e480c03fa7ae748b77807894a0c3858d29783b4d4238d505d1",
+    "matched-real-answers-4080-controller-20261116/seed-20261121-mid-low/cell-1-P-kv-ladder-server.jsonl": "b7168614bb3b06455e4e86b6374a38eeb3aab9213bd14757723dbad1c4ce5121",
+    "matched-real-answers-4080-controller-20261116/seed-20261122-contended/cell-4-P-kv-ladder.jsonl": "1241654193475aa05c5b726d1a41d7e3cc60561e20294754437fe815ec10d6ae",
+    "matched-real-answers-4080-controller-20261116/seed-20261122-contended/cell-4-P-kv-ladder-server.jsonl": "f6ae46100689d8ce5a7848e114041fff13c8a40023c1871670ce869c03bfe2ed",
+    "matched-real-answers-4080-controller-20261116/seed-20261122-light/cell-2-P-kv-ladder.jsonl": "0c53d9ed6acafa4469a3755bd2972ca0370f6bc64168b143d02b88b66975025e",
+    "matched-real-answers-4080-controller-20261116/seed-20261122-light/cell-2-P-kv-ladder-server.jsonl": "5982fbe91068573273e3a9e11100c3edb0823af88da5eacf2936bb01d0ed2dd7",
+    "matched-real-answers-4080-controller-20261116/seed-20261122-mid-high/cell-2-P-kv-ladder.jsonl": "4aa150d7cda6a95b70673d39f7e9cbd09d15dbda9fff653492c2b397e0efb732",
+    "matched-real-answers-4080-controller-20261116/seed-20261122-mid-high/cell-2-P-kv-ladder-server.jsonl": "a527df8e94fa8e6aa424e5a3daa000fe88a250fd79b5564edc26bbd937e6d015",
+    "matched-real-answers-4080-controller-20261116/seed-20261122-mid-low/cell-3-P-kv-ladder.jsonl": "2a192e7f84e1e7426dada750baf47e515c5b18c29bf38559a32db94438e6bdfd",
+    "matched-real-answers-4080-controller-20261116/seed-20261122-mid-low/cell-3-P-kv-ladder-server.jsonl": "7ec54233c3ddb8b92a34736c7150d445af124f01abb739c626821260b2d83473"
+  },
+  "target_jobs": 600,
+  "server_samples": 5798,
+  "largest_gap_between_server_samples_s": 1.0522505590051878,
+  "by_reason": {
+    "fallback": {
+      "jobs": 46,
+      "missing_signal": 0,
+      "age_s_max": 1.006421740996302,
+      "kv_min": 0.8001725129384704,
+      "kv_max": 1.0
+    },
+    "rule 0": {
+      "jobs": 357,
+      "missing_signal": 0,
+      "age_s_max": 1.0123840249871137,
+      "kv_min": 0.0986198964922369,
+      "kv_max": 0.49769982748706154
+    },
+    "rule 1": {
+      "jobs": 197,
+      "missing_signal": 0,
+      "age_s_max": 1.0110918860009406,
+      "kv_min": 0.5017251293847038,
+      "kv_max": 0.7978723404255319
+    }
+  }
+}
