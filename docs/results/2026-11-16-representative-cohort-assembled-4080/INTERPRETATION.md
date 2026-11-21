@@ -79,7 +79,7 @@ Per seed (preemptions; background requests within the loose target out of the bl
 
 ## Cautions
 
-- Blocks from four run directories, assembled after the fact. Each block is a complete seed at one rate with its own control, so nothing within a block mixes machine states, but the blocks ran on different days and the server process was restarted between the original run and the reruns.
+- Blocks from four run directories, assembled after the fact. Each block is a complete seed at one rate with its own control, so nothing within a block mixes machine states, but the blocks ran at different times. The server log shows one startup, so they shared one server process.
 - GPU power is unrecorded in four cells (`nvidia-smi` timed out under load); their controls are the check.
 - Per-GPU-second values are comparable between actions at one rate only.
 - Synthetic background; evenly spaced target jobs; WSL2 laptop at its thermal limit; one model and one dataset.
