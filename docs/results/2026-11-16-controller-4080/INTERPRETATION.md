@@ -2,6 +2,8 @@
 
 This file is written by hand. Every number is copied from the generated [README.md](README.md) in this folder or from `controller-vs-mixture.json`, both built only from logged runs. Hardware: HP Omen laptop, RTX 4080 Laptop GPU (12 GB), WSL2, vLLM 0.32.0, Qwen3-1.7B in BF16. Do not pool with another machine.
 
+**Correction, 2026-11-20.** An earlier version of this file said the 46 `(1,0)` choices of the controller came from stale metrics. That was wrong. In the policy code the label `fallback` means a fresh signal matched no threshold rule; a missing or stale signal is labelled `no fresh signal`, and no job has that label. The raw job logs show a reading at most 1.01 s old for all 46 jobs, with KV usage from 0.800 to 1.0, so these were ordinary decisions of the ladder. No result count changes. The per-job signals are in `controller/policy-signals.jsonl`, summarised with the hashes of the raw logs in `controller/policy-signals-summary.json`.
+
 ## What was run
 
 - The same 50 questions (ten per MATH level) as the [frozen-rate comparison](../2026-11-15-baseline-4080/INTERPRETATION.md) and the [load ladder](../2026-11-15-load-ladder-4080/INTERPRETATION.md), on three new seeds (20261120 to 20261122), at four background rates: 1.231, 1.724, 2.094 and 2.463 req/s.
@@ -20,7 +22,7 @@ Actions chosen, out of 150 jobs per rate:
 | 2.094 | 62 | 83 | 5 |
 | 2.463 | 10 | 99 | 41 |
 
-It moved from depth to width to the single answer as load rose, which is what the ladder said it should do. The five and 41 `(1,0)` choices at the two upper rates were all fallbacks (no fresh KV reading), not threshold decisions. The mixture chose 14 `(1,0)`, 87 `(1,2048)` and 49 `(4,0)` at every rate.
+It moved from depth to width to the single answer as load rose, which is what the ladder said it should do. The five and 41 `(1,0)` choices at the two upper rates were jobs that arrived with a fresh KV reading at or above 0.8. The mixture chose 14 `(1,0)`, 87 `(1,2048)` and 49 `(4,0)` at every rate.
 
 ## Result 1: the controller matches the best fixed action at every rate, and never beats it
 
@@ -75,7 +77,7 @@ At the three lower rates no cell of any action or policy had a preemption, excep
 ## Checks on the runs themselves
 
 - **GPU power.** `nvidia-smi` timed out in 13 of 60 cells of run 1 and 18 of 24 cells of run 2, so their power is not recorded; the recorded cells averaged 102 to 115 W, the normal range. The background-only controls give the same answer at every rate and in both runs: p95 14.7 / 15.6 / 15.2 s and 14.7 / 15.4 / 15.4 s (light), 17.1 / 18.6 / 17.8 s and 17.2 / 18.6 / 18.4 s (1.724), 19.7 / 21.9 / 20.9 s and 20.8 / 21.8 / 20.8 s (2.094), 22.4 / 28.0 / 24.7 s and 22.2 / 27.8 / 25.1 s (2.463) across the three seeds, in line with the normal-power cells of the earlier runs. Seed 20261121 ran a little slower at the top rate in both runs.
-- **Fallbacks.** 46 of 600 controller jobs found no KV reading under 5 s old and fell back to `(1,0)`, all at the two upper rates. The metrics scrape slows down when the server is loaded. A production controller would keep the last reading instead.
+- **Signal freshness.** All 600 controller jobs had a KV reading at most 1.02 s old, and the largest gap between server samples in the controller cells was 1.052 s. The 46 fallbacks to `(1,0)`, all at the two upper rates, are jobs that arrived with KV usage at or above 0.8.
 - **Thresholds.** The freeze used the six reduced-power ladder cells of seed 20261118 among its inputs, which makes the depth threshold (0.5) more cautious than normal-power data alone would give.
 - **The two runs were not interleaved.** Run 2 ran after run 1 on the same machine; the control cells above are the check that the machine behaved the same.
 

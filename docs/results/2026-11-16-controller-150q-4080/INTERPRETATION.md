@@ -2,6 +2,8 @@
 
 This file is written by hand. Every number is copied from the generated [README.md](README.md) in this folder or from `fixed-vs-policies.json`, both built only from logged runs. Hardware: HP Omen laptop, RTX 4080 Laptop GPU (12 GB), WSL2, vLLM 0.32.0, Qwen3-1.7B in BF16. Do not pool with another machine.
 
+**Correction, 2026-11-20.** An earlier version of this file said the 72 `(1,0)` choices at the contended rate came from stale metrics. That was wrong. In the policy code the label `fallback` means a fresh signal matched no threshold rule; a missing or stale signal is labelled `no fresh signal`, and no job has that label. The raw job logs show a reading at most 1.01 s old for all 72 jobs, with KV usage from 0.806 to 1.0, so these were ordinary decisions of the ladder. No result count changes. The per-job signals are in `policies/policy-signals.jsonl`, summarised with the hashes of the raw logs in `policies/policy-signals-summary.json`.
+
 ## What was run
 
 - The 150-question cohort of the [representative-cohort run](../2026-11-16-representative-cohort-4080/INTERPRETATION.md) (count per MATH level proportional to MATH-500), one seed (20261116), both frozen rates (light 1.231 req/s, contended 2.463 req/s), window 1,218 s per cell.
@@ -16,9 +18,9 @@ This file is written by hand. Every number is copied from the generated [README.
 | Rate | `(1,2048)` | `(4,0)` | `(1,0)` |
 |---|---|---|---|
 | light | 150 (rule 0) | 0 | 0 |
-| contended | 4 (rule 0) | 74 (rule 1) | 72 (all fallbacks: no KV reading under 5 s old) |
+| contended | 4 (rule 0) | 74 (rule 1) | 72 (fallback: fresh KV reading of 0.806 to 1.0) |
 
-At the contended rate the "otherwise `(1,0)`" rule never fired on a fresh reading. Every `(1,0)` came from the fallback, because the metrics scrape goes stale exactly when the server is busiest. The staleness of the metrics endpoint acted as the load signal. That worked here, but it is not the mechanism the policy was written for.
+At the contended rate the controller used all three rungs of the ladder from fresh readings. Every reading was at most 1.01 s old, and no job lacked a signal.
 
 ## Result 1: within noise of the best fixed action at both rates, not better
 
@@ -57,7 +59,7 @@ The mixture kept sending 57% of jobs to depth at the contended rate; 1 of its 85
 
 On the 50-question cohort `(4,0)` stayed affordable at 2.463 req/s (0.813 correct within loose, 36 to 125 preemptions per cell). On this cohort, same rate and same machine, fixed `(4,0)` delivered 0.400 with 5,314 preemptions, a background p95 of 72.5 s (control 26.7 s) and only 616 of 3,031 background requests within the loose target. Two things changed: the window is three times longer (1,218 s against 406 s), so queues have time to build, and the proportional cohort has more level-4 and level-5 questions with longer answers.
 
-The consequence for the controller: its width threshold (KV usage below 0.8) was frozen on 50-question data where width was affordable, and it admitted width 74 times here. 48 of those 74 jobs met the loose target, better than fixed width (60 of 150) because they were interleaved with cheaper fallback jobs, but 26 missed. A threshold frozen on one cohort does not transfer to another on the same machine; the controller needs a signal that reflects the current cost of width, not a fixed KV level.
+The consequence for the controller: its width threshold (KV usage below 0.8) was frozen on 50-question data where width was affordable, and it admitted width 74 times here. 48 of those 74 jobs were correct within the loose target and 26 were not. Fixed width reached 60 of 150, but the server load differs between the two cells, so this is not a like-for-like comparison of width jobs. A threshold frozen on one cohort does not transfer to another on the same machine; the controller needs a signal that reflects the current cost of width, not a fixed KV level.
 
 ## Cost to everyone else
 
@@ -78,7 +80,7 @@ The controller loaded the server less than width, depth or the mixture, and more
 - **GPU power** was recorded in 3 of 6 policy cells (103 to 107 W, normal) and all 8 fixed cells (102 to 115 W); `nvidia-smi` timed out in the other three. The controls agree between the two runs (15.9 and 16.0 s light, 26.2 and 26.7 s contended), so the machine was in the same state.
 - **The two runs were not interleaved.** The policies ran about three hours after the fixed actions, on the same server process. The controls above are the check.
 - **One seed.** Intervals resample questions only. The seed-to-seed variation seen on the 50-question cohort (for example 0 to 1,382 preemptions for `(4,0)` at this rate) is not bounded here.
-- **Fallbacks.** 72 of 150 controller jobs at the contended rate had no fresh KV reading, against 46 of 600 in the 50-question run. The longer window keeps the server saturated for longer, and the scrape is slow while it is.
+- **Signal freshness.** All 300 controller jobs of this run had a KV reading at most 1.01 s old. The largest gap between server samples in the two controller cells was 1.015 s. The 72 fallbacks at the contended rate are jobs that arrived with KV usage at or above 0.8.
 
 ## What this does and does not establish
 
@@ -92,7 +94,7 @@ Not established:
 
 - Any gain over the best fixed action. At the light rate the controller is 1.3 to 4.0 points above the fixed actions with intervals that include zero; at the contended rate it is 2.7 points below `(1,0)`.
 - That extra compute raises accuracy on this seed. The accuracy differences are within noise; the three-seed assembled run is needed for that.
-- That the controller's threshold decisions, rather than its fallbacks, are what kept it on time at the contended rate.
+- That the depth and width rungs of the ladder add value at the contended rate. There the controller is within noise of fixed `(1,0)` and costs the background more.
 
 ## Cautions
 
