@@ -59,7 +59,7 @@ Not established:
 
 ## Suggested next steps (for discussion)
 
-1. Decide whether "width versus depth under load" is the paper core, given that `(1,0)` dominates here. The flip is real on this machine but sits between two actions that are both dominated.
+1. Decide whether "width versus depth under load" is the main comparison to develop, given that `(1,0)` dominates here. The flip is real on this machine but sits between two actions that are both dominated.
 2. Repeat on questions where extra compute changes the answer (for example the questions the 500-question labels mark as wrong at `(1,0)` and right at `(1,2048)` or `(4,0)`, chosen from labels and not from this run), so that accuracy differences are detectable.
 3. Add a rung between the light and contended rates to locate where `(1,2048)` stops being affordable.
 4. Rerun the frozen protocol on the cluster for latency numbers free of WSL2 noise.
