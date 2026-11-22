@@ -1,0 +1,11 @@
+{
+  "derived_from": "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-controller-20261116 (policy kv-ladder, seeds 20261120-20261122, rates light, mid-low, mid-high, contended)",
+  "chosen_counts": {
+    "1:0": 46,
+    "1:2048": 357,
+    "4:0": 197
+  },
+  "jobs": 600,
+  "note": "load-blind mixture with the shares the kv-ladder controller used over all four rates pooled; the same shares are applied at every rate",
+  "created": "2026-11-16"
+}

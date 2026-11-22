@@ -14,6 +14,10 @@ The logic is in `matched_real_answers.py`. It reuses the trace generator, cell o
 - **Other background rates.** `run --rates LABEL=RPS ...` replaces the frozen pair with the named rates, for example two rates between them, to locate where an action stops being affordable. The target schedule still follows the calibrated contended rate, so it is identical to the schedule of a run at the frozen pair. Rates given this way are chosen by hand and must be reported as such.
 - All traces and cell orders are written before the first cell runs. The server must be idle before and after every cell. `--deadline-epoch` stops the run before a block that could not finish; only complete blocks are scored.
 
+## Per-job policies
+
+`run --policies FILE` adds one cell per policy to every block; with an empty `--actions` the block holds the control and the policies only, which is how a baseline mixture is run on the seeds of an earlier controller run. A policy sets the action of each target job on arrival, from server load or from fixed shares. See [load-adaptive controller](load-adaptive-controller.md).
+
 ## Metrics (`score`)
 
 Scoring is offline and requires `math_verify`, the grader used for the labels.
@@ -55,7 +59,7 @@ A block that ran while the machine was in a different state (for example at redu
 - One machine. Intervals come from resampling questions; with three seeds they say little about run-to-run variation of the server itself.
 - The background is synthetic, so the comparison says how an action behaves next to calibrated traffic, not next to other users' real answers.
 - The GPU-second attribution is by generated tokens. Two actions with the same token count but different batch shapes are charged the same.
-- Fixed actions only. A result here cannot be described as a routing gain.
+- Fixed actions and frozen per-job policies only; no learned router. A policy result is a gain over a fixed action only where the paired interval against that action excludes zero.
 - Target jobs are spaced evenly, not Poisson, so target-on-target bursts are not exercised.
 
 ## Tests

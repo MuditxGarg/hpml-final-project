@@ -20,6 +20,7 @@ SERIES = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100']
 CONTROL = '#8a897f'
 # Colour follows the action, whichever actions a figure happens to show.
 COLOR = {(1, 0): SERIES[0], (1, 2048): SERIES[1], (4, 0): SERIES[2], (4, 2048): SERIES[3]}
+POLICY_SERIES = ['#6d4fd3', '#c2318f', '#0f8b9c']  # per-job policies, in order of appearance in a run
 
 
 def fmt(value, digits=1):
@@ -31,8 +32,33 @@ def table(header, rows):
     return '\n'.join(lines + ['| ' + ' | '.join(str(c) for c in row) + ' |' for row in rows])
 
 
-def action_name(n, budget):
-    return 'control' if n == 0 else f'({n},{budget})'
+def row_key(entry):
+    """What a scored row stands for: a policy by name, otherwise the fixed action (N, B)."""
+    return entry.get('policy') or (entry['n'], entry['budget'])
+
+
+def action_name(action, budget=None):
+    """'(N,B)' for a fixed action, 'control' for the background-only cell, a policy by its name."""
+    if budget is not None:
+        action = (action, budget)
+    if isinstance(action, str):
+        return action
+    n, b = action
+    return 'control' if n == 0 else f'({n},{b})'
+
+
+def colours(keys):
+    """Colour follows the action or policy, whichever a figure happens to show."""
+    policies = [k for k in keys if isinstance(k, str)]
+    return {**COLOR, **{name: POLICY_SERIES[i % len(POLICY_SERIES)] for i, name in enumerate(policies)}}
+
+
+def chosen(entry):
+    return '-' if not entry.get('chosen') else ', '.join(f'{a} {n}' for a, n in sorted(entry['chosen'].items()))
+
+
+def sort_key(k):
+    return (isinstance(k, str), k if isinstance(k, str) else tuple(k))
 
 
 def interval(entry, digits=3):
@@ -113,15 +139,15 @@ def profile_section(directory, sources):
 def matched_section(directory, sources):
     summary = sources.load(Path(directory) / 'summary.json')
     manifest = sources.load(Path(directory) / 'manifest.json')
-    actions = [[a['rate'], action_name(a['n'], a['budget']), a['jobs'], len(a['seeds']), a['statuses']['completed'], a['statuses']['no_answer'],
+    actions = [[a['rate'], action_name(row_key(a)), chosen(a), a['jobs'], len(a['seeds']), a['statuses']['completed'], a['statuses']['no_answer'],
                 sum(a['statuses'][s] for s in ('timeout', 'error', 'censored', 'drop')), interval(a['accuracy']),
                 interval(a['correct_within_tight']), interval(a['correct_within_loose']), fmt(a['target_gpu_s'], 0),
                 interval(a['correct_within_tight_per_gpu_s'], 4), interval(a['correct_within_loose_per_gpu_s'], 4)] for a in summary['actions']]
-    cells = [[c['block'], action_name(c['n'], c['budget']), c['target_jobs'], c['target_correct'], c['target_correct_tight'], c['target_correct_loose'],
+    cells = [[c['block'], action_name(row_key(c)), c['target_jobs'], c['target_correct'], c['target_correct_tight'], c['target_correct_loose'],
               fmt(c['target_latency_p95_s']), c['background_jobs'], c['background_within_tight'], c['background_within_loose'], fmt(c['background_p95_s']),
               fmt(c['waiting_max'], 0), fmt(c['kv_cache_max'], 2), fmt(c['preemptions'], 0), fmt(c.get('gpu_power_mean_w')),
               fmt(c['goodput_tight_per_gpu_s'], 3), fmt(c['goodput_loose_per_gpu_s'], 3)] for c in summary['cells']]
-    gaps = [[d['rate'], d['metric'], action_name(*d['action']), action_name(*d['minus']), d['questions'],
+    gaps = [[d['rate'], d['metric'], action_name(d['action']), action_name(d['minus']), d['questions'],
              '-' if d['value'] is None else f'{d["value"]:+.4f}', '-' if not d['ci95'] else f'[{d["ci95"][0]:+.4f}, {d["ci95"][1]:+.4f}]',
              '-' if not d['ci95'] else 'no' if d['ci95'][0] <= 0 <= d['ci95'][1] else 'yes'] for d in summary['paired_differences']]
     targets = summary['latency_targets_s']
@@ -130,7 +156,7 @@ def matched_section(directory, sources):
             f'blocks scored: {len(summary["blocks_scored"])}, skipped: {len(summary["blocks_skipped"])}. '
             f'Latency targets: tight {fmt(targets["tight"], 2)} s, loose {fmt(targets["loose"], 2)} s. '
             'Values are followed by 95% bootstrap intervals over questions.', '',
-            table(['Rate', 'Action', 'Jobs', 'Seeds', 'Completed', 'No answer', 'Failed', 'Accuracy', 'Correct within tight', 'Correct within loose',
+            table(['Rate', 'Action', 'Chosen actions', 'Jobs', 'Seeds', 'Completed', 'No answer', 'Failed', 'Accuracy', 'Correct within tight', 'Correct within loose',
                    'Target GPU-s', 'Correct within tight per GPU-s', 'Correct within loose per GPU-s'], actions), '',
             'Per cell:', '',
             table(['Block', 'Action', 'Target jobs', 'Correct', 'Correct within tight', 'Correct within loose', 'Target p95 (s)', 'Background requests',
@@ -240,7 +266,8 @@ def make_figures(out, calibrations, profile, matched):
 
     for index, run in enumerate(matched):
         actions = run['summary']['actions']
-        names = sorted({(a['n'], a['budget']) for a in actions})
+        names = sorted({row_key(a) for a in actions}, key=sort_key)
+        colour = colours(names)
         labels = sorted({a['rate'] for a in actions}, key=lambda r: (run['rates'].get(r, {'light': 0, 'contended': 1}.get(r, 2)), r))
         fig, axes = plt.subplots(1, 2, figsize=(10, 3.8))
         for ax, key, title, unit in ((axes[0], 'correct_within_loose', 'Correct answers within the loose target', 'Fraction of target jobs'),
@@ -248,11 +275,11 @@ def make_figures(out, calibrations, profile, matched):
             width = .8 / len(names)
             for i, a in enumerate(names):
                 for j, label in enumerate(labels):
-                    entry = next((e for e in actions if e['rate'] == label and (e['n'], e['budget']) == a), None)
+                    entry = next((e for e in actions if e['rate'] == label and row_key(e) == a), None)
                     if entry is None or entry[key]['value'] is None:
                         continue
                     x, value, ci = j + (i - (len(names) - 1) / 2) * width, entry[key]['value'], entry[key]['ci95']
-                    ax.bar(x, value, width=width * .88, color=COLOR.get(a, CONTROL), label=action_name(*a) if j == 0 else None)
+                    ax.bar(x, value, width=width * .88, color=colour.get(a, CONTROL), label=action_name(a) if j == 0 else None)
                     if ci:
                         ax.plot([x, x], ci, color=INK, linewidth=1.2)
             ax.set_xticks(range(len(labels)), [f'{label} rate' for label in labels])
@@ -266,16 +293,17 @@ def make_figures(out, calibrations, profile, matched):
     for run in matched:
         for a in run['summary']['actions']:
             if a['rate'] in run['rates'] and a['correct_within_loose']['value'] is not None:
-                points.setdefault((a['n'], a['budget']), []).append((run['rates'][a['rate']], a['correct_within_loose']))
+                points.setdefault(row_key(a), []).append((run['rates'][a['rate']], a['correct_within_loose']))
     if len({rate for series in points.values() for rate, _ in series}) >= 3:
         fig, ax = plt.subplots(figsize=(6.4, 3.8))
-        for a, series in sorted(points.items()):
+        colour = colours(sorted(points, key=sort_key))
+        for a, series in sorted(points.items(), key=lambda item: sort_key(item[0])):
             series.sort(key=lambda item: item[0])
             xs = [rate for rate, _ in series]
-            ax.plot(xs, [v['value'] for _, v in series], color=COLOR.get(a, CONTROL), linewidth=2, marker='o', markersize=5, label=action_name(*a))
+            ax.plot(xs, [v['value'] for _, v in series], color=colour.get(a, CONTROL), linewidth=2, marker='o', markersize=5, label=action_name(a))
             for rate, v in series:
                 if v['ci95']:
-                    ax.plot([rate, rate], v['ci95'], color=COLOR.get(a, CONTROL), linewidth=1, alpha=.55)
+                    ax.plot([rate, rate], v['ci95'], color=colour.get(a, CONTROL), linewidth=1, alpha=.55)
         ax.set_ylim(0, 1)
         ax.margins(x=.12)
         style(ax, 'Correct answers within the loose target against background load', 'Background rate (req/s)', 'Fraction of target jobs')
@@ -325,11 +353,19 @@ def main(argv=None):
         measured.append('- **Profiling pass:** a background-only control and each action at the two frozen rates on one matched synthetic trace per rate; server gauges, counters and histograms, GPU samples, and client timing of streamed target requests.')
     if matched:
         measured.append('- **Matched real-answer comparison:** real, graded answers to a fixed question cohort for each fixed action, next to matched synthetic background traffic at the background rates of each run.')
+    policies = sorted({a['policy'] for run in matched for a in run['summary']['actions'] if a.get('policy')})
+    if policies:
+        measured.append('- **Per-job policies** (' + ', '.join(f'`{p}`' for p in policies) + '): an action chosen per target job by a rule frozen before the run, '
+                        'from a server signal read at arrival or from a fixed hash of the job. The chosen actions are listed per entry.')
+        not_routed = ('- No learned router. A policy is a gain over a fixed action only where a paired interval against that action excludes zero; '
+                      'fixed-action cells keep one action for the whole cell.')
+    else:
+        not_routed = '- No router or controller. Every action is fixed for a whole cell, so nothing here is a routing gain.'
     lines = [f'# {args.title}', '', f'Hardware: {args.hardware}. Results from other machines must not be pooled with these.', '',
              'Generated by `16_make_baseline_report.py` from the logged run directories listed in `sources.json`. Every number below is formatted from a logged value; none is typed by hand.', '',
              '## What was measured', '', *measured, '',
              '## What was not measured', '',
-             '- No router or controller. Every action is fixed for a whole cell, so nothing here is a routing gain.',
+             not_routed,
              '- Calibration and profiling use replayed lengths and score no answers.',
              '- One machine and one server configuration. One pass per calibration rung and per profiling cell.',
              '- Failures are kept in every denominator and listed by status; nothing was dropped.', '',

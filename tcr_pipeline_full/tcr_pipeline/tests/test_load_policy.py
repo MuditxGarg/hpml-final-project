@@ -1,0 +1,178 @@
+import json
+import types
+
+import pytest
+
+import load_policy as lp
+import matched_real_answers as m
+from sustained_calibration import KV, RUNNING, WAITING
+from test_matched_real_answers import questions
+from test_real_answer_validation import Tokenizer
+from test_sustained_calibration import fake_server  # noqa: F401  (pytest fixture)
+
+LADDER = dict(kind='threshold', name='kv-ladder', fallback='1:0',
+              rules=[dict(action='1:2048', kv_below=.5, waiting_at_most=0), dict(action='4:0', kv_below=.8)])
+
+
+def signal(kv, waiting=0, age=.5):
+    return dict(kv=kv, waiting=waiting, running=10, age_s=age)
+
+
+def test_threshold_takes_the_first_rule_that_holds_and_falls_back_without_a_signal():
+    policy = lp.Threshold(LADDER)
+    assert policy.choose(signal(.3), 1, 'q') == ((1, 2048), 'rule 0')
+    assert policy.choose(signal(.3, waiting=2), 1, 'q') == ((4, 0), 'rule 1')  # a queue rules out depth
+    assert policy.choose(signal(.5), 1, 'q') == ((4, 0), 'rule 1')  # limits are strict
+    assert policy.choose(signal(.9), 1, 'q') == ((1, 0), 'fallback')
+    assert policy.choose(None, 1, 'q') == ((1, 0), 'no fresh signal')
+    assert policy.choose(signal(.1, age=9), 1, 'q') == ((1, 0), 'no fresh signal')
+    with pytest.raises(ValueError):
+        lp.Threshold(dict(LADDER, rules=[dict(action='1:2048', gpu_below=1)]))
+    with pytest.raises(ValueError):
+        lp.Threshold(dict(LADDER, rules=[dict(action='1:2048')]))
+
+
+def test_signal_is_the_newest_successful_sample():
+    samples = [dict(at_s=1., metrics={KV[0]: .2, WAITING: 0., RUNNING: 3.}), dict(at_s=2., metrics={KV[1]: .6, WAITING: 4., RUNNING: 9.}),
+               dict(at_s=3., error='timeout')]
+    assert lp.read_signal(samples, 3.5) == dict(kv=.6, waiting=4., running=9., age_s=1.5)
+    assert lp.read_signal(samples[2:], 3.5) is None
+
+
+def test_mixture_is_load_blind_reproducible_and_close_to_its_shares():
+    mix = lp.Mixture(dict(kind='mixture', name='mix', shares={'1:0': .25, '1:2048': .75}))
+    picks = [mix.choose(signal(i % 2), 7, f'q{i}')[0] for i in range(2000)]
+    assert picks == [mix.choose(None, 7, f'q{i}')[0] for i in range(2000)]
+    assert picks != [mix.choose(None, 8, f'q{i}')[0] for i in range(2000)]
+    assert .72 < picks.count((1, 2048)) / 2000 < .78 and set(picks) == {(1, 0), (1, 2048)}
+    with pytest.raises(ValueError):
+        lp.Mixture(dict(name='bad', shares={'1:0': .5}))
+
+
+def test_policy_names_must_be_distinct(tmp_path):
+    path = tmp_path / 'p.json'
+    path.write_text(json.dumps([LADDER, LADDER]))
+    with pytest.raises(ValueError):
+        lp.load_policies(path)
+
+
+def test_policy_cells_run_and_score_against_fake_server(fake_server, tmp_path, monkeypatch):  # noqa: F811
+    monkeypatch.setattr(m, 'load_tokenizer', lambda: Tokenizer())
+    cohort = questions()
+    policies = [dict(kind='threshold', name='always-deep', fallback='1:0', rules=[dict(action='2:400', kv_below=2)]),
+                dict(kind='threshold', name='never', fallback='1:0', rules=[dict(action='2:400', kv_below=-1)]),
+                dict(kind='mixture', name='mix', shares={'1:0': .5, '2:400': .5})]
+    files = dict(plan=dict(questions=cohort), prompts=cohort + [dict(id='b0', thinking='bg', nothinking='bg')],
+                 lengths={'200': [200]}, hardware={'device': 'fake CPU HTTP server'}, policies=policies,
+                 calibration=dict(status='complete', reference_budget=200, latency_targets_s=[.4, 8.],
+                                  light_rate_rps=3., contended_rate_rps=10.),
+                 gold={q['id']: '1' for q in cohort})
+    for name, value in files.items():
+        (tmp_path / f'{name}.json').write_text(json.dumps(value))
+    out = tmp_path / 'run'
+    argv = ['run', '--url', fake_server, '--model', 'fake', '--out', str(out), '--no-gpu', '--seeds', '5',
+            '--actions', '--rates', 'mid=6', '--target-fraction', '.25', '--warmup', '.5', '--timeout', '30',
+            '--idle-timeout', '30', '--idle-stable', '.1', '--metrics-interval', '.05',
+            '--hardware-json', str(tmp_path / 'hardware.json')]
+    for name in ('plan', 'calibration', 'lengths', 'prompts', 'policies'):
+        argv += ['--' + name, str(tmp_path / f'{name}.json')]
+    m.main(argv)
+
+    manifest = json.loads((out / 'manifest.json').read_text())
+    assert manifest['status'] == 'complete' and manifest['policies'] == policies
+    order = json.loads((out / 'seed-5-mid' / 'order.json').read_text())
+    assert sorted(map(str, order)) == sorted(map(str, [[0, 0], 'always-deep', 'never', 'mix']))  # no fixed action: control and policies only
+    cells = json.loads((out / 'seed-5-mid' / 'cells.json').read_text())
+    deep = next(c for c in cells if c['policy'] == 'always-deep')
+    assert deep['n'] is None and deep['cell'].endswith('P-always-deep')
+    rows = [json.loads(line) for line in (out / 'seed-5-mid' / f'{deep["cell"]}.jsonl').read_text().splitlines()]
+    jobs = [r for r in rows if r['stream'] == 'target']
+    assert len(jobs) == 5 and all((r['n'], r['budget'], r['policy_reason']) == (2, 400, 'rule 0') for r in jobs)
+    assert all(0 <= r['policy_signal']['kv'] <= 1 and r['policy_signal']['age_s'] < 1 for r in jobs)
+    assert all('policy' not in r for r in rows if r['stream'] == 'background')
+
+    m.score(types.SimpleNamespace(out=str(out), gold=str(tmp_path / 'gold.json'), draws=50), verifier=lambda gold, pred: gold == pred)
+    summary = json.loads((out / 'summary.json').read_text())
+    by_name = {a['policy'] or (a['n'], a['budget']): a for a in summary['actions']}
+    assert list(by_name) == ['always-deep', 'mix', 'never']  # policies by name
+    assert by_name['always-deep']['chosen'] == {'2:400': 5} and by_name['never']['chosen'] == {'1:0': 5}
+    assert by_name['never']['reasons'] == {'fallback': 5} and sum(by_name['mix']['chosen'].values()) == 5
+    assert all(a['jobs'] == 5 and a['accuracy']['value'] == 1 for a in summary['actions'])
+    assert by_name['always-deep']['target_gpu_s'] > by_name['never']['target_gpu_s']
+    names = {(str(d['action']), str(d['minus'])) for d in summary['paired_differences']}
+    assert ('always-deep', 'mix') in names and ('always-deep', 'never') in names and len(names) == 3
+    without_policies = [a for a in argv if a != '--policies' and not a.endswith('policies.json')]
+    without_policies[without_policies.index('--out') + 1] = str(tmp_path / 'none')
+    with pytest.raises(SystemExit, match='nothing to run'):
+        m.main(without_policies)
+    assert not (tmp_path / 'none').exists()
+    assert 'policies' in summary['caveat']
+
+
+def test_freeze_threshold_stops_at_the_first_late_or_thin_bin():
+    row = lambda action, start, jobs, rate: dict(action=action, kv_from=start, kv_to=round(start + .1, 6), jobs=jobs, on_time_rate=rate)
+    table = [row('1:2048', 0., 3, 1.), row('1:2048', .1, 30, 1.), row('1:2048', .2, 40, .95), row('1:2048', .3, 40, .6), row('1:2048', .4, 40, 1.),
+             row('4:0', .1, 30, 1.), row('4:0', .2, 5, 1.), row('4:0', .3, 50, 1.),
+             row('8:0', .1, 30, .5), row('9:0', .1, 30, 1.), row('9:0', .3, 30, 1.)]
+    assert lp.freeze_threshold(table, '1:2048', .9, 20) == .3  # the thin lowest bin is passed, the late bin stops it
+    assert lp.freeze_threshold(table, '4:0', .9, 20) == .2  # too few jobs to judge
+    assert lp.freeze_threshold(table, '8:0', .9, 20) == 0 and lp.freeze_threshold(table, '2:0', .9, 20) == 0
+    assert lp.freeze_threshold(table, '9:0', .9, 20) == .2  # a gap in the bins is not evidence
+
+
+def test_freeze_reads_runs_and_writes_a_valid_policy(tmp_path):
+    run = tmp_path / 'run'
+    (run / 'seed-3-light').mkdir(parents=True)
+    (run / 'manifest.json').write_text(json.dumps(dict(completed=['seed-3-light'], latency_targets_s=[5, 10])))
+    cells = [dict(cell='cell-0-N1-B2048', n=1, budget=2048, control=False, seed=3), dict(cell='cell-1-N0-B0', n=0, budget=0, control=True, seed=3),
+             dict(cell='cell-2-P-x', n=None, budget=None, control=False, policy='x', seed=3)]
+    (run / 'seed-3-light' / 'cells.json').write_text(json.dumps(cells))
+    samples = [dict(at_s=float(t), metrics={KV[0]: .25 if t < 10 else .65}) for t in range(20)]
+    # Four jobs arrive at low KV usage and are on time; four arrive at high usage and are late or fail.
+    rows = [dict(stream='target', measured=True, at_s=t + .5, status='completed', latency_s=4.) for t in range(4)]
+    rows += [dict(stream='target', measured=True, at_s=t + .5, status='completed', latency_s=30.) for t in range(10, 13)]
+    rows += [dict(stream='target', measured=True, at_s=13.5, status='timeout'), dict(stream='background', measured=True, at_s=1., status='completed', latency_s=1.)]
+    for cell in cells:
+        (run / 'seed-3-light' / f'{cell["cell"]}.jsonl').write_text('\n'.join(map(json.dumps, rows)))
+        (run / 'seed-3-light' / f'{cell["cell"]}-server.jsonl').write_text('\n'.join(map(json.dumps, samples)))
+    table = lp.arrival_table([run])
+    assert [(r['action'], r['kv_from'], r['jobs'], r['on_time']) for r in table] == [('1:2048', .2, 4, 4), ('1:2048', .6, 4, 0)]
+    out = tmp_path / 'frozen'
+    lp.freeze(['--runs', str(run), '--prefer', '1:2048', '4:0', '--min-jobs', '4', '--output', str(out)])
+    specs, policies = lp.load_policies(out / 'policies.json')
+    assert specs == [dict(kind='threshold', name='kv-ladder', fallback='1:0', rules=[dict(action='1:2048', kv_below=.3)])]
+    record = json.loads((out / 'freeze.json').read_text())
+    assert record['seeds_used'] == [3] and len(record['sources']) == 1 and record['thresholds'][1] == dict(action='4:0', kv_below=0.)
+    with pytest.raises(FileExistsError):
+        lp.freeze(['--runs', str(run), '--prefer', '1:2048', '--output', str(out)])
+
+
+def test_compare_pairs_entries_of_separate_runs_on_shared_seeds(tmp_path):
+    def run(name, entries, seeds):
+        d = tmp_path / name
+        d.mkdir()
+        (d / 'summary.json').write_text(json.dumps(dict(latency_targets_s=dict(tight=1., loose=2.))))
+        rows = [dict(rate='light', n=None if ':' not in e and e else int(e.split(':')[0]) if ':' in e else None,
+                     budget=int(e.split(':')[1]) if ':' in e else None, policy=None if ':' in e else e, seed=s, question=f'q{i}',
+                     status='completed', job=1, correct=int(i % 2 == 0 or e == 'ctrl'), correct_tight=0, correct_loose=int(i % 2 == 0 or e == 'ctrl'),
+                     tokens=10, gpu_s=1.)
+                for e in entries for s in seeds for i in range(4)]
+        (d / 'scored.jsonl').write_text('\n'.join(json.dumps(r) for r in rows) + '\n')
+        return d
+    first = run('fixed', ['1:0', '4:0'], [1, 2])
+    second = run('ctrl', ['ctrl'], [1, 2])
+    third = run('other-seeds', ['mix'], [3])
+    out = tmp_path / 'comparison.json'
+    m.main(['compare', '--runs', str(first), str(second), str(third), '--output', str(out), '--draws', '50'])
+    comparison = json.loads(out.read_text())
+    assert [(e['entry'], e['run'], e['jobs']) for e in comparison['entries']] == [('1:0', 'fixed', 8), ('4:0', 'fixed', 8), ('ctrl', 'ctrl', 8), ('mix', 'other-seeds', 4)]
+    pairs = {(d['action'], d['minus']) for d in comparison['paired_differences']}
+    assert pairs == {('1:0', '4:0'), ('1:0', 'ctrl'), ('4:0', 'ctrl')}  # mix ran on other seeds and is listed, not compared
+    assert comparison['not_compared'] == [dict(rate='light', entry='1:0', seeds=[1, 2], not_compared_with=['mix']),
+                                          dict(rate='light', entry='4:0', seeds=[1, 2], not_compared_with=['mix']),
+                                          dict(rate='light', entry='ctrl', seeds=[1, 2], not_compared_with=['mix']),
+                                          dict(rate='light', entry='mix', seeds=[3], not_compared_with=['1:0', '4:0', 'ctrl'])]
+    gap = next(d for d in comparison['paired_differences'] if d['metric'] == 'correct_within_loose' and (d['action'], d['minus']) == ('1:0', 'ctrl'))
+    assert gap['value'] == -.5 and gap['questions'] == 4 and gap['ci95'][0] <= -.5 <= gap['ci95'][1]
+    with pytest.raises(SystemExit, match='more than one run'):
+        m.main(['compare', '--runs', str(first), str(first), '--output', str(tmp_path / 'x.json')])
