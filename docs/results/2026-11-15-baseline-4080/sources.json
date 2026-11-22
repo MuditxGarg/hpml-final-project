@@ -1,0 +1,19 @@
+{
+  "files": {
+    "/root/hpml-final-project/evaluation-results/sustained-calibration-4080-20261115-seed42/calibration.json": "5cfa588aa0dbc8768649bc2e101d24502d87995c02ee719aa8bef800b9944e2e",
+    "/root/hpml-final-project/evaluation-results/sustained-calibration-4080-20261115-seed42/manifest.json": "283cd13220926c7ad35a3121ce7c13c88853394d29af4b426a1ea68c7b6f3bef",
+    "/root/hpml-final-project/evaluation-results/sustained-calibration-4080-20261115-seed1042/calibration.json": "c5956989db70f4192e40318f41dbb01119357da473d477be1b29b2d6336c61b8",
+    "/root/hpml-final-project/evaluation-results/sustained-calibration-4080-20261115-seed1042/manifest.json": "a3f2c493eef85112db6c4ef6bb67ae0837bb059f62e43cfe24a04b5ddb74e46a",
+    "/root/hpml-final-project/evaluation-results/profiling-4080-20261115-seed42/profile.json": "755342ca9b5087e2e1045a0754ace80c234ad0ad79271689a4529f7aeafcc677",
+    "/root/hpml-final-project/evaluation-results/profiling-4080-20261115-seed42/manifest.json": "7d9fda1b3722669c69e67d9d2707b3c55a60ff7c18c14206fa0eec0a527b71dd",
+    "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-20261115/summary.json": "7dd9ca5da38889c04850d81c5f306bd59f9bd713be38efd69b61913105622ca6",
+    "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-20261115/manifest.json": "9133d36c9aba545625fe5a4e6d710f6e7ca5b88fc28e1482267603bf5cbc4b1a"
+  },
+  "figures": [
+    "calibration-ladder.png",
+    "profile-actions.png",
+    "profile-decode-by-concurrency.png",
+    "profile-collapse-timeline.png",
+    "matched-actions.png"
+  ]
+}

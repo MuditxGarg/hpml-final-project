@@ -1,0 +1,2029 @@
+{
+  "hardware_user_supplied": {
+    "gpu_model": "NVIDIA GeForce RTX 4080 Laptop GPU (12 GB)",
+    "gpu_count": 1,
+    "driver": "617.42",
+    "host": "HP Omen laptop, i9-13900HX, WSL2 (6.18.54.1-microsoft-standard-WSL2)",
+    "vllm_version": "0.32.0",
+    "torch_version": "2.13.0+cu130",
+    "model": "Qwen/Qwen3-1.7B",
+    "model_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "tokenizer_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "server_command": "vllm serve Qwen/Qwen3-1.7B --dtype bfloat16 --max-model-len 5120 --gpu-memory-utilization 0.85 --enable-prefix-caching --max-num-seqs 128 --port 8001 --served-model-name m --seed 20261104 (VLLM_USE_FLASHINFER_SAMPLER=0)",
+    "kv_cache_tokens": 55664,
+    "prefix_caching_enabled": true,
+    "other_clients": "none",
+    "prompt_provenance": "500 MATH-500 questions, Qwen3 chat template, replay convention of colab_recover_features.py (no extra <think> suffix)",
+    "length_provenance": "tcr_results/main/lengths_v2.json, budget 1024 pool"
+  },
+  "reference_budget": 1024,
+  "latency_targets_s": [
+    20.91757719599991,
+    41.83515439199982
+  ],
+  "rates_rps": {
+    "light": 1.2314943584721938,
+    "contended": 2.4629887169443876
+  },
+  "target_rate_rps": 0.12314943584721938,
+  "cells": [
+    {
+      "cell": "light-cell-0-N1-B0",
+      "rate_label": "light",
+      "background_rate_rps": 1.2314943584721938,
+      "n": 1,
+      "budget": 0,
+      "control": false,
+      "streams": {
+        "background": {
+          "scheduled": 246,
+          "statuses": {
+            "completed": 246,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 246,
+            "mean": 14.646109965645325,
+            "p50": 14.639167918382327,
+            "p95": 16.76081180949342,
+            "max": 17.635027120675247
+          },
+          "unconditional_p95_upper_s": 16.76081180949342,
+          "attainment": {
+            "20.9176": 1.0,
+            "41.8352": 1.0
+          }
+        },
+        "target": {
+          "scheduled": 29,
+          "statuses": {
+            "completed": 29,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 29,
+            "mean": 12.037696230289548,
+            "p50": 8.514425022730407,
+            "p95": 31.845252419216123,
+            "max": 32.4160239313229
+          },
+          "unconditional_p95_upper_s": 31.845252419216123,
+          "attainment": {
+            "20.9176": 0.8275862068965517,
+            "41.8352": 1.0
+          },
+          "streamed_requests": {
+            "sent": 29,
+            "completed": 29,
+            "time_to_first_token_s": {
+              "n": 29,
+              "mean": 0.04543627048286876,
+              "p50": 0.0464427879996947,
+              "p95": 0.05453332399974897,
+              "max": 0.06656384599955345
+            },
+            "decode_ms_per_token": {
+              "n": 29,
+              "mean": 14.699598732412463,
+              "p50": 14.609046442623434,
+              "p95": 16.32555706995987,
+              "max": 16.409180748203706
+            },
+            "longest_stall_s": {
+              "n": 29,
+              "mean": 0.03311922182757403,
+              "p50": 0.026735141999779444,
+              "p95": 0.05809151799985557,
+              "max": 0.05811362700023892
+            },
+            "note": "client-side timing of completed streamed target requests only"
+          }
+        }
+      },
+      "server": {
+        "samples": 179,
+        "scrape_errors": 0,
+        "running": {
+          "mean": 21.47486033519553,
+          "max": 31.0
+        },
+        "waiting": {
+          "mean": 0.0,
+          "max": 0.0
+        },
+        "waiting_positive_fraction": 0.0,
+        "waiting_by_reason": {
+          "capacity": {
+            "mean": 0.0,
+            "max": 0.0
+          },
+          "deferred": {
+            "mean": 0.0,
+            "max": 0.0
+          }
+        },
+        "kv_cache": {
+          "mean": 0.23427706798680292,
+          "max": 0.3688901667625072
+        },
+        "counters": {
+          "preemptions": 0.0,
+          "generation_tokens": 264548.0,
+          "prompt_tokens": 33310.0,
+          "prefix_cache_queries": 33310.0,
+          "prefix_cache_hits": 11488.0,
+          "requests_finished": 262.0
+        },
+        "tokens_per_s": 1476.715957384158,
+        "histogram_means": {
+          "queue_time_s": {
+            "observations": 262.0,
+            "mean": 8.490572556100594e-06
+          },
+          "time_to_first_token_s": {
+            "observations": 274.0,
+            "mean": 0.04240967670496363
+          },
+          "prefill_time_s": {
+            "observations": 262.0,
+            "mean": 0.03155929346944816
+          },
+          "decode_time_s": {
+            "observations": 262.0,
+            "mean": 14.018215772622302
+          },
+          "inter_token_latency_s": {
+            "observations": 264274.0,
+            "mean": 0.014469293343434053
+          },
+          "e2e_latency_s": {
+            "observations": null,
+            "mean": null
+          },
+          "preemptions_per_request": {
+            "observations": 262.0,
+            "mean": 0.0
+          }
+        },
+        "decode_by_concurrency": [
+          {
+            "running_from": 0,
+            "running_to": 16,
+            "intervals": 18,
+            "inter_token_latency_ms": 12.559764421728097,
+            "tokens_per_s_per_sequence": 79.61932775347469
+          },
+          {
+            "running_from": 16,
+            "running_to": 32,
+            "intervals": 160,
+            "inter_token_latency_ms": 14.274819480394134,
+            "tokens_per_s_per_sequence": 70.05342529013821
+          }
+        ],
+        "note": "measurement window only; histogram means cover requests or tokens observed in the window, all streams together"
+      },
+      "gpu": {
+        "samples": 171,
+        "errors": 0,
+        "utilization.gpu": {
+          "mean": 97.14035087719299,
+          "max": 99.0
+        },
+        "memory.used": {
+          "mean": 10758.0,
+          "max": 10758.0
+        },
+        "power.draw": {
+          "mean": 125.64520467836257,
+          "max": 132.71
+        },
+        "temperature.gpu": {
+          "mean": 86.01754385964912,
+          "max": 87.0
+        }
+      }
+    },
+    {
+      "cell": "light-cell-1-N0-B0",
+      "rate_label": "light",
+      "background_rate_rps": 1.2314943584721938,
+      "n": 0,
+      "budget": 0,
+      "control": true,
+      "streams": {
+        "background": {
+          "scheduled": 246,
+          "statuses": {
+            "completed": 246,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 246,
+            "mean": 14.026368611311728,
+            "p50": 14.170933802030873,
+            "p95": 15.762787882306412,
+            "max": 16.27803938599598
+          },
+          "unconditional_p95_upper_s": 15.762787882306412,
+          "attainment": {
+            "20.9176": 1.0,
+            "41.8352": 1.0
+          }
+        },
+        "target": {
+          "scheduled": 0,
+          "statuses": {
+            "completed": 0,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": null,
+          "latency_s": {
+            "n": 0,
+            "mean": null,
+            "p50": null,
+            "p95": null,
+            "max": null
+          },
+          "unconditional_p95_upper_s": null,
+          "attainment": {
+            "20.9176": null,
+            "41.8352": null
+          },
+          "streamed_requests": {
+            "sent": 0,
+            "completed": 0,
+            "time_to_first_token_s": {
+              "n": 0,
+              "mean": null,
+              "p50": null,
+              "p95": null,
+              "max": null
+            },
+            "decode_ms_per_token": {
+              "n": 0,
+              "mean": null,
+              "p50": null,
+              "p95": null,
+              "max": null
+            },
+            "longest_stall_s": {
+              "n": 0,
+              "mean": null,
+              "p50": null,
+              "p95": null,
+              "max": null
+            },
+            "note": "client-side timing of completed streamed target requests only"
+          }
+        }
+      },
+      "server": {
+        "samples": 179,
+        "scrape_errors": 0,
+        "running": {
+          "mean": 18.88268156424581,
+          "max": 29.0
+        },
+        "waiting": {
+          "mean": 0.0,
+          "max": 0.0
+        },
+        "waiting_positive_fraction": 0.0,
+        "waiting_by_reason": {
+          "capacity": {
+            "mean": 0.0,
+            "max": 0.0
+          },
+          "deferred": {
+            "mean": 0.0,
+            "max": 0.0
+          }
+        },
+        "kv_cache": {
+          "mean": 0.20357008619221859,
+          "max": 0.30879815986198966
+        },
+        "counters": {
+          "preemptions": 0.0,
+          "generation_tokens": 243127.0,
+          "prompt_tokens": 29911.0,
+          "prefix_cache_queries": 29911.0,
+          "prefix_cache_hits": 10000.0,
+          "requests_finished": 236.0
+        },
+        "tokens_per_s": 1357.1924332782003,
+        "histogram_means": {
+          "queue_time_s": {
+            "observations": 236.0,
+            "mean": 8.035834772441777e-06
+          },
+          "time_to_first_token_s": {
+            "observations": 245.0,
+            "mean": 0.04132920187346789
+          },
+          "prefill_time_s": {
+            "observations": 236.0,
+            "mean": 0.030483019957647246
+          },
+          "decode_time_s": {
+            "observations": 236.0,
+            "mean": 13.791854364372508
+          },
+          "inter_token_latency_s": {
+            "observations": 242882.0,
+            "mean": 0.0138498599524042
+          },
+          "e2e_latency_s": {
+            "observations": null,
+            "mean": null
+          },
+          "preemptions_per_request": {
+            "observations": 236.0,
+            "mean": 0.0
+          }
+        },
+        "decode_by_concurrency": [
+          {
+            "running_from": 0,
+            "running_to": 16,
+            "intervals": 28,
+            "inter_token_latency_ms": 12.614340176276844,
+            "tokens_per_s_per_sequence": 79.27485591998303
+          },
+          {
+            "running_from": 16,
+            "running_to": 32,
+            "intervals": 150,
+            "inter_token_latency_ms": 13.83401342790717,
+            "tokens_per_s_per_sequence": 72.28560281593434
+          }
+        ],
+        "note": "measurement window only; histogram means cover requests or tokens observed in the window, all streams together"
+      },
+      "gpu": {
+        "samples": 172,
+        "errors": 0,
+        "utilization.gpu": {
+          "mean": 96.91279069767442,
+          "max": 98.0
+        },
+        "memory.used": {
+          "mean": 10758.0,
+          "max": 10758.0
+        },
+        "power.draw": {
+          "mean": 120.4993023255814,
+          "max": 127.69
+        },
+        "temperature.gpu": {
+          "mean": 86.01744186046511,
+          "max": 87.0
+        }
+      }
+    },
+    {
+      "cell": "light-cell-2-N4-B0",
+      "rate_label": "light",
+      "background_rate_rps": 1.2314943584721938,
+      "n": 4,
+      "budget": 0,
+      "control": false,
+      "streams": {
+        "background": {
+          "scheduled": 246,
+          "statuses": {
+            "completed": 246,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 246,
+            "mean": 16.897178385637705,
+            "p50": 16.719782852083824,
+            "p95": 20.54107785382726,
+            "max": 21.474834827675792
+          },
+          "unconditional_p95_upper_s": 20.54107785382726,
+          "attainment": {
+            "20.9176": 0.9878048780487805,
+            "41.8352": 1.0
+          }
+        },
+        "target": {
+          "scheduled": 29,
+          "statuses": {
+            "completed": 29,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 29,
+            "mean": 23.56081968001414,
+            "p50": 22.10156086940242,
+            "p95": 39.446788048324024,
+            "max": 39.913610170686965
+          },
+          "unconditional_p95_upper_s": 39.446788048324024,
+          "attainment": {
+            "20.9176": 0.41379310344827586,
+            "41.8352": 1.0
+          },
+          "streamed_requests": {
+            "sent": 116,
+            "completed": 116,
+            "time_to_first_token_s": {
+              "n": 116,
+              "mean": 0.05622008870684646,
+              "p50": 0.05727821000073163,
+              "p95": 0.06941486699906818,
+              "max": 0.07376124499933212
+            },
+            "decode_ms_per_token": {
+              "n": 116,
+              "mean": 16.989084583188557,
+              "p50": 16.988522689519325,
+              "p95": 19.938879965518247,
+              "max": 20.259113990722955
+            },
+            "longest_stall_s": {
+              "n": 116,
+              "mean": 0.03660247330170587,
+              "p50": 0.030083483999987948,
+              "p95": 0.06649498299884726,
+              "max": 0.06774833100098476
+            },
+            "note": "client-side timing of completed streamed target requests only"
+          }
+        }
+      },
+      "server": {
+        "samples": 179,
+        "scrape_errors": 0,
+        "running": {
+          "mean": 30.910614525139664,
+          "max": 50.0
+        },
+        "waiting": {
+          "mean": 0.0,
+          "max": 0.0
+        },
+        "waiting_positive_fraction": 0.0,
+        "waiting_by_reason": {
+          "capacity": {
+            "mean": 0.0,
+            "max": 0.0
+          },
+          "deferred": {
+            "mean": 0.0,
+            "max": 0.0
+          }
+        },
+        "kv_cache": {
+          "mean": 0.33856226367815573,
+          "max": 0.5989074180563543
+        },
+        "counters": {
+          "preemptions": 0.0,
+          "generation_tokens": 328331.0,
+          "prompt_tokens": 43507.0,
+          "prefix_cache_queries": 43507.0,
+          "prefix_cache_hits": 20656.0,
+          "requests_finished": 347.0
+        },
+        "tokens_per_s": 1832.3016441716254,
+        "histogram_means": {
+          "queue_time_s": {
+            "observations": 347.0,
+            "mean": 9.9471959947026e-06
+          },
+          "time_to_first_token_s": {
+            "observations": 361.0,
+            "mean": 0.05005474434004596
+          },
+          "prefill_time_s": {
+            "observations": 347.0,
+            "mean": 0.03735696072045627
+          },
+          "decode_time_s": {
+            "observations": 347.0,
+            "mean": 15.334481432262649
+          },
+          "inter_token_latency_s": {
+            "observations": 327970.0,
+            "mean": 0.01683235251308414
+          },
+          "e2e_latency_s": {
+            "observations": null,
+            "mean": null
+          },
+          "preemptions_per_request": {
+            "observations": 347.0,
+            "mean": 0.0
+          }
+        },
+        "decode_by_concurrency": [
+          {
+            "running_from": 16,
+            "running_to": 32,
+            "intervals": 94,
+            "inter_token_latency_ms": 14.976195227337795,
+            "tokens_per_s_per_sequence": 66.77263382455
+          },
+          {
+            "running_from": 32,
+            "running_to": 48,
+            "intervals": 82,
+            "inter_token_latency_ms": 17.976208217479964,
+            "tokens_per_s_per_sequence": 55.62908417068765
+          },
+          {
+            "running_from": 48,
+            "running_to": 64,
+            "intervals": 2,
+            "inter_token_latency_ms": 20.028373175423628,
+            "tokens_per_s_per_sequence": 49.9291675485195
+          }
+        ],
+        "note": "measurement window only; histogram means cover requests or tokens observed in the window, all streams together"
+      },
+      "gpu": {
+        "samples": 171,
+        "errors": 0,
+        "utilization.gpu": {
+          "mean": 97.6374269005848,
+          "max": 99.0
+        },
+        "memory.used": {
+          "mean": 10758.0,
+          "max": 10758.0
+        },
+        "power.draw": {
+          "mean": 118.81900584795322,
+          "max": 125.55
+        },
+        "temperature.gpu": {
+          "mean": 86.03508771929825,
+          "max": 87.0
+        }
+      }
+    },
+    {
+      "cell": "light-cell-3-N4-B2048",
+      "rate_label": "light",
+      "background_rate_rps": 1.2314943584721938,
+      "n": 4,
+      "budget": 2048,
+      "control": false,
+      "streams": {
+        "background": {
+          "scheduled": 246,
+          "statuses": {
+            "completed": 246,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 246,
+            "mean": 29.517932420824383,
+            "p50": 28.106129088058694,
+            "p95": 45.7376161507521,
+            "max": 47.74757392171733
+          },
+          "unconditional_p95_upper_s": 45.7376161507521,
+          "attainment": {
+            "20.9176": 0.10569105691056911,
+            "41.8352": 0.8658536585365854
+          }
+        },
+        "target": {
+          "scheduled": 29,
+          "statuses": {
+            "completed": 29,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 29,
+            "mean": 56.38309535722077,
+            "p50": 53.12279187760976,
+            "p95": 73.44915052477074,
+            "max": 74.43475228376661
+          },
+          "unconditional_p95_upper_s": 73.44915052477074,
+          "attainment": {
+            "20.9176": 0.0,
+            "41.8352": 0.034482758620689655
+          },
+          "streamed_requests": {
+            "sent": 116,
+            "completed": 116,
+            "time_to_first_token_s": {
+              "n": 116,
+              "mean": 0.6619939110862169,
+              "p50": 0.08581554499869526,
+              "p95": 6.321816902000137,
+              "max": 8.857249492000847
+            },
+            "decode_ms_per_token": {
+              "n": 116,
+              "mean": 27.604833953569084,
+              "p50": 25.989601321175204,
+              "p95": 37.97586078498345,
+              "max": 46.90839771729365
+            },
+            "longest_stall_s": {
+              "n": 116,
+              "mean": 1.5806018510602842,
+              "p50": 0.16382627099847014,
+              "p95": 9.47970480999902,
+              "max": 13.763961360000394
+            },
+            "note": "client-side timing of completed streamed target requests only"
+          }
+        }
+      },
+      "server": {
+        "samples": 179,
+        "scrape_errors": 0,
+        "running": {
+          "mean": 59.832402234636874,
+          "max": 91.0
+        },
+        "waiting": {
+          "mean": 6.139664804469274,
+          "max": 53.0
+        },
+        "waiting_positive_fraction": 0.2346368715083799,
+        "waiting_by_reason": {
+          "capacity": {
+            "mean": 6.139664804469274,
+            "max": 53.0
+          },
+          "deferred": {
+            "mean": 0.0,
+            "max": 0.0
+          }
+        },
+        "kv_cache": {
+          "mean": 0.7858976294730484,
+          "max": 1.0
+        },
+        "counters": {
+          "preemptions": 441.0,
+          "generation_tokens": 416532.0,
+          "prompt_tokens": 42505.0,
+          "prefix_cache_queries": 42505.0,
+          "prefix_cache_hits": 19968.0,
+          "requests_finished": 316.0
+        },
+        "tokens_per_s": 2323.280067427182,
+        "histogram_means": {
+          "queue_time_s": {
+            "observations": 316.0,
+            "mean": 1.2567047239905162
+          },
+          "time_to_first_token_s": {
+            "observations": 356.0,
+            "mean": 1.2108096815227123
+          },
+          "prefill_time_s": {
+            "observations": 316.0,
+            "mean": 0.07691105449696266
+          },
+          "decode_time_s": {
+            "observations": 316.0,
+            "mean": 32.587047157650815
+          },
+          "inter_token_latency_s": {
+            "observations": 416176.0,
+            "mean": 0.02732659761840796
+          },
+          "e2e_latency_s": {
+            "observations": null,
+            "mean": null
+          },
+          "preemptions_per_request": {
+            "observations": 316.0,
+            "mean": 1.2784810126582278
+          }
+        },
+        "decode_by_concurrency": [
+          {
+            "running_from": 16,
+            "running_to": 32,
+            "intervals": 8,
+            "inter_token_latency_ms": 16.728468982965765,
+            "tokens_per_s_per_sequence": 59.77833363102614
+          },
+          {
+            "running_from": 32,
+            "running_to": 48,
+            "intervals": 20,
+            "inter_token_latency_ms": 19.9393749071234,
+            "tokens_per_s_per_sequence": 50.152023554296434
+          },
+          {
+            "running_from": 48,
+            "running_to": 64,
+            "intervals": 76,
+            "inter_token_latency_ms": 23.50903498972536,
+            "tokens_per_s_per_sequence": 42.53683745151813
+          },
+          {
+            "running_from": 64,
+            "running_to": 80,
+            "intervals": 63,
+            "inter_token_latency_ms": 28.145948111260722,
+            "tokens_per_s_per_sequence": 35.52909271512217
+          },
+          {
+            "running_from": 80,
+            "running_to": 96,
+            "intervals": 11,
+            "inter_token_latency_ms": 28.92756688197786,
+            "tokens_per_s_per_sequence": 34.569101648953726
+          }
+        ],
+        "note": "measurement window only; histogram means cover requests or tokens observed in the window, all streams together"
+      },
+      "gpu": {
+        "samples": 171,
+        "errors": 0,
+        "utilization.gpu": {
+          "mean": 98.38011695906432,
+          "max": 100.0
+        },
+        "memory.used": {
+          "mean": 10758.0,
+          "max": 10758.0
+        },
+        "power.draw": {
+          "mean": 117.85567251461988,
+          "max": 126.29
+        },
+        "temperature.gpu": {
+          "mean": 86.10526315789474,
+          "max": 88.0
+        }
+      }
+    },
+    {
+      "cell": "light-cell-4-N1-B2048",
+      "rate_label": "light",
+      "background_rate_rps": 1.2314943584721938,
+      "n": 1,
+      "budget": 2048,
+      "control": false,
+      "streams": {
+        "background": {
+          "scheduled": 246,
+          "statuses": {
+            "completed": 246,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 246,
+            "mean": 16.420144304138397,
+            "p50": 16.210326436228428,
+            "p95": 19.22856581424415,
+            "max": 20.14400846567746
+          },
+          "unconditional_p95_upper_s": 19.22856581424415,
+          "attainment": {
+            "20.9176": 1.0,
+            "41.8352": 1.0
+          }
+        },
+        "target": {
+          "scheduled": 29,
+          "statuses": {
+            "completed": 29,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 29,
+            "mean": 27.753203024462977,
+            "p50": 30.900439511621414,
+            "p95": 37.61723691676667,
+            "max": 37.61883691239997
+          },
+          "unconditional_p95_upper_s": 37.61723691676667,
+          "attainment": {
+            "20.9176": 0.2413793103448276,
+            "41.8352": 1.0
+          },
+          "streamed_requests": {
+            "sent": 29,
+            "completed": 29,
+            "time_to_first_token_s": {
+              "n": 29,
+              "mean": 0.04939937941400848,
+              "p50": 0.04928133500106924,
+              "p95": 0.061699617999693146,
+              "max": 0.06465649399979156
+            },
+            "decode_ms_per_token": {
+              "n": 29,
+              "mean": 16.672000582236496,
+              "p50": 16.739539264181282,
+              "p95": 18.53936736369113,
+              "max": 18.715503948068882
+            },
+            "longest_stall_s": {
+              "n": 29,
+              "mean": 0.04816540944839603,
+              "p50": 0.06046552600128052,
+              "p95": 0.0665783630010992,
+              "max": 0.06658117100050731
+            },
+            "note": "client-side timing of completed streamed target requests only"
+          }
+        }
+      },
+      "server": {
+        "samples": 179,
+        "scrape_errors": 0,
+        "running": {
+          "mean": 26.16759776536313,
+          "max": 40.0
+        },
+        "waiting": {
+          "mean": 0.0,
+          "max": 0.0
+        },
+        "waiting_positive_fraction": 0.0,
+        "waiting_by_reason": {
+          "capacity": {
+            "mean": 0.0,
+            "max": 0.0
+          },
+          "deferred": {
+            "mean": 0.0,
+            "max": 0.0
+          }
+        },
+        "kv_cache": {
+          "mean": 0.31026307419983873,
+          "max": 0.4945370902817712
+        },
+        "counters": {
+          "preemptions": 0.0,
+          "generation_tokens": 288058.0,
+          "prompt_tokens": 33194.0,
+          "prefix_cache_queries": 33194.0,
+          "prefix_cache_hits": 11328.0,
+          "requests_finished": 260.0
+        },
+        "tokens_per_s": 1607.6845163607384,
+        "histogram_means": {
+          "queue_time_s": {
+            "observations": 260.0,
+            "mean": 8.838242271080023e-06
+          },
+          "time_to_first_token_s": {
+            "observations": 274.0,
+            "mean": 0.047593670169802475
+          },
+          "prefill_time_s": {
+            "observations": 260.0,
+            "mean": 0.03545378343076384
+          },
+          "decode_time_s": {
+            "observations": 260.0,
+            "mean": 17.23382245649543
+          },
+          "inter_token_latency_s": {
+            "observations": 287784.0,
+            "mean": 0.01627797530988377
+          },
+          "e2e_latency_s": {
+            "observations": null,
+            "mean": null
+          },
+          "preemptions_per_request": {
+            "observations": 260.0,
+            "mean": 0.0
+          }
+        },
+        "decode_by_concurrency": [
+          {
+            "running_from": 0,
+            "running_to": 16,
+            "intervals": 3,
+            "inter_token_latency_ms": 12.544529729736825,
+            "tokens_per_s_per_sequence": 79.7160213690194
+          },
+          {
+            "running_from": 16,
+            "running_to": 32,
+            "intervals": 131,
+            "inter_token_latency_ms": 15.314570179891636,
+            "tokens_per_s_per_sequence": 65.29729455371995
+          },
+          {
+            "running_from": 32,
+            "running_to": 48,
+            "intervals": 44,
+            "inter_token_latency_ms": 18.58519746328192,
+            "tokens_per_s_per_sequence": 53.806261783102535
+          }
+        ],
+        "note": "measurement window only; histogram means cover requests or tokens observed in the window, all streams together"
+      },
+      "gpu": {
+        "samples": 171,
+        "errors": 0,
+        "utilization.gpu": {
+          "mean": 97.26315789473684,
+          "max": 99.0
+        },
+        "memory.used": {
+          "mean": 10758.0,
+          "max": 10758.0
+        },
+        "power.draw": {
+          "mean": 118.9133918128655,
+          "max": 124.89
+        },
+        "temperature.gpu": {
+          "mean": 86.01754385964912,
+          "max": 87.0
+        }
+      }
+    },
+    {
+      "cell": "contended-cell-0-N1-B0",
+      "rate_label": "contended",
+      "background_rate_rps": 2.4629887169443876,
+      "n": 1,
+      "budget": 0,
+      "control": false,
+      "streams": {
+        "background": {
+          "scheduled": 467,
+          "statuses": {
+            "completed": 467,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 467,
+            "mean": 24.228383687216123,
+            "p50": 25.08543611732715,
+            "p95": 28.246664687350233,
+            "max": 29.357002314801505
+          },
+          "unconditional_p95_upper_s": 28.246664687350233,
+          "attainment": {
+            "20.9176": 0.15845824411134904,
+            "41.8352": 1.0
+          }
+        },
+        "target": {
+          "scheduled": 21,
+          "statuses": {
+            "completed": 21,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 21,
+            "mean": 18.060544687134907,
+            "p50": 14.0451272214774,
+            "p95": 47.99282457825379,
+            "max": 51.00484409795476
+          },
+          "unconditional_p95_upper_s": 47.99282457825379,
+          "attainment": {
+            "20.9176": 0.7142857142857143,
+            "41.8352": 0.8571428571428571
+          },
+          "streamed_requests": {
+            "sent": 21,
+            "completed": 21,
+            "time_to_first_token_s": {
+              "n": 21,
+              "mean": 0.07242014809526154,
+              "p50": 0.07224615199993423,
+              "p95": 0.0897908440001629,
+              "max": 0.11536139500094578
+            },
+            "decode_ms_per_token": {
+              "n": 21,
+              "mean": 23.257568819123154,
+              "p50": 23.408039639960332,
+              "p95": 27.741946715706607,
+              "max": 28.61093235093017
+            },
+            "longest_stall_s": {
+              "n": 21,
+              "mean": 0.052858546380992355,
+              "p50": 0.04892699199990602,
+              "p95": 0.079281133999757,
+              "max": 0.07943911999973352
+            },
+            "note": "client-side timing of completed streamed target requests only"
+          }
+        }
+      },
+      "server": {
+        "samples": 179,
+        "scrape_errors": 0,
+        "running": {
+          "mean": 63.899441340782126,
+          "max": 84.0
+        },
+        "waiting": {
+          "mean": 0.0,
+          "max": 0.0
+        },
+        "waiting_positive_fraction": 0.0,
+        "waiting_by_reason": {
+          "capacity": {
+            "mean": 0.0,
+            "max": 0.0
+          },
+          "deferred": {
+            "mean": 0.0,
+            "max": 0.0
+          }
+        },
+        "kv_cache": {
+          "mean": 0.6925575284068093,
+          "max": 0.9332949971247844
+        },
+        "counters": {
+          "preemptions": 0.0,
+          "generation_tokens": 478515.0,
+          "prompt_tokens": 61649.0,
+          "prefix_cache_queries": 61649.0,
+          "prefix_cache_hits": 22656.0,
+          "requests_finished": 469.0
+        },
+        "tokens_per_s": 2671.358969314972,
+        "histogram_means": {
+          "queue_time_s": {
+            "observations": 469.0,
+            "mean": 8.744831590827352e-06
+          },
+          "time_to_first_token_s": {
+            "observations": 487.0,
+            "mean": 0.07275461122485402
+          },
+          "prefill_time_s": {
+            "observations": 469.0,
+            "mean": 0.05622857966521055
+          },
+          "decode_time_s": {
+            "observations": 469.0,
+            "mean": 23.76966237448226
+          },
+          "inter_token_latency_s": {
+            "observations": 478028.0,
+            "mean": 0.023965415621323732
+          },
+          "e2e_latency_s": {
+            "observations": null,
+            "mean": null
+          },
+          "preemptions_per_request": {
+            "observations": 469.0,
+            "mean": 0.0
+          }
+        },
+        "decode_by_concurrency": [
+          {
+            "running_from": 32,
+            "running_to": 48,
+            "intervals": 23,
+            "inter_token_latency_ms": 17.922600297648362,
+            "tokens_per_s_per_sequence": 55.79547517617802
+          },
+          {
+            "running_from": 48,
+            "running_to": 64,
+            "intervals": 48,
+            "inter_token_latency_ms": 22.116732431171908,
+            "tokens_per_s_per_sequence": 45.214635711312106
+          },
+          {
+            "running_from": 64,
+            "running_to": 80,
+            "intervals": 89,
+            "inter_token_latency_ms": 25.417098178438092,
+            "tokens_per_s_per_sequence": 39.34359433872443
+          },
+          {
+            "running_from": 80,
+            "running_to": 96,
+            "intervals": 18,
+            "inter_token_latency_ms": 27.527020569013594,
+            "tokens_per_s_per_sequence": 36.32794175791304
+          }
+        ],
+        "note": "measurement window only; histogram means cover requests or tokens observed in the window, all streams together"
+      },
+      "gpu": {
+        "samples": 171,
+        "errors": 0,
+        "utilization.gpu": {
+          "mean": 98.33333333333333,
+          "max": 99.0
+        },
+        "memory.used": {
+          "mean": 10758.0,
+          "max": 10758.0
+        },
+        "power.draw": {
+          "mean": 117.85859649122807,
+          "max": 127.46
+        },
+        "temperature.gpu": {
+          "mean": 86.09941520467837,
+          "max": 88.0
+        }
+      }
+    },
+    {
+      "cell": "contended-cell-1-N1-B2048",
+      "rate_label": "contended",
+      "background_rate_rps": 2.4629887169443876,
+      "n": 1,
+      "budget": 2048,
+      "control": false,
+      "streams": {
+        "background": {
+          "scheduled": 467,
+          "statuses": {
+            "completed": 467,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 467,
+            "mean": 31.337261683073194,
+            "p50": 31.611803349945518,
+            "p95": 40.15318555438128,
+            "max": 42.69844047585988
+          },
+          "unconditional_p95_upper_s": 40.15318555438128,
+          "attainment": {
+            "20.9176": 0.044967880085653104,
+            "41.8352": 0.9850107066381156
+          }
+        },
+        "target": {
+          "scheduled": 21,
+          "statuses": {
+            "completed": 21,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 21,
+            "mean": 50.95960161742138,
+            "p50": 54.11074233305904,
+            "p95": 66.42905138656292,
+            "max": 69.00513360763443
+          },
+          "unconditional_p95_upper_s": 66.42905138656292,
+          "attainment": {
+            "20.9176": 0.0,
+            "41.8352": 0.2857142857142857
+          },
+          "streamed_requests": {
+            "sent": 21,
+            "completed": 21,
+            "time_to_first_token_s": {
+              "n": 21,
+              "mean": 1.0635075940954266,
+              "p50": 0.08959098999912385,
+              "p95": 6.0526218899995,
+              "max": 11.70561904600072
+            },
+            "decode_ms_per_token": {
+              "n": 21,
+              "mean": 28.40269154903467,
+              "p50": 28.991700618234862,
+              "p95": 33.535920478766755,
+              "max": 37.6783449229669
+            },
+            "longest_stall_s": {
+              "n": 21,
+              "mean": 3.3551498816191487,
+              "p50": 0.1628190520004864,
+              "p95": 11.278783974999897,
+              "max": 12.033422751001126
+            },
+            "note": "client-side timing of completed streamed target requests only"
+          }
+        }
+      },
+      "server": {
+        "samples": 179,
+        "scrape_errors": 0,
+        "running": {
+          "mean": 74.49720670391062,
+          "max": 101.0
+        },
+        "waiting": {
+          "mean": 7.592178770949721,
+          "max": 55.0
+        },
+        "waiting_positive_fraction": 0.33519553072625696,
+        "waiting_by_reason": {
+          "capacity": {
+            "mean": 7.592178770949721,
+            "max": 55.0
+          },
+          "deferred": {
+            "mean": 0.0,
+            "max": 0.0
+          }
+        },
+        "kv_cache": {
+          "mean": 0.8375294348193433,
+          "max": 1.0
+        },
+        "counters": {
+          "preemptions": 651.0,
+          "generation_tokens": 480115.0,
+          "prompt_tokens": 61007.0,
+          "prefix_cache_queries": 61007.0,
+          "prefix_cache_hits": 22592.0,
+          "requests_finished": 439.0
+        },
+        "tokens_per_s": 2680.2659289366006,
+        "histogram_means": {
+          "queue_time_s": {
+            "observations": 439.0,
+            "mean": 0.8707003167676999
+          },
+          "time_to_first_token_s": {
+            "observations": 483.0,
+            "mean": 1.1996881359605809
+          },
+          "prefill_time_s": {
+            "observations": 439.0,
+            "mean": 0.08033573490657403
+          },
+          "decode_time_s": {
+            "observations": 439.0,
+            "mean": 29.484236443259025
+          },
+          "inter_token_latency_s": {
+            "observations": 479632.0,
+            "mean": 0.029373417374289924
+          },
+          "e2e_latency_s": {
+            "observations": null,
+            "mean": null
+          },
+          "preemptions_per_request": {
+            "observations": 439.0,
+            "mean": 1.1799544419134396
+          }
+        },
+        "decode_by_concurrency": [
+          {
+            "running_from": 32,
+            "running_to": 48,
+            "intervals": 17,
+            "inter_token_latency_ms": 20.243712567224602,
+            "tokens_per_s_per_sequence": 49.39805367613453
+          },
+          {
+            "running_from": 48,
+            "running_to": 64,
+            "intervals": 23,
+            "inter_token_latency_ms": 22.806863103104625,
+            "tokens_per_s_per_sequence": 43.846450758231335
+          },
+          {
+            "running_from": 64,
+            "running_to": 80,
+            "intervals": 54,
+            "inter_token_latency_ms": 29.747842992716773,
+            "tokens_per_s_per_sequence": 33.61588267911835
+          },
+          {
+            "running_from": 80,
+            "running_to": 96,
+            "intervals": 82,
+            "inter_token_latency_ms": 28.166095415703765,
+            "tokens_per_s_per_sequence": 35.503678633512635
+          },
+          {
+            "running_from": 96,
+            "running_to": 112,
+            "intervals": 2,
+            "inter_token_latency_ms": 30.109065989862103,
+            "tokens_per_s_per_sequence": 33.21258787425375
+          }
+        ],
+        "note": "measurement window only; histogram means cover requests or tokens observed in the window, all streams together"
+      },
+      "gpu": {
+        "samples": 171,
+        "errors": 0,
+        "utilization.gpu": {
+          "mean": 98.73099415204679,
+          "max": 100.0
+        },
+        "memory.used": {
+          "mean": 10758.0,
+          "max": 10758.0
+        },
+        "power.draw": {
+          "mean": 117.62994152046784,
+          "max": 123.86
+        },
+        "temperature.gpu": {
+          "mean": 86.12865497076024,
+          "max": 88.0
+        }
+      }
+    },
+    {
+      "cell": "contended-cell-2-N4-B0",
+      "rate_label": "contended",
+      "background_rate_rps": 2.4629887169443876,
+      "n": 4,
+      "budget": 0,
+      "control": false,
+      "streams": {
+        "background": {
+          "scheduled": 467,
+          "statuses": {
+            "completed": 467,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 467,
+            "mean": 32.892808571700435,
+            "p50": 32.92731636664365,
+            "p95": 43.030338376001424,
+            "max": 45.77245641079733
+          },
+          "unconditional_p95_upper_s": 43.030338376001424,
+          "attainment": {
+            "20.9176": 0.03640256959314775,
+            "41.8352": 0.9357601713062098
+          }
+        },
+        "target": {
+          "scheduled": 21,
+          "statuses": {
+            "completed": 21,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 21,
+            "mean": 40.37734145675437,
+            "p50": 35.36957827290939,
+            "p95": 63.96504084447736,
+            "max": 64.39194222611656
+          },
+          "unconditional_p95_upper_s": 63.96504084447736,
+          "attainment": {
+            "20.9176": 0.047619047619047616,
+            "41.8352": 0.5714285714285714
+          },
+          "streamed_requests": {
+            "sent": 84,
+            "completed": 84,
+            "time_to_first_token_s": {
+              "n": 84,
+              "mean": 1.3625850562262236,
+              "p50": 0.09379118700053368,
+              "p95": 5.761853981999593,
+              "max": 11.066577351000888
+            },
+            "decode_ms_per_token": {
+              "n": 84,
+              "mean": 32.82425294532105,
+              "p50": 29.403336128712674,
+              "p95": 55.83909826463405,
+              "max": 74.76043498961936
+            },
+            "longest_stall_s": {
+              "n": 84,
+              "mean": 3.3649431539405277,
+              "p50": 0.15014669400079583,
+              "p95": 15.02002278100008,
+              "max": 15.26355535500079
+            },
+            "note": "client-side timing of completed streamed target requests only"
+          }
+        }
+      },
+      "server": {
+        "samples": 179,
+        "scrape_errors": 0,
+        "running": {
+          "mean": 77.93854748603351,
+          "max": 116.0
+        },
+        "waiting": {
+          "mean": 11.223463687150838,
+          "max": 63.0
+        },
+        "waiting_positive_fraction": 0.4022346368715084,
+        "waiting_by_reason": {
+          "capacity": {
+            "mean": 11.223463687150838,
+            "max": 63.0
+          },
+          "deferred": {
+            "mean": 0.0,
+            "max": 0.0
+          }
+        },
+        "kv_cache": {
+          "mean": 0.834983503651042,
+          "max": 1.0
+        },
+        "counters": {
+          "preemptions": 891.0,
+          "generation_tokens": 497345.0,
+          "prompt_tokens": 68278.0,
+          "prefix_cache_queries": 68278.0,
+          "prefix_cache_hits": 29504.0,
+          "requests_finished": 486.0
+        },
+        "tokens_per_s": 2775.5374961464086,
+        "histogram_means": {
+          "queue_time_s": {
+            "observations": 486.0,
+            "mean": 1.3814855179999979
+          },
+          "time_to_first_token_s": {
+            "observations": 549.0,
+            "mean": 1.7382204971243993
+          },
+          "prefill_time_s": {
+            "observations": 486.0,
+            "mean": 0.08639244184566222
+          },
+          "decode_time_s": {
+            "observations": 486.0,
+            "mean": 28.477517955986016
+          },
+          "inter_token_latency_s": {
+            "observations": 496796.0,
+            "mean": 0.030225444469169423
+          },
+          "e2e_latency_s": {
+            "observations": null,
+            "mean": null
+          },
+          "preemptions_per_request": {
+            "observations": 486.0,
+            "mean": 1.7098765432098766
+          }
+        },
+        "decode_by_concurrency": [
+          {
+            "running_from": 32,
+            "running_to": 48,
+            "intervals": 17,
+            "inter_token_latency_ms": 19.248068234109844,
+            "tokens_per_s_per_sequence": 51.95326553486974
+          },
+          {
+            "running_from": 48,
+            "running_to": 64,
+            "intervals": 22,
+            "inter_token_latency_ms": 28.119080876558133,
+            "tokens_per_s_per_sequence": 35.56304007196992
+          },
+          {
+            "running_from": 64,
+            "running_to": 80,
+            "intervals": 45,
+            "inter_token_latency_ms": 29.38952572644921,
+            "tokens_per_s_per_sequence": 34.0257277135999
+          },
+          {
+            "running_from": 80,
+            "running_to": 96,
+            "intervals": 77,
+            "inter_token_latency_ms": 28.970543949886952,
+            "tokens_per_s_per_sequence": 34.517819262551406
+          },
+          {
+            "running_from": 96,
+            "running_to": 112,
+            "intervals": 17,
+            "inter_token_latency_ms": 28.34283185998493,
+            "tokens_per_s_per_sequence": 35.282289537617565
+          }
+        ],
+        "note": "measurement window only; histogram means cover requests or tokens observed in the window, all streams together"
+      },
+      "gpu": {
+        "samples": 171,
+        "errors": 0,
+        "utilization.gpu": {
+          "mean": 98.71345029239767,
+          "max": 100.0
+        },
+        "memory.used": {
+          "mean": 10758.0,
+          "max": 10758.0
+        },
+        "power.draw": {
+          "mean": 116.683567251462,
+          "max": 123.43
+        },
+        "temperature.gpu": {
+          "mean": 86.16374269005848,
+          "max": 88.0
+        }
+      }
+    },
+    {
+      "cell": "contended-cell-3-N4-B2048",
+      "rate_label": "contended",
+      "background_rate_rps": 2.4629887169443876,
+      "n": 4,
+      "budget": 2048,
+      "control": false,
+      "streams": {
+        "background": {
+          "scheduled": 467,
+          "statuses": {
+            "completed": 467,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 467,
+            "mean": 65.6661837159649,
+            "p50": 67.12032599062822,
+            "p95": 84.89784943111835,
+            "max": 89.00983049488158
+          },
+          "unconditional_p95_upper_s": 84.89784943111835,
+          "attainment": {
+            "20.9176": 0.0,
+            "41.8352": 0.14775160599571735
+          }
+        },
+        "target": {
+          "scheduled": 21,
+          "statuses": {
+            "completed": 21,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 21,
+            "mean": 96.40387200461264,
+            "p50": 98.94707489386806,
+            "p95": 112.43935373386714,
+            "max": 117.03751292525507
+          },
+          "unconditional_p95_upper_s": 112.43935373386714,
+          "attainment": {
+            "20.9176": 0.0,
+            "41.8352": 0.0
+          },
+          "streamed_requests": {
+            "sent": 84,
+            "completed": 84,
+            "time_to_first_token_s": {
+              "n": 84,
+              "mean": 26.95072940403556,
+              "p50": 28.914967693999643,
+              "p95": 51.797067307999896,
+              "max": 52.64394662599989
+            },
+            "decode_ms_per_token": {
+              "n": 84,
+              "mean": 35.86151813361549,
+              "p50": 34.12320515513146,
+              "p95": 46.97628287550492,
+              "max": 71.94639765028724
+            },
+            "longest_stall_s": {
+              "n": 84,
+              "mean": 7.104450921404523,
+              "p50": 5.359179177999977,
+              "p95": 21.801716508998652,
+              "max": 25.292256907998308
+            },
+            "note": "client-side timing of completed streamed target requests only"
+          }
+        }
+      },
+      "server": {
+        "samples": 179,
+        "scrape_errors": 0,
+        "running": {
+          "mean": 83.84357541899442,
+          "max": 128.0
+        },
+        "waiting": {
+          "mean": 78.26815642458101,
+          "max": 180.0
+        },
+        "waiting_positive_fraction": 0.8938547486033519,
+        "waiting_by_reason": {
+          "capacity": {
+            "mean": 78.26815642458101,
+            "max": 180.0
+          },
+          "deferred": {
+            "mean": 0.0,
+            "max": 0.0
+          }
+        },
+        "kv_cache": {
+          "mean": 0.9758401572855394,
+          "max": 1.0
+        },
+        "counters": {
+          "preemptions": 1243.0,
+          "generation_tokens": 467120.0,
+          "prompt_tokens": 52707.0,
+          "prefix_cache_queries": 52707.0,
+          "prefix_cache_hits": 22288.0,
+          "requests_finished": 397.0
+        },
+        "tokens_per_s": 2605.853065602882,
+        "histogram_means": {
+          "queue_time_s": {
+            "observations": 397.0,
+            "mean": 10.838313891276993
+          },
+          "time_to_first_token_s": {
+            "observations": 425.0,
+            "mean": 17.90777245241053
+          },
+          "prefill_time_s": {
+            "observations": 397.0,
+            "mean": 0.163112043911925
+          },
+          "decode_time_s": {
+            "observations": 397.0,
+            "mean": 43.18674693422926
+          },
+          "inter_token_latency_s": {
+            "observations": 466695.0,
+            "mean": 0.03960260257244031
+          },
+          "e2e_latency_s": {
+            "observations": null,
+            "mean": null
+          },
+          "preemptions_per_request": {
+            "observations": 397.0,
+            "mean": 3.065491183879093
+          }
+        },
+        "decode_by_concurrency": [
+          {
+            "running_from": 48,
+            "running_to": 64,
+            "intervals": 32,
+            "inter_token_latency_ms": 33.26985893581194,
+            "tokens_per_s_per_sequence": 30.05723594828928
+          },
+          {
+            "running_from": 64,
+            "running_to": 80,
+            "intervals": 59,
+            "inter_token_latency_ms": 32.5095516996813,
+            "tokens_per_s_per_sequence": 30.760190396898125
+          },
+          {
+            "running_from": 80,
+            "running_to": 96,
+            "intervals": 40,
+            "inter_token_latency_ms": 31.39311860220814,
+            "tokens_per_s_per_sequence": 31.85411467625461
+          },
+          {
+            "running_from": 96,
+            "running_to": 112,
+            "intervals": 19,
+            "inter_token_latency_ms": 30.873477652438556,
+            "tokens_per_s_per_sequence": 32.3902610278507
+          },
+          {
+            "running_from": 112,
+            "running_to": 128,
+            "intervals": 19,
+            "inter_token_latency_ms": 32.244407260849265,
+            "tokens_per_s_per_sequence": 31.01313018131324
+          },
+          {
+            "running_from": 128,
+            "running_to": 144,
+            "intervals": 9,
+            "inter_token_latency_ms": 29.21348079333842,
+            "tokens_per_s_per_sequence": 34.23077198756921
+          }
+        ],
+        "note": "measurement window only; histogram means cover requests or tokens observed in the window, all streams together"
+      },
+      "gpu": {
+        "samples": 171,
+        "errors": 0,
+        "utilization.gpu": {
+          "mean": 98.7719298245614,
+          "max": 100.0
+        },
+        "memory.used": {
+          "mean": 10857.122807017544,
+          "max": 10908.0
+        },
+        "power.draw": {
+          "mean": 117.02830409356726,
+          "max": 125.85
+        },
+        "temperature.gpu": {
+          "mean": 86.11111111111111,
+          "max": 88.0
+        }
+      }
+    },
+    {
+      "cell": "contended-cell-4-N0-B0",
+      "rate_label": "contended",
+      "background_rate_rps": 2.4629887169443876,
+      "n": 0,
+      "budget": 0,
+      "control": true,
+      "streams": {
+        "background": {
+          "scheduled": 467,
+          "statuses": {
+            "completed": 467,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": 1.0,
+          "latency_s": {
+            "n": 467,
+            "mean": 22.630068032748024,
+            "p50": 23.307253046123236,
+            "p95": 26.92051987647703,
+            "max": 28.007940446033942
+          },
+          "unconditional_p95_upper_s": 26.92051987647703,
+          "attainment": {
+            "20.9176": 0.3147751605995717,
+            "41.8352": 1.0
+          }
+        },
+        "target": {
+          "scheduled": 0,
+          "statuses": {
+            "completed": 0,
+            "no_answer": 0,
+            "drop": 0,
+            "timeout": 0,
+            "error": 0,
+            "censored": 0
+          },
+          "completion_rate": null,
+          "latency_s": {
+            "n": 0,
+            "mean": null,
+            "p50": null,
+            "p95": null,
+            "max": null
+          },
+          "unconditional_p95_upper_s": null,
+          "attainment": {
+            "20.9176": null,
+            "41.8352": null
+          },
+          "streamed_requests": {
+            "sent": 0,
+            "completed": 0,
+            "time_to_first_token_s": {
+              "n": 0,
+              "mean": null,
+              "p50": null,
+              "p95": null,
+              "max": null
+            },
+            "decode_ms_per_token": {
+              "n": 0,
+              "mean": null,
+              "p50": null,
+              "p95": null,
+              "max": null
+            },
+            "longest_stall_s": {
+              "n": 0,
+              "mean": null,
+              "p50": null,
+              "p95": null,
+              "max": null
+            },
+            "note": "client-side timing of completed streamed target requests only"
+          }
+        }
+      },
+      "server": {
+        "samples": 179,
+        "scrape_errors": 0,
+        "running": {
+          "mean": 58.273743016759774,
+          "max": 78.0
+        },
+        "waiting": {
+          "mean": 0.0,
+          "max": 0.0
+        },
+        "waiting_positive_fraction": 0.0,
+        "waiting_by_reason": {
+          "capacity": {
+            "mean": 0.0,
+            "max": 0.0
+          },
+          "deferred": {
+            "mean": 0.0,
+            "max": 0.0
+          }
+        },
+        "kv_cache": {
+          "mean": 0.6312078154464937,
+          "max": 0.878953421506613
+        },
+        "counters": {
+          "preemptions": 0.0,
+          "generation_tokens": 466656.0,
+          "prompt_tokens": 59340.0,
+          "prefix_cache_queries": 59418.0,
+          "prefix_cache_hits": 21344.0,
+          "requests_finished": 457.0
+        },
+        "tokens_per_s": 2604.3384735562922,
+        "histogram_means": {
+          "queue_time_s": {
+            "observations": 457.0,
+            "mean": 9.037833660044932e-06
+          },
+          "time_to_first_token_s": {
+            "observations": 466.0,
+            "mean": 0.06782608431296287
+          },
+          "prefill_time_s": {
+            "observations": 457.0,
+            "mean": 0.05265429556672983
+          },
+          "decode_time_s": {
+            "observations": 457.0,
+            "mean": 22.469023986274458
+          },
+          "inter_token_latency_s": {
+            "observations": 466190.0,
+            "mean": 0.022398691403188606
+          },
+          "e2e_latency_s": {
+            "observations": null,
+            "mean": null
+          },
+          "preemptions_per_request": {
+            "observations": 457.0,
+            "mean": 0.0
+          }
+        },
+        "decode_by_concurrency": [
+          {
+            "running_from": 32,
+            "running_to": 48,
+            "intervals": 37,
+            "inter_token_latency_ms": 17.850181768656523,
+            "tokens_per_s_per_sequence": 56.02183848659285
+          },
+          {
+            "running_from": 48,
+            "running_to": 64,
+            "intervals": 77,
+            "inter_token_latency_ms": 21.72423594968347,
+            "tokens_per_s_per_sequence": 46.0315383388464
+          },
+          {
+            "running_from": 64,
+            "running_to": 80,
+            "intervals": 64,
+            "inter_token_latency_ms": 25.16614882985975,
+            "tokens_per_s_per_sequence": 39.73591695577575
+          }
+        ],
+        "note": "measurement window only; histogram means cover requests or tokens observed in the window, all streams together"
+      },
+      "gpu": {
+        "samples": 170,
+        "errors": 0,
+        "utilization.gpu": {
+          "mean": 98.14117647058823,
+          "max": 99.0
+        },
+        "memory.used": {
+          "mean": 10908.0,
+          "max": 10908.0
+        },
+        "power.draw": {
+          "mean": 118.98770588235294,
+          "max": 126.13
+        },
+        "temperature.gpu": {
+          "mean": 86.08823529411765,
+          "max": 88.0
+        }
+      }
+    }
+  ],
+  "status": "complete",
+  "caveat": "one machine, one pass per cell; synthetic fixed-length requests, not real answers"
+}

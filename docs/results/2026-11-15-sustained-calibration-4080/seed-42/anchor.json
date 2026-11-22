@@ -1,0 +1,6 @@
+{
+  "definition": "finite-burst throughput proxy; places the ladder only, not a capacity estimate",
+  "burst": 64,
+  "elapsed_s": 26.7369883450001,
+  "requests_per_s": 2.3936876948958314
+}
