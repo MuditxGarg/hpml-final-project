@@ -1,0 +1,34 @@
+{
+  "source_sha256": {
+    "matched-real-answers-4080-150q-policies-assembled-20261121/seed-20261116-contended/cell-2-P-kv-ladder.jsonl": "0842a53610e3594a07785440939400af8be3e8eef7089b810b182fe26e05c7fc",
+    "matched-real-answers-4080-150q-policies-assembled-20261121/seed-20261116-light/cell-1-P-kv-ladder.jsonl": "53b1231f6d05b4c8a7342a411298789eb6c0a319397e2f3b75ab8f1c003e98fe",
+    "matched-real-answers-4080-150q-policies-assembled-20261121/seed-20261117-contended/cell-1-P-kv-ladder.jsonl": "2461f26fdb227814c4d94148cbc89b8cce286ce7b6ccc0715149dfc666cb9ebf",
+    "matched-real-answers-4080-150q-policies-assembled-20261121/seed-20261117-light/cell-0-P-kv-ladder.jsonl": "9ae5dbf0d4ad7677c3c8ff7cd96b014c5e69a2f3a419bf5cc7d0e2cb3b4b6298",
+    "matched-real-answers-4080-150q-policies-assembled-20261121/seed-20261118-contended/cell-0-P-kv-ladder.jsonl": "1bcf78e986eefd79fc725a0d872d1d870d656af00c847d78d37f2bdd0bed4384",
+    "matched-real-answers-4080-150q-policies-assembled-20261121/seed-20261118-light/cell-0-P-kv-ladder.jsonl": "76dc13eba7f5572f41ae041eaed4b8971abf60fd55a2e2a7d6518c28ddf7ed85"
+  },
+  "target_jobs": 900,
+  "by_reason": {
+    "fallback": {
+      "jobs": 176,
+      "missing_signal": 0,
+      "age_s_max": 1.0078129490066203,
+      "kv_min": 0.8016101207590569,
+      "kv_max": 1.0
+    },
+    "rule 0": {
+      "jobs": 473,
+      "missing_signal": 0,
+      "age_s_max": 1.011673207001877,
+      "kv_min": 0.07360552041403101,
+      "kv_max": 0.49396204715353653
+    },
+    "rule 1": {
+      "jobs": 251,
+      "missing_signal": 0,
+      "age_s_max": 1.0107727549984702,
+      "kv_min": 0.5051753881541116,
+      "kv_max": 0.7995974698102357
+    }
+  }
+}

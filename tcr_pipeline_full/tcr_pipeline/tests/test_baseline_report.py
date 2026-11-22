@@ -20,8 +20,11 @@ def matched_run(tmp_path):
                 target_latency_p95_s=12.34, background_jobs=40, background_within_tight=38, background_within_loose=40, background_p95_s=18.5,
                 waiting_max=0., kv_cache_max=.42, preemptions=0., goodput_tight_per_gpu_s=.21, goodput_loose_per_gpu_s=.23)
     summary = dict(status='complete', blocks_scored=['seed-1-light'], blocks_skipped=[], latency_targets_s=dict(tight=20.9, loose=41.8),
-                   cells=[cell], actions=[action('light', 1, 0, .7), action('light', 4, 2048, .6), action('contended', 1, 0, .6)],
+                   cells=[cell, dict(cell, n=None, budget=None, policy='ladder')],
+                   actions=[action('light', 1, 0, .7), action('light', 4, 2048, .6), action('contended', 1, 0, .6),
+                            dict(action('light', None, None, .65), policy='ladder', chosen={'1:0': 4, '4:2048': 6}, reasons={'rule 0': 6, 'fallback': 4})],
                    paired_differences=[dict(rate='light', metric='correct_within_loose', action=[1, 0], minus=[4, 2048], questions=5, value=.1, ci95=[.02, .2]),
+                                       dict(rate='light', metric='correct_within_loose', action=[1, 0], minus='ladder', questions=5, value=.05, ci95=[-.02, .1]),
                                        dict(rate='light', metric='correct_within_tight', action=[1, 0], minus=[4, 2048], questions=5, value=.1, ci95=[-.1, .3])],
                    definitions=dict(correct_within_target='as logged'))
     run = tmp_path / 'matched'
@@ -45,10 +48,13 @@ def test_tables_are_formatted_from_logged_values(tmp_path):
     profile = json.loads((PROFILE / 'profile.json').read_text())
     worst = max(profile['cells'], key=lambda c: c['server']['counters']['preemptions'])
     assert f'| {worst["server"]["counters"]["preemptions"]:.0f} |' in text
-    assert '| light | (1,0) | 10 | 2 | 9 | 1 | 0 | 0.800 [0.700, 0.900] |' in text
+    assert '| light | (1,0) | - | 10 | 2 | 9 | 1 | 0 | 0.800 [0.700, 0.900] |' in text
+    assert '| light | ladder | 1:0 4, 4:2048 6 | 10 | 2 |' in text and '| seed-1-light | ladder | 5 |' in text
+    assert '| light | correct_within_loose | (1,0) | ladder | 5 | +0.0500 | [-0.0200, +0.1000] | no |' in text
     assert '| light | correct_within_loose | (1,0) | (4,2048) | 5 | +0.1000 | [+0.0200, +0.2000] | yes |' in text
     assert '| light | correct_within_tight | (1,0) | (4,2048) | 5 | +0.1000 | [-0.1000, +0.3000] | no |' in text
     assert 'test machine' in text and 'What was not measured' in text and 'Plots were not requested.' in text
+    assert '**Per-job policies** (`ladder`)' in text and 'No learned router' in text and 'No router or controller' not in text
     sources = json.loads((out / 'sources.json').read_text())
     assert len(sources['files']) == 6 and all(len(digest) == 64 for digest in sources['files'].values())
     with pytest.raises(FileExistsError):

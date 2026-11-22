@@ -1,0 +1,26 @@
+[
+  {
+    "kind": "threshold",
+    "name": "kv-ladder",
+    "fallback": "1:0",
+    "rules": [
+      {
+        "action": "1:2048",
+        "kv_below": 0.5
+      },
+      {
+        "action": "4:0",
+        "kv_below": 0.8
+      }
+    ]
+  },
+  {
+    "kind": "mixture",
+    "name": "mix-kv-ladder",
+    "shares": {
+      "1:0": 0.07666666666666666,
+      "1:2048": 0.595,
+      "4:0": 0.3283333333333333
+    }
+  }
+]

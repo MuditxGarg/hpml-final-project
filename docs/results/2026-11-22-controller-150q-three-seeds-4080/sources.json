@@ -1,0 +1,12 @@
+{
+  "files": {
+    "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-150q-fixed-matched-power-assembled-20261122/summary.json": "968d5ea3ba1ed080d9d6a0ecb69ddb0c17f44abbb897d67a879cffef56a249b7",
+    "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-150q-fixed-matched-power-assembled-20261122/manifest.json": "038269f3b4a693fbe2fff83ad40f5eeeca7a66f5b62b97b59185d729ae805579",
+    "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-150q-policies-assembled-20261121/summary.json": "904146c87afa9c1cc3bbb8d29ff1689476f1fc9ed2b1aa0132e70eeaf513846e",
+    "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-150q-policies-assembled-20261121/manifest.json": "3b6e7b513cb67100690a99634d3ab4474fb8aa9c3058df80fc3946ac4e62fdcd"
+  },
+  "figures": [
+    "matched-actions.png",
+    "matched-actions-2.png"
+  ]
+}

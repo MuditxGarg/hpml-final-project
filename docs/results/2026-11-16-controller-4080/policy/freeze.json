@@ -1,0 +1,345 @@
+{
+  "rule": "an action is allowed below the start of the first KV-usage bin whose on-time rate is under min_on_time or that holds fewer than min_jobs jobs; bins below the lowest well-populated bin count as affordable",
+  "arguments": {
+    "runs": [
+      "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-20261115",
+      "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-ladder-20261115"
+    ],
+    "prefer": [
+      "1:2048",
+      "4:0"
+    ],
+    "fallback": "1:0",
+    "name": "kv-ladder",
+    "min_on_time": 0.9,
+    "min_jobs": 20,
+    "bin_width": 0.1,
+    "output": "/root/hpml-final-project/evaluation-resources/policy-kv-ladder-4080-20261115"
+  },
+  "thresholds": [
+    {
+      "action": "1:2048",
+      "kv_below": 0.5
+    },
+    {
+      "action": "4:0",
+      "kv_below": 0.8
+    }
+  ],
+  "table": [
+    {
+      "action": "1:0",
+      "kv_from": 0.0,
+      "kv_to": 0.1,
+      "jobs": 7,
+      "on_time": 7,
+      "on_time_rate": 1.0
+    },
+    {
+      "action": "1:0",
+      "kv_from": 0.1,
+      "kv_to": 0.2,
+      "jobs": 80,
+      "on_time": 80,
+      "on_time_rate": 1.0
+    },
+    {
+      "action": "1:0",
+      "kv_from": 0.2,
+      "kv_to": 0.3,
+      "jobs": 124,
+      "on_time": 124,
+      "on_time_rate": 1.0
+    },
+    {
+      "action": "1:0",
+      "kv_from": 0.3,
+      "kv_to": 0.4,
+      "jobs": 95,
+      "on_time": 94,
+      "on_time_rate": 0.9894736842105263
+    },
+    {
+      "action": "1:0",
+      "kv_from": 0.4,
+      "kv_to": 0.5,
+      "jobs": 102,
+      "on_time": 102,
+      "on_time_rate": 1.0
+    },
+    {
+      "action": "1:0",
+      "kv_from": 0.5,
+      "kv_to": 0.6,
+      "jobs": 108,
+      "on_time": 105,
+      "on_time_rate": 0.9722222222222222
+    },
+    {
+      "action": "1:0",
+      "kv_from": 0.6,
+      "kv_to": 0.7,
+      "jobs": 48,
+      "on_time": 47,
+      "on_time_rate": 0.9791666666666666
+    },
+    {
+      "action": "1:0",
+      "kv_from": 0.7,
+      "kv_to": 0.8,
+      "jobs": 25,
+      "on_time": 23,
+      "on_time_rate": 0.92
+    },
+    {
+      "action": "1:0",
+      "kv_from": 0.8,
+      "kv_to": 0.9,
+      "jobs": 9,
+      "on_time": 9,
+      "on_time_rate": 1.0
+    },
+    {
+      "action": "1:0",
+      "kv_from": 0.9,
+      "kv_to": 1.0,
+      "jobs": 2,
+      "on_time": 2,
+      "on_time_rate": 1.0
+    },
+    {
+      "action": "1:2048",
+      "kv_from": 0.1,
+      "kv_to": 0.2,
+      "jobs": 28,
+      "on_time": 28,
+      "on_time_rate": 1.0
+    },
+    {
+      "action": "1:2048",
+      "kv_from": 0.2,
+      "kv_to": 0.3,
+      "jobs": 109,
+      "on_time": 109,
+      "on_time_rate": 1.0
+    },
+    {
+      "action": "1:2048",
+      "kv_from": 0.3,
+      "kv_to": 0.4,
+      "jobs": 107,
+      "on_time": 106,
+      "on_time_rate": 0.9906542056074766
+    },
+    {
+      "action": "1:2048",
+      "kv_from": 0.4,
+      "kv_to": 0.5,
+      "jobs": 84,
+      "on_time": 78,
+      "on_time_rate": 0.9285714285714286
+    },
+    {
+      "action": "1:2048",
+      "kv_from": 0.5,
+      "kv_to": 0.6,
+      "jobs": 74,
+      "on_time": 49,
+      "on_time_rate": 0.6621621621621622
+    },
+    {
+      "action": "1:2048",
+      "kv_from": 0.6,
+      "kv_to": 0.7,
+      "jobs": 64,
+      "on_time": 31,
+      "on_time_rate": 0.484375
+    },
+    {
+      "action": "1:2048",
+      "kv_from": 0.7,
+      "kv_to": 0.8,
+      "jobs": 62,
+      "on_time": 33,
+      "on_time_rate": 0.532258064516129
+    },
+    {
+      "action": "1:2048",
+      "kv_from": 0.8,
+      "kv_to": 0.9,
+      "jobs": 34,
+      "on_time": 20,
+      "on_time_rate": 0.5882352941176471
+    },
+    {
+      "action": "1:2048",
+      "kv_from": 0.9,
+      "kv_to": 1.0,
+      "jobs": 38,
+      "on_time": 8,
+      "on_time_rate": 0.21052631578947367
+    },
+    {
+      "action": "4:0",
+      "kv_from": 0.0,
+      "kv_to": 0.1,
+      "jobs": 3,
+      "on_time": 3,
+      "on_time_rate": 1.0
+    },
+    {
+      "action": "4:0",
+      "kv_from": 0.1,
+      "kv_to": 0.2,
+      "jobs": 44,
+      "on_time": 44,
+      "on_time_rate": 1.0
+    },
+    {
+      "action": "4:0",
+      "kv_from": 0.2,
+      "kv_to": 0.3,
+      "jobs": 113,
+      "on_time": 113,
+      "on_time_rate": 1.0
+    },
+    {
+      "action": "4:0",
+      "kv_from": 0.3,
+      "kv_to": 0.4,
+      "jobs": 98,
+      "on_time": 96,
+      "on_time_rate": 0.9795918367346939
+    },
+    {
+      "action": "4:0",
+      "kv_from": 0.4,
+      "kv_to": 0.5,
+      "jobs": 79,
+      "on_time": 77,
+      "on_time_rate": 0.9746835443037974
+    },
+    {
+      "action": "4:0",
+      "kv_from": 0.5,
+      "kv_to": 0.6,
+      "jobs": 93,
+      "on_time": 87,
+      "on_time_rate": 0.9354838709677419
+    },
+    {
+      "action": "4:0",
+      "kv_from": 0.6,
+      "kv_to": 0.7,
+      "jobs": 68,
+      "on_time": 62,
+      "on_time_rate": 0.9117647058823529
+    },
+    {
+      "action": "4:0",
+      "kv_from": 0.7,
+      "kv_to": 0.8,
+      "jobs": 51,
+      "on_time": 49,
+      "on_time_rate": 0.9607843137254902
+    },
+    {
+      "action": "4:0",
+      "kv_from": 0.8,
+      "kv_to": 0.9,
+      "jobs": 38,
+      "on_time": 34,
+      "on_time_rate": 0.8947368421052632
+    },
+    {
+      "action": "4:0",
+      "kv_from": 0.9,
+      "kv_to": 1.0,
+      "jobs": 13,
+      "on_time": 9,
+      "on_time_rate": 0.6923076923076923
+    },
+    {
+      "action": "4:2048",
+      "kv_from": 0.1,
+      "kv_to": 0.2,
+      "jobs": 2,
+      "on_time": 2,
+      "on_time_rate": 1.0
+    },
+    {
+      "action": "4:2048",
+      "kv_from": 0.2,
+      "kv_to": 0.3,
+      "jobs": 10,
+      "on_time": 10,
+      "on_time_rate": 1.0
+    },
+    {
+      "action": "4:2048",
+      "kv_from": 0.3,
+      "kv_to": 0.4,
+      "jobs": 13,
+      "on_time": 12,
+      "on_time_rate": 0.9230769230769231
+    },
+    {
+      "action": "4:2048",
+      "kv_from": 0.4,
+      "kv_to": 0.5,
+      "jobs": 39,
+      "on_time": 32,
+      "on_time_rate": 0.8205128205128205
+    },
+    {
+      "action": "4:2048",
+      "kv_from": 0.5,
+      "kv_to": 0.6,
+      "jobs": 53,
+      "on_time": 31,
+      "on_time_rate": 0.5849056603773585
+    },
+    {
+      "action": "4:2048",
+      "kv_from": 0.6,
+      "kv_to": 0.7,
+      "jobs": 35,
+      "on_time": 18,
+      "on_time_rate": 0.5142857142857142
+    },
+    {
+      "action": "4:2048",
+      "kv_from": 0.7,
+      "kv_to": 0.8,
+      "jobs": 11,
+      "on_time": 4,
+      "on_time_rate": 0.36363636363636365
+    },
+    {
+      "action": "4:2048",
+      "kv_from": 0.8,
+      "kv_to": 0.9,
+      "jobs": 8,
+      "on_time": 1,
+      "on_time_rate": 0.125
+    },
+    {
+      "action": "4:2048",
+      "kv_from": 0.9,
+      "kv_to": 1.0,
+      "jobs": 129,
+      "on_time": 1,
+      "on_time_rate": 0.007751937984496124
+    }
+  ],
+  "sources": {
+    "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-20261115": "9133d36c9aba545625fe5a4e6d710f6e7ca5b88fc28e1482267603bf5cbc4b1a",
+    "/root/hpml-final-project/evaluation-results/matched-real-answers-4080-ladder-20261115": "68275fc0564b7f8b4702c2aa5557f17835ebf1ace11b9ebe9ddaea7aff352c54"
+  },
+  "seeds_used": [
+    20261116,
+    20261117,
+    20261118
+  ],
+  "caveat": "thresholds describe these runs on this machine; evaluate the policy on other seeds only"
+}

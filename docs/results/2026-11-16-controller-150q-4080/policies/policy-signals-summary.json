@@ -1,0 +1,35 @@
+{
+  "source_run": "matched-real-answers-4080-150q-policies-seed20261116",
+  "source_sha256": {
+    "matched-real-answers-4080-150q-policies-seed20261116/seed-20261116-contended/cell-2-P-kv-ladder.jsonl": "0842a53610e3594a07785440939400af8be3e8eef7089b810b182fe26e05c7fc",
+    "matched-real-answers-4080-150q-policies-seed20261116/seed-20261116-contended/cell-2-P-kv-ladder-server.jsonl": "882bda4507fee7feabd472a82be5d2d6047029ada6561e289c4ee9ab633215c1",
+    "matched-real-answers-4080-150q-policies-seed20261116/seed-20261116-light/cell-1-P-kv-ladder.jsonl": "53b1231f6d05b4c8a7342a411298789eb6c0a319397e2f3b75ab8f1c003e98fe",
+    "matched-real-answers-4080-150q-policies-seed20261116/seed-20261116-light/cell-1-P-kv-ladder-server.jsonl": "193db4106a55c3b1cd93b698c4d098631a12d623bffcabadb263ff51a95b962d"
+  },
+  "target_jobs": 300,
+  "server_samples": 2581,
+  "largest_gap_between_server_samples_s": 1.0148443399812095,
+  "by_reason": {
+    "fallback": {
+      "jobs": 72,
+      "missing_signal": 0,
+      "age_s_max": 1.0072248590004165,
+      "kv_min": 0.8059229442208166,
+      "kv_max": 1.0
+    },
+    "rule 0": {
+      "jobs": 154,
+      "missing_signal": 0,
+      "age_s_max": 1.009578048979165,
+      "kv_min": 0.07360552041403101,
+      "kv_max": 0.4672225416906268
+    },
+    "rule 1": {
+      "jobs": 74,
+      "missing_signal": 0,
+      "age_s_max": 0.9926466979959514,
+      "kv_min": 0.5100632547441057,
+      "kv_max": 0.7995974698102357
+    }
+  }
+}
