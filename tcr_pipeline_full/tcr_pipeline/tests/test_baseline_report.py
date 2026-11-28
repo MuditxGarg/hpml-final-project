@@ -94,3 +94,48 @@ def test_several_matched_runs_share_one_load_curve(tmp_path):
     text = (out / 'README.md').read_text()
     assert '### Matched real-answer comparison\n' in text and '### Matched real-answer comparison (ladder)' in text
     assert {'matched-actions.png', 'matched-actions-2.png', 'matched-load-curve.png'} <= {p.name for p in (out / 'figures').iterdir()}
+
+
+def test_power_check_and_its_warnings_are_shown(tmp_path):
+    run = matched_run(tmp_path)
+    summary = json.loads((run / 'summary.json').read_text())
+    warning = '1 of 2 cells differ from their block control by more than 10% in mean GPU power: seed-1-light ladder +15%.'
+    summary['power_check'] = dict(tolerance=.1, tolerance_source='run configuration', rule='as logged', flagged=1, unknown=0, warnings=[warning],
+                                  cells=[dict(block='seed-1-light', segment=0, entry='1:0', power_w=101., control_power_w=100., relative_gap=.01, status='ok'),
+                                         dict(block='seed-1-light', segment=0, entry='ladder', power_w=115., control_power_w=100., relative_gap=.15, status='flagged')])
+    summary['warnings'] = [warning]
+    (run / 'summary.json').write_text(json.dumps(summary))
+    out = tmp_path / 'report'
+    br.main(['--matched', str(run), '--hardware', 'test machine', '--output', str(out), '--no-plots'])
+    text = (out / 'README.md').read_text()
+    assert text.count(warning) == 2  # once at the top of the report, once next to the run's power table
+    assert text.index(warning) < text.index('## What was measured')
+    assert '| seed-1-light | 0 | (1,0) | 101.0 | 100.0 | +1.0% | ok |' in text and '| seed-1-light | 0 | ladder | 115.0 | 100.0 | +15.0% | flagged |' in text
+    assert '1 flagged and 0 unknown of 2 cells' in text
+
+
+def test_a_summary_without_the_power_check_is_marked_unchecked(tmp_path):
+    out = tmp_path / 'report'
+    br.main(['--matched', str(matched_run(tmp_path)), '--hardware', 'test machine', '--output', str(out), '--no-plots'])
+    text = (out / 'README.md').read_text()
+    assert '`matched` was scored before the power-state check existed' in text and 'rescore it to show one' in text
+
+
+def test_schedule_runs_show_results_by_load_phase(tmp_path):
+    run = matched_run(tmp_path)
+    summary = json.loads((run / 'summary.json').read_text())
+    value = lambda v: dict(value=v, ci95=[v - .1, v + .1])
+    entry = lambda level, v: dict(rate='step', phase_rate=level, n=1, budget=0, jobs=6, questions=3, seeds=[1, 2], correct_within_loose=value(v),
+                                  correct_within_tight=value(v / 2), correct_within_loose_per_gpu_s=value(v / 10))
+    summary['phases'] = dict(definition='grouped by the phase of arrival', actions=[entry('light', .8), entry('contended', .4)],
+                             paired_differences=[dict(rate='step', phase_rate='contended', metric='correct_within_loose', action=[1, 0], minus='ladder',
+                                                      questions=3, value=-.2, ci95=[-.3, -.1])],
+                             schedules=dict(step=[dict(phase='1-light', start_s=60., end_s=466., rate_rps=1.231)]))
+    summary['cells'][0]['background_by_phase'] = dict(light=dict(p95_s=17.25), contended=dict(p95_s=33.5))
+    (run / 'summary.json').write_text(json.dumps(summary))
+    out = tmp_path / 'report'
+    br.main(['--matched', str(run), '--hardware', 'test machine', '--output', str(out), '--no-plots'])
+    text = (out / 'README.md').read_text()
+    assert '| step | light | (1,0) | - | 6 | 0.800 [0.700, 0.900] | 0.400 [0.300, 0.500] | 0.0800 [-0.0200, 0.1800] |' in text
+    assert '| step | contended | correct_within_loose | (1,0) | ladder | 3 | -0.2000 | [-0.3000, -0.1000] | yes |' in text
+    assert '| seed-1-light | (1,0) | 17.2 | 33.5 |' in text and '`step`: 1-light 60 to 466 s at 1.231 req/s' in text

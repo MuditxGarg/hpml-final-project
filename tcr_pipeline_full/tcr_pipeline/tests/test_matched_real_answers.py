@@ -107,6 +107,11 @@ def test_run_and_score_against_fake_server(fake_server, tmp_path, monkeypatch): 
     assert len(gaps) == 2 and all(d['value'] == 0 and d['questions'] == 5 for d in gaps)
     assert sum(d['metric'] == 'accuracy' for d in summary['paired_differences']) == 2
     assert all(c['gpu_power_mean_w'] is None for c in summary['cells'])  # the run used --no-gpu
+    check = summary['power_check']  # without GPU samples every cell is reported as unverified, never as matched
+    assert check['tolerance'] == .1 and check['tolerance_source'] == 'run configuration'
+    assert (check['flagged'], check['unknown'], len(check['cells'])) == (0, 4, 4) and summary['warnings'] == check['warnings']
+    assert len(summary['warnings']) == 1 and 'not verified' in summary['warnings'][0]
+    assert all(a['gpu_power_mean_w'] is None for a in summary['actions'])
     with pytest.raises(FileExistsError):
         m.main(argv)
 
@@ -189,4 +194,252 @@ def test_assemble_gathers_blocks_of_several_runs_for_one_score(fake_server, tmp_
     (tmp_path / 'second' / 'manifest.json').write_text(json.dumps(dict(other, rates_rps={'mid': 5., 'other': 7.})))
     with pytest.raises(SystemExit, match='rates_rps for mid'):
         m.main(['assemble', '--out', str(tmp_path / 'z'), '--blocks', f'{tmp_path}/first/seed-5-mid', f'{tmp_path}/second/seed-6-mid'])
+    assert not (tmp_path / 'z').exists()
+
+
+def test_power_check_flags_cells_against_the_control_of_their_block_segment():
+    cell = lambda block, n, power, segment=0, policy=None: dict(block=block, cell=f'{block}-{n}-{policy}-{segment}', n=n, budget=0, policy=policy,
+                                                                gpu_power_mean_w=power, segment=segment)
+    cells = [cell('a', 0, 100.), cell('a', 1, 105.), cell('a', None, 115., policy='ladder'), cell('a', 4, 89.),
+             cell('a', 0, 120., segment=1), cell('a', 1, 118., segment=1),  # a resumed segment has its own control
+             cell('b', 0, None), cell('b', 1, 100.), cell('c', 1, None)]
+    check = m.power_check(cells, .1)
+    status = {(r['block'], r['segment'], r['entry']): (r['status'], r['relative_gap']) for r in check['cells']}
+    assert status[('a', 0, '1:0')] == ('ok', pytest.approx(.05)) and status[('a', 0, 'ladder')] == ('flagged', pytest.approx(.15))
+    assert status[('a', 0, '4:0')][0] == 'flagged' and status[('a', 1, '1:0')] == ('ok', pytest.approx(118 / 120 - 1))
+    assert status[('b', 0, '1:0')] == ('unknown', None) and status[('c', 0, '1:0')] == ('unknown', None)  # no control power, no control
+    assert (check['flagged'], check['unknown'], len(check['cells'])) == (2, 2, 6)
+    assert len(check['warnings']) == 2 and 'a ladder +15.0%' in check['warnings'][0] and 'b 1:0, c 1:0' in check['warnings'][1]
+    assert m.power_check([cell('a', 0, 100.), cell('a', 1, 109.)], .1)['warnings'] == []
+    # A segment without its own control borrows the block control of a segment on the same server process, never of another.
+    stopped = [cell('a', 1, 101., segment=0), cell('a', 0, 100., segment=1), cell('a', 4, 150., segment=2)]
+    rows = m.power_check(stopped, .1, [dict(index=0, server_process_start=7.), dict(index=1, server_process_start=7.), dict(index=2, server_process_start=8.)])['cells']
+    assert [(r['segment'], r['status'], r['reference']) for r in rows] == [
+        (0, 'ok', 'control of another segment on the same server process'), (2, 'unknown', None)]
+    assert [r['status'] for r in m.power_check(stopped, .1)['cells']] == ['unknown', 'unknown']  # without segment records nothing is borrowed
+    assert m.power_check([cell('a', 0, 100.), cell('a', 0, 110.), cell('a', 1, 105.)], .1)['cells'][0]['control_power_w'] == 105.  # two controls: their mean
+
+
+def test_compare_warns_when_entries_of_separate_runs_ran_at_different_power(tmp_path):
+    def run(name, entry, power, warnings=()):
+        n, budget = map(int, entry.split(':'))
+        d = tmp_path / name
+        d.mkdir()
+        cells = [dict(rate='light', n=0, budget=0, policy=None, gpu_power_mean_w=power),
+                 dict(rate='light', n=n, budget=budget, policy=None, gpu_power_mean_w=power)]
+        (d / 'summary.json').write_text(json.dumps(dict(latency_targets_s=dict(tight=1., loose=2.), cells=cells, warnings=list(warnings),
+                                                        power_check=dict(tolerance=.1))))
+        rows = [dict(rate='light', n=n, budget=budget, policy=None, seed=1, question=f'q{i}', status='completed', job=1, correct=1,
+                     correct_tight=1, correct_loose=1, tokens=10, gpu_s=1.) for i in range(3)]
+        (d / 'scored.jsonl').write_text('\n'.join(json.dumps(r) for r in rows) + '\n')
+        return d
+    out = tmp_path / 'comparison.json'
+    m.main(['compare', '--runs', str(run('a', '1:0', 100.)), str(run('b', '4:0', 125., ['cell x flagged'])), '--output', str(out), '--draws', '20'])
+    comparison = json.loads(out.read_text())
+    assert [e['gpu_power_mean_w'] for e in comparison['entries']] == [100., 125.] and comparison['power_tolerance'] == .1
+    assert len(comparison['warnings']) == 2 and '1:0 ran at 100.0 W and 4:0 at 125.0 W' in comparison['warnings'][0]
+    assert comparison['warnings'][1] == 'b: cell x flagged'
+    m.main(['compare', '--runs', str(run('c', '1:0', 100.)), str(run('d', '4:0', 105.)), '--output', str(tmp_path / 'ok.json'), '--draws', '20'])
+    assert json.loads((tmp_path / 'ok.json').read_text())['warnings'] == []
+
+
+def run_inputs(tmp_path, url):
+    """Input files and the common `run` arguments of a small two-block run (seed 5 at the frozen light and contended rates)."""
+    cohort = questions()
+    files = dict(plan=dict(questions=cohort), prompts=cohort + [dict(id=f'b{i}', thinking='bg', nothinking='bg') for i in range(3)],
+                 lengths={'200': [200]}, hardware={'device': 'fake CPU HTTP server'},
+                 calibration=dict(status='complete', reference_budget=200, latency_targets_s=[.4, 8.], light_rate_rps=3., contended_rate_rps=10.),
+                 gold={q['id']: '1' for q in cohort})
+    for name, value in files.items():
+        (tmp_path / f'{name}.json').write_text(json.dumps(value))
+    argv = ['--url', url, '--model', 'fake', '--no-gpu', '--seeds', '5', '--actions', '1:0', '2:400', '--target-fraction', '.5', '--warmup', '.3',
+            '--timeout', '30', '--idle-timeout', '30', '--idle-stable', '.1', '--metrics-interval', '.05', '--hardware-json', str(tmp_path / 'hardware.json')]
+    for name in ('plan', 'calibration', 'lengths', 'prompts'):
+        argv += ['--' + name, str(tmp_path / f'{name}.json')]
+    return argv
+
+
+def block_cells(out):
+    manifest = json.loads((out / 'manifest.json').read_text())
+    return {name: json.loads((out / name / 'cells.json').read_text()) for name in manifest['blocks'] if (out / name / 'cells.json').exists()}
+
+
+@pytest.mark.parametrize('stop_at', [5, 6])  # the second or the third cell of the second block
+def test_a_run_stopped_mid_cell_resumes_with_the_same_cells(fake_server, tmp_path, monkeypatch, stop_at):  # noqa: F811
+    import os
+    import signal
+    monkeypatch.setattr(m, 'load_tokenizer', lambda: Tokenizer())
+    common = run_inputs(tmp_path, fake_server)
+    whole, cut = tmp_path / 'whole', tmp_path / 'cut'
+    m.main(['run', '--out', str(whole)] + common)
+    real, calls = m.run_cell, []
+
+    def stopped(*args, **kwargs):  # the cell is stopped as a job limit or a spot shutdown would stop it
+        calls.append(1)
+        if len(calls) == stop_at:
+            os.kill(os.getpid(), signal.SIGTERM)
+        return real(*args, **kwargs)
+    monkeypatch.setattr(m, 'run_cell', stopped)
+    with pytest.raises(SystemExit):
+        m.main(['run', '--out', str(cut)] + common)
+    manifest = json.loads((cut / 'manifest.json').read_text())
+    first, second = manifest['blocks']
+    kept = stop_at - 4  # cells of the second block recorded before the stop
+    assert manifest['status'] == 'interrupted' and manifest['completed'] == [first] and manifest['segments'][0]['status'] == 'interrupted'
+    stopped_cell = manifest['current_cell']['cell']
+    assert manifest['current_cell']['block'] == second and len(block_cells(cut)[second]) == kept
+    (cut / second / f'{stopped_cell}.jsonl').write_text('{"partial": true}\n')  # a write the stop cut short
+    monkeypatch.setattr(m, 'run_cell', real)
+    m.main(['resume', '--out', str(cut)])
+
+    manifest = json.loads((cut / 'manifest.json').read_text())
+    assert manifest['status'] == 'complete' and manifest['completed'] == [first, second] and manifest['current_cell'] is None
+    assert [(s['index'], s['kind'], s['status']) for s in manifest['segments']] == [(0, 'start', 'interrupted'), (1, 'resume', 'complete')]
+    assert [(d['block'], d['cell'], d['files']) for d in manifest['discarded']] == [(second, stopped_cell, [f'{stopped_cell}.jsonl'])]
+    assert (cut / second / 'discarded' / 'segment-1' / f'{stopped_cell}.jsonl').read_text() == '{"partial": true}\n'
+    assert 'partial' not in (cut / second / f'{stopped_cell}.jsonl').read_text()  # rerun from the start, not continued
+    original, resumed = block_cells(whole), block_cells(cut)
+    assert [(c['cell'], c['segment']) for c in resumed[first]] == [(c['cell'], 0) for c in original[first]]
+    names = [c['cell'] for c in original[second]]
+    control_pending = any(c['control'] for c in original[second][kept:])
+    # A block that continues in a new segment gets its own control there: the original one if it had not run yet, else a repeat first.
+    expected = [(n, 0) for n in names[:kept]] + ([] if control_pending else [('cell-s1-control-N0-B0', 1)]) + [(n, 1) for n in names[kept:]]
+    assert [(c['cell'], c['segment']) for c in resumed[second]] == expected
+    assert sum(c['control'] and c['segment'] == 1 for c in resumed[second]) == 1
+    for out in (whole, cut):
+        m.score(types.SimpleNamespace(out=str(out), gold=str(tmp_path / 'gold.json'), draws=50), verifier=lambda gold, pred: gold == pred)
+    jobs = lambda out: sorted((a['rate'], a['n'], a['budget'], a['jobs'], a['accuracy']['value']) for a in json.loads((out / 'summary.json').read_text())['actions'])
+    assert jobs(cut) == jobs(whole)  # the same scored jobs: the discarded partial cell is never scored
+    check = json.loads((cut / 'summary.json').read_text())['power_check']
+    assert sorted(r['segment'] for r in check['cells'] if r['block'] == second) == [0] * (kept - (not control_pending)) + [1] * (2 - kept + (not control_pending))
+    with pytest.raises(SystemExit, match='already complete'):
+        m.main(['resume', '--out', str(cut)])
+
+
+def test_resume_after_a_deadline_refuses_changed_inputs_and_new_code(fake_server, tmp_path, monkeypatch):  # noqa: F811
+    import time
+    monkeypatch.setattr(m, 'load_tokenizer', lambda: Tokenizer())
+    out = tmp_path / 'run'
+    m.main(['run', '--out', str(out), '--deadline-epoch', str(time.time() + 1)] + run_inputs(tmp_path, fake_server))
+    manifest = json.loads((out / 'manifest.json').read_text())
+    assert manifest['status'] == 'partial_deadline' and manifest['skipped'] == manifest['blocks'] and block_cells(out) == {}
+    calibration = (tmp_path / 'calibration.json').read_text()
+    (tmp_path / 'calibration.json').write_text(json.dumps(dict(json.loads(calibration), light_rate_rps=4.)))
+    with pytest.raises(SystemExit, match='inputs changed.*calibration_sha256.*rates_rps'):
+        m.main(['resume', '--out', str(out)])
+    (tmp_path / 'calibration.json').write_text(calibration)
+    real = m.environment
+    monkeypatch.setattr(m, 'environment', lambda url: dict(real(url), git_commit='0' * 40))
+    with pytest.raises(SystemExit, match='allow-new-commit'):
+        m.main(['resume', '--out', str(out)])
+    m.main(['resume', '--out', str(out), '--allow-new-commit'])
+    manifest = json.loads((out / 'manifest.json').read_text())
+    assert manifest['status'] == 'complete' and manifest['skipped'] == [] and manifest['segments'][-1]['git_commit'] == '0' * 40
+    # Nothing had run before the deadline, so no block needs a repeated control.
+    assert all(len(cells) == 3 and {c['segment'] for c in cells} == {len(manifest['segments']) - 1} for cells in block_cells(out).values())
+
+
+def test_a_cell_that_ran_across_a_server_restart_is_never_recorded(fake_server, tmp_path, monkeypatch):  # noqa: F811
+    monkeypatch.setattr(m, 'load_tokenizer', lambda: Tokenizer())
+    starts = iter([1., 1., 2.])  # segment start, before the first cell, after it: the server restarted during the cell
+    monkeypatch.setattr(m, 'server_process_start', lambda url: next(starts))
+    out = tmp_path / 'run'
+    with pytest.raises(RuntimeError, match='changed during'):
+        m.main(['run', '--out', str(out)] + run_inputs(tmp_path, fake_server))
+    manifest = json.loads((out / 'manifest.json').read_text())
+    first = manifest['blocks'][0]
+    assert manifest['status'] == 'failed' and block_cells(out) == {} and not list((out / first).glob('cell-*'))
+    monkeypatch.setattr(m, 'server_process_start', lambda url: 3.)
+    m.main(['resume', '--out', str(out)])
+    manifest = json.loads((out / 'manifest.json').read_text())
+    assert manifest['status'] == 'complete' and [(d['block'], d['files']) for d in manifest['discarded']] == [(first, [])]
+    assert [s['server_process_start'] for s in manifest['segments']] == [1., 3.]
+
+
+def test_schedules_split_the_window_into_light_and_contended_phases():
+    rates = dict(light=1., contended=4.)
+    step = m.schedule_phases('step', rates, 60., 900., 300.)
+    assert [(p['phase'], p['rate_rps'], p['start_s'], p['end_s']) for p in step] == [
+        ('warmup', 1., 0., 60.), ('1-light', 1., 60., 360.), ('2-contended', 4., 360., 660.), ('3-light', 1., 660., 960.)]
+    square = m.schedule_phases('square', rates, 60., 1000., 300.)
+    assert [(p['phase'], p['start_s'], p['end_s']) for p in square] == [
+        ('warmup', 0., 60.), ('1-light', 60., 360.), ('2-contended', 360., 660.), ('3-light', 660., 960.), ('4-contended', 960., 1060.)]
+    assert [p['phase'] for p in m.schedule_phases('square', rates, 0., 600., 300.)] == ['1-light', '2-contended']  # no warm-up phase
+    assert m.phase_of(square, 59.9)['phase'] == 'warmup' and m.phase_of(square, 360.)['phase'] == '2-contended'
+    assert m.phase_of(square, 1060.)['phase'] == '4-contended'
+    with pytest.raises(ValueError, match='unknown schedule'):
+        m.schedule_phases('ramp', rates, 60., 900., 300.)
+
+
+def test_piecewise_background_is_poisson_at_each_phase_rate_and_matches_a_constant_trace():
+    background = [dict(id=f'b{i}', thinking=f'bg {i}', nothinking=f'bg {i}') for i in range(4)]
+    phases = [dict(phase='1-light', rate_label='light', rate_rps=2., start_s=0., end_s=1000.),
+              dict(phase='2-contended', rate_label='contended', rate_rps=8., start_s=1000., end_s=2000.)]
+    trace = m.piecewise_background([20, 30], background, 8, 3, phases)
+    times = [e['at_s'] for e in trace['events']]
+    assert times == sorted(times) and 0 <= times[0] and times[-1] < 2000
+    light, heavy = sum(t < 1000 for t in times), sum(t >= 1000 for t in times)
+    assert abs(light - 2000) < 150 and abs(heavy - 8000) < 300  # within about 3.5 standard deviations of the Poisson counts
+    # One phase at a constant rate gives the same events as the constant-rate generator, up to rounding of the times.
+    one = [dict(phase='warmup', rate_label='light', rate_rps=3., start_s=0., end_s=1.), dict(phase='1-light', rate_label='light', rate_rps=3., start_s=1., end_s=11.)]
+    scheduled = m.make_trace(questions(), background, [20, 30], 8, 3, None, 1., 10., one)
+    constant = m.make_trace(questions(), background, [20, 30], 8, 3, 3., 1., 10.)
+    strip = lambda trace: [(e['id'], e['stream'], e.get('prompt_index'), e.get('lengths'), e.get('question_id'), e['measured']) for e in trace['events']]
+    assert strip(scheduled) == strip(constant)
+    assert [e['at_s'] for e in scheduled['events']] == pytest.approx([e['at_s'] for e in constant['events']], abs=1e-9)
+    assert (scheduled['warmup_s'], scheduled['duration_s'], scheduled['background_rate']) == (1., 10., None)
+    assert {e['phase'] for e in scheduled['events'] if not e['measured']} <= {'warmup'} and 'phase' not in constant['events'][0]
+
+
+def test_scheduled_run_keeps_traces_identical_labels_phases_and_scores_them(fake_server, tmp_path, monkeypatch):  # noqa: F811
+    import time
+    monkeypatch.setattr(m, 'load_tokenizer', lambda: Tokenizer())
+    common = run_inputs(tmp_path, fake_server) + ['--schedules', 'step', 'square', '--phase-s', '.4']
+    with pytest.raises(SystemExit, match='cannot be combined'):
+        m.main(['run', '--out', str(tmp_path / 'x'), '--rates', 'mid=6'] + common)
+    out = tmp_path / 'run'
+    m.main(['run', '--out', str(out), '--deadline-epoch', str(time.time() + 1)] + common)  # stopped before any cell, then resumed
+    m.main(['resume', '--out', str(out)])
+    manifest = json.loads((out / 'manifest.json').read_text())
+    assert manifest['status'] == 'complete' and sorted(manifest['completed']) == ['seed-5-square', 'seed-5-step']
+    assert manifest['rates_rps'] == dict(light=3., contended=10.) and set(manifest['schedules']) == {'step', 'square'}
+    assert [p['phase'] for p in manifest['schedules']['square']] == ['warmup', '1-light', '2-contended', '3-light']
+    expected = dict(step=dict(light=4, contended=1), square=dict(light=3, contended=2))  # targets at 0.4, 0.6, 0.8, 1.0 and 1.2 s
+    for block in manifest['completed']:
+        kind = block.split('-', 2)[2]
+        cells = json.loads((out / block / 'cells.json').read_text())
+        assert [c['schedule'] for c in cells] == [kind] * 3 and all(c['background_rate_rps'] is None for c in cells)
+        traces = []
+        for c in cells:
+            rows = [json.loads(line) for line in (out / block / f'{c["cell"]}.jsonl').read_text().splitlines()]
+            traces.append([(r['id'], r['at_s'], r['prompt_index'], r['phase'], r['phase_rate']) for r in rows if r['stream'] == 'background'])
+            targets = [r for r in rows if r['stream'] == 'target']
+            assert {level: sum(r['phase_rate'] == level for r in targets) for level in ('light', 'contended')} == expected[kind]
+        assert traces[0] == traces[1] == traces[2] and {t[4] for t in traces[0]} == {'light', 'contended'}  # the same background in every cell
+    m.score(types.SimpleNamespace(out=str(out), gold=str(tmp_path / 'gold.json'), draws=50), verifier=lambda gold, pred: gold == pred)
+    summary = json.loads((out / 'summary.json').read_text())
+    assert sorted((a['rate'], a['n'], a['jobs']) for a in summary['actions']) == [('square', 1, 5), ('square', 2, 5), ('step', 1, 5), ('step', 2, 5)]
+    phases = summary['phases']
+    assert sorted((a['rate'], a['phase_rate'], a['n'], a['jobs']) for a in phases['actions']) == sorted(
+        (kind, level, n, count) for kind, levels in expected.items() for level, count in levels.items() for n in (1, 2))
+    assert all(a['accuracy']['value'] == 1 for a in phases['actions'])
+    assert {(d['rate'], d['phase_rate']) for d in phases['paired_differences']} == {(k, level) for k in expected for level in ('light', 'contended')}
+    scored = [json.loads(line) for line in (out / 'scored.jsonl').read_text().splitlines()]
+    assert all(r['phase'] in ('1-light', '2-contended', '3-light') and r['phase_rate'] in ('light', 'contended') for r in scored)
+    assert all(set(c['background_by_phase']) == {'light', 'contended'} for c in summary['cells'])
+    import experiment_tracking
+    final = list(experiment_tracking.matched_runs(out))[-1]  # what the W&B uploader would send for the scored run
+    assert final['summary']['step/contended/(1,0)/accuracy'] == 1 and final['summary']['power_cells_unknown'] == 4
+    assert len(final['tables']['phase_actions'][1]) == 8 and final['config']['schedules'] == manifest['schedules']
+    assembled = tmp_path / 'assembled'
+    m.main(['assemble', '--out', str(assembled), '--blocks', f'{out}/seed-5-step', f'{out}/seed-5-square'])
+    assert json.loads((assembled / 'manifest.json').read_text())['schedules'] == manifest['schedules']
+    m.score(types.SimpleNamespace(out=str(assembled), gold=str(tmp_path / 'gold.json'), draws=50), verifier=lambda gold, pred: gold == pred)
+    assert json.loads((assembled / 'summary.json').read_text())['actions'] == summary['actions']
+    other = tmp_path / 'other'
+    other.mkdir()
+    changed = dict(manifest, completed=['seed-6-step'], schedules=dict(manifest['schedules'], step=manifest['schedules']['square']))
+    (other / 'manifest.json').write_text(json.dumps(changed))
+    with pytest.raises(SystemExit, match='step schedule'):
+        m.main(['assemble', '--out', str(tmp_path / 'z'), '--blocks', f'{out}/seed-5-step', f'{other}/seed-6-step'])
     assert not (tmp_path / 'z').exists()

@@ -112,12 +112,22 @@ def matched_runs(source):
         gaps = [[d['rate'], d['metric'], name(d['action']), name(d['minus']), d['questions'], d['value'], *(d['ci95'] or (None, None))]
                 for d in scored['paired_differences']]
         summary = {f'{a["rate"]}/{label(a)}/{m}': a[m]['value'] for a in scored['actions'] for m in metrics}
+        tables = dict(actions=(columns, rows),
+                      paired_differences=(['rate', 'metric', 'action', 'minus', 'questions', 'difference', 'low', 'high'], gaps))
+        check = scored.get('power_check')
+        if check:  # how many cells ran at a different power state than their block control
+            summary.update(power_cells_flagged=check['flagged'], power_cells_unknown=check['unknown'])
+        phases = (scored.get('phases') or {}).get('actions', [])
+        if phases:  # time-varying schedules: the same metrics by the load level of the phase of arrival
+            summary.update({f'{a["rate"]}/{a["phase_rate"]}/{label(a)}/{m}': a[m]['value'] for a in phases for m in metrics})
+            tables['phase_actions'] = (['rate', 'phase_rate'] + columns[1:],
+                                       [[a['rate'], a['phase_rate'], label(a), a['jobs'], a['questions'], a['statuses']['no_answer'], a['target_gpu_s']]
+                                        + [x for m in metrics for x in (a[m]['value'], *(a[m]['ci95'] or (None, None)))] for a in phases])
         yield describe('matched-summary', source, 'summary',
                        dict(common(manifest), latency_targets_s=scored['latency_targets_s'], definitions=scored['definitions'],
-                            caveat=scored['caveat'], blocks_scored=scored['blocks_scored'], policies=manifest.get('policies')),
-                       [], summary,
-                       dict(actions=(columns, rows),
-                            paired_differences=(['rate', 'metric', 'action', 'minus', 'questions', 'difference', 'low', 'high'], gaps)))
+                            caveat=scored['caveat'], blocks_scored=scored['blocks_scored'], policies=manifest.get('policies'),
+                            schedules=manifest.get('schedules') or None),
+                       [], summary, tables)
 
 
 def upload(run, wandb, entity, project, tags=(), exists=lambda run_id: False):

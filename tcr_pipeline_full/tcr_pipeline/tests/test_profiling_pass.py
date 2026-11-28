@@ -118,3 +118,70 @@ def test_profiling_refuses_an_incomplete_calibration(tmp_path):
     with pytest.raises(SystemExit, match='not complete'):
         pp.main(argv)
     assert not (tmp_path / 'run').exists()
+
+
+def test_nvidia_smi_values_parse_numbers_hex_masks_and_missing_fields():
+    assert pp._smi_value(' 102.5') == 102.5 and pp._smi_value('[N/A]') is None and pp._smi_value('0x0000000000000004') == 4
+
+
+@pytest.fixture
+def fresh_gpu_state(monkeypatch):
+    monkeypatch.setattr(pp, '_nvml', dict(handle=None, failed=False, smi_fields=None))
+
+
+def test_gpu_sample_reads_nvml_in_process_and_nulls_unsupported_fields(monkeypatch, fresh_gpu_state):
+    import sys
+    import types
+
+    class Unsupported(Exception):
+        pass
+
+    def unsupported(handle):
+        raise Unsupported('Not Supported')
+    nv = types.SimpleNamespace(
+        nvmlInit=lambda: None, nvmlDeviceGetHandleByIndex=lambda i: 'gpu0', NVML_TEMPERATURE_GPU=0, NVML_CLOCK_SM=1, NVML_CLOCK_MEM=2,
+        nvmlDeviceGetUtilizationRates=lambda h: types.SimpleNamespace(gpu=99), nvmlDeviceGetMemoryInfo=lambda h: types.SimpleNamespace(used=3 * 2 ** 20),
+        nvmlDeviceGetPowerUsage=lambda h: 123456, nvmlDeviceGetTemperature=lambda h, kind: 80,
+        nvmlDeviceGetEnforcedPowerLimit=unsupported, nvmlDeviceGetClockInfo=lambda h, kind: 2100 if kind == 1 else 9000,
+        nvmlDeviceGetCurrentClocksThrottleReasons=lambda h: 0x24)  # older binding name only
+    monkeypatch.setitem(sys.modules, 'pynvml', nv)
+    monkeypatch.setattr(pp.subprocess, 'check_output', lambda *a, **k: pytest.fail('nvidia-smi must not run when NVML loads'))
+    sample = pp.gpu_sample()
+    assert sample == {'utilization.gpu': 99, 'memory.used': 3., 'power.draw': 123.456, 'temperature.gpu': 80, 'power.limit': None,
+                      'clocks.sm': 2100, 'clocks.mem': 9000, 'throttle_reasons': 0x24, 'source': 'nvml'}
+    assert pp.throttle_summary([sample, dict(sample, throttle_reasons=1), dict(sample, throttle_reasons=None)]) == dict(
+        samples=2, power_cap=.5, hardware_slowdown=0., thermal=.5)
+    assert pp.throttle_summary([dict(sample, throttle_reasons=None)]) is None
+
+
+def test_gpu_sample_falls_back_to_nvidia_smi_and_drops_rejected_state_fields(monkeypatch, fresh_gpu_state):
+    import subprocess
+    import sys
+    monkeypatch.setitem(sys.modules, 'pynvml', None)  # import fails
+    calls = []
+
+    def smi(cmd, **kwargs):
+        calls.append(cmd[1])
+        if 'clocks_throttle_reasons.active' in cmd[1]:
+            raise subprocess.CalledProcessError(2, cmd)
+        return '50, 1000, 110.5, 70\n'
+    monkeypatch.setattr(pp.subprocess, 'check_output', smi)
+    assert pp.gpu_sample() == {'utilization.gpu': 50., 'memory.used': 1000., 'power.draw': 110.5, 'temperature.gpu': 70.,
+                               'power.limit': None, 'clocks.sm': None, 'clocks.mem': None, 'throttle_reasons': None, 'source': 'nvidia-smi'}
+    pp.gpu_sample()
+    assert len(calls) == 3 and 'enforced.power.limit' not in calls[2]  # rejected once, then only the base fields
+    monkeypatch.setattr(pp.subprocess, 'check_output', lambda *a, **k: '50, 1000, 110.5, 70, [N/A], 2100, 9000, 0x0000000000000004\n')
+    monkeypatch.setattr(pp, '_nvml', dict(handle=None, failed=True, smi_fields=None))
+    assert pp.gpu_sample()['throttle_reasons'] == 4 and pp.gpu_sample()['clocks.sm'] == 2100.
+
+
+def test_cell_summary_reports_machine_state_and_skips_missing_values():
+    trace = dict(warmup_s=0, duration_s=10)
+    base = {'utilization.gpu': 99., 'memory.used': 1., 'power.draw': 100., 'temperature.gpu': 80., 'power.limit': 175.,
+            'clocks.sm': 2000., 'clocks.mem': 9000., 'throttle_reasons': 0x4, 'source': 'nvml'}
+    device = [dict(at_s=1, gpu=base), dict(at_s=2, gpu=dict(base, **{'power.draw': None, 'clocks.sm': 1000., 'throttle_reasons': 0x1})),
+              dict(at_s=3, error='TimeoutExpired')]
+    gpu = pp.summarize_cell([], [], device, trace, [4])['gpu']
+    assert gpu['samples'] == 2 and gpu['errors'] == 1 and gpu['power.draw'] == dict(mean=100., max=100.)
+    assert gpu['clocks.sm']['mean'] == 1500. and gpu['power.limit']['max'] == 175.
+    assert gpu['throttle'] == dict(samples=2, power_cap=.5, hardware_slowdown=0., thermal=0.) and gpu['source'] == ['nvml']
