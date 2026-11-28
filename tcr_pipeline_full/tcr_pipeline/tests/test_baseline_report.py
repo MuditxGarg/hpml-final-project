@@ -119,3 +119,23 @@ def test_a_summary_without_the_power_check_is_marked_unchecked(tmp_path):
     br.main(['--matched', str(matched_run(tmp_path)), '--hardware', 'test machine', '--output', str(out), '--no-plots'])
     text = (out / 'README.md').read_text()
     assert '`matched` was scored before the power-state check existed' in text and 'rescore it to show one' in text
+
+
+def test_schedule_runs_show_results_by_load_phase(tmp_path):
+    run = matched_run(tmp_path)
+    summary = json.loads((run / 'summary.json').read_text())
+    value = lambda v: dict(value=v, ci95=[v - .1, v + .1])
+    entry = lambda level, v: dict(rate='step', phase_rate=level, n=1, budget=0, jobs=6, questions=3, seeds=[1, 2], correct_within_loose=value(v),
+                                  correct_within_tight=value(v / 2), correct_within_loose_per_gpu_s=value(v / 10))
+    summary['phases'] = dict(definition='grouped by the phase of arrival', actions=[entry('light', .8), entry('contended', .4)],
+                             paired_differences=[dict(rate='step', phase_rate='contended', metric='correct_within_loose', action=[1, 0], minus='ladder',
+                                                      questions=3, value=-.2, ci95=[-.3, -.1])],
+                             schedules=dict(step=[dict(phase='1-light', start_s=60., end_s=466., rate_rps=1.231)]))
+    summary['cells'][0]['background_by_phase'] = dict(light=dict(p95_s=17.25), contended=dict(p95_s=33.5))
+    (run / 'summary.json').write_text(json.dumps(summary))
+    out = tmp_path / 'report'
+    br.main(['--matched', str(run), '--hardware', 'test machine', '--output', str(out), '--no-plots'])
+    text = (out / 'README.md').read_text()
+    assert '| step | light | (1,0) | - | 6 | 0.800 [0.700, 0.900] | 0.400 [0.300, 0.500] | 0.0800 [-0.0200, 0.1800] |' in text
+    assert '| step | contended | correct_within_loose | (1,0) | ladder | 3 | -0.2000 | [-0.3000, -0.1000] | yes |' in text
+    assert '| seed-1-light | (1,0) | 17.2 | 33.5 |' in text and '`step`: 1-light 60 to 466 s at 1.231 req/s' in text

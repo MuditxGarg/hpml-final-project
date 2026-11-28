@@ -80,18 +80,81 @@ def prepare(args):
     print(out / 'plan.json')
 
 
-def make_trace(questions, background_prompts, pool, budget, seed, rate, warmup, duration):
+SCHEDULES = ('step', 'square')
+
+
+def schedule_phases(kind, rates, warmup, duration, phase_s):
+    """Piecewise-constant background rate over a cell, from a machine's frozen light and contended rates.
+
+      step    light, contended, light: the measurement window in three equal phases
+      square  light and contended alternating in phases of phase_s seconds, starting light; the last phase may be shorter
+    The warm-up runs at the light rate and is its own phase."""
+    if kind == 'step':
+        cuts = [warmup + duration * k / 3 for k in range(4)]
+    elif kind == 'square':
+        if phase_s <= 0:
+            raise ValueError('square phases need a positive length')
+        cuts = [warmup]
+        while cuts[-1] + phase_s < warmup + duration - 1e-9:
+            cuts.append(cuts[-1] + phase_s)
+        cuts.append(warmup + duration)
+    else:
+        raise ValueError(f'unknown schedule {kind!r}; known: {", ".join(SCHEDULES)}')
+    phases = [dict(phase='warmup', rate_label='light', rate_rps=rates['light'], start_s=0., end_s=float(warmup))] if warmup > 0 else []
+    for index, (start, end) in enumerate(zip(cuts, cuts[1:])):
+        label = ('light', 'contended')[index % 2]
+        phases.append(dict(phase=f'{index + 1}-{label}', rate_label=label, rate_rps=rates[label], start_s=start, end_s=end))
+    return phases
+
+
+def phase_of(phases, at_s):
+    """The phase an arrival time falls in; phases are contiguous from 0, and the end of the last one belongs to it."""
+    for phase in phases:
+        if at_s < phase['end_s']:
+            return phase
+    return phases[-1]
+
+
+def piecewise_background(pool, prompts, budget, seed, phases):
+    """Poisson arrivals at a piecewise-constant rate, by time rescaling: a unit-rate stream on the cumulative-rate axis,
+    mapped back to time through the inverse of the cumulative rate. Prompts and lengths use the same seeded streams as
+    a constant-rate trace, so only the arrival times depend on the schedule."""
+    total = sum(p['rate_rps'] * (p['end_s'] - p['start_s']) for p in phases)
+    trace = generate_trace({str(budget): pool}, prompts, seed, 1., 0, 0, total, 1)
+    bounds, cumulative = [], 0.
+    for p in phases:
+        bounds.append((cumulative, p))
+        cumulative += p['rate_rps'] * (p['end_s'] - p['start_s'])
+    for event in trace['events']:
+        before, p = next((c, p) for c, p in reversed(bounds) if event['at_s'] >= c)
+        event['at_s'] = p['start_s'] + (event['at_s'] - before) / p['rate_rps']
+    return trace
+
+
+def make_trace(questions, background_prompts, pool, budget, seed, rate, warmup, duration, phases=None):
     """Poisson synthetic background plus one evenly spaced target job per question, in seeded order.
 
-    The target schedule depends only on the seed, so it is identical at every background rate.
+    The target schedule depends only on the seed, so it is identical at every background rate and schedule. With `phases`
+    (see schedule_phases) the background rate follows the schedule, `rate` is ignored, and every event carries its phase.
     """
-    trace = generate_trace({str(budget): pool}, background_prompts, seed, rate, 0, warmup, duration, 1)
+    if phases is None:
+        trace = generate_trace({str(budget): pool}, background_prompts, seed, rate, 0, warmup, duration, 1)
+    else:
+        trace = piecewise_background(pool, background_prompts, budget, seed, phases)
+        for event in trace['events']:
+            event['measured'] = event['at_s'] >= warmup
+        trace.update(background_rate=None, warmup_s=warmup, duration_s=duration, schedule=phases,
+                     background_arrival_definition='Poisson at a piecewise-constant rate (time rescaling of a unit-rate stream)')
     order = list(questions)
     random.Random(f'{seed}:targets').shuffle(order)
     for index, question in enumerate(order):
         trace['events'].append(dict(id=f'target-{index}', stream='target', question_id=question['id'],
                                     at_s=warmup + (index + .5) * duration / len(order), measured=True))
     trace['events'].sort(key=lambda e: (e['at_s'], e['id']))
+    if phases is not None:
+        for event in trace['events']:
+            phase = phase_of(phases, event['at_s'])
+            event.update(phase=phase['phase'], phase_rate=phase['rate_label'])
     trace.update(experiment='matched real answers: synthetic background, real scored target answers',
                  target_count=len(order), target_arrival_definition='one job per question, evenly spaced over the window, seeded order')
     return trace
@@ -152,6 +215,17 @@ def context(args):
     rates = dict(light=calibration['light_rate_rps'], contended=calibration['contended_rate_rps'])
     # The target schedule always follows the calibrated contended rate, so it is the same for any background rate.
     target_rate = args.target_fraction * rates['contended']
+    schedules = {}
+    if getattr(args, 'schedules', None):
+        if args.rates:
+            raise SystemExit('--schedules uses the frozen light and contended rates and cannot be combined with --rates')
+        if len(set(args.schedules)) != len(args.schedules):
+            raise SystemExit('--schedules must be distinct')
+        duration = len(questions) / target_rate
+        try:
+            schedules = {kind: schedule_phases(kind, rates, args.warmup, duration, args.phase_s) for kind in args.schedules}
+        except ValueError as exc:
+            raise SystemExit(str(exc))
     if args.rates:
         rates = {label: float(value) for label, value in (item.split('=') for item in args.rates)}
         if len(rates) != len(args.rates) or min(rates.values()) <= 0:
@@ -165,7 +239,7 @@ def context(args):
     return dict(url=args.url.rstrip('/'), calibration=calibration, plan=plan, questions=questions, budget=calibration['reference_budget'],
                 targets=calibration['latency_targets_s'], rates=rates, target_rate=target_rate, duration=len(questions) / target_rate,
                 lengths=lengths, background=[p for p in json.loads(Path(args.prompts).read_text()) if p['id'] not in chosen],
-                actions=actions, policy_specs=policy_specs, by_name={p.name: p for p in policies})
+                actions=actions, policy_specs=policy_specs, by_name={p.name: p for p in policies}, schedules=schedules)
 
 
 def cell_name(position, item, by_name):
@@ -188,11 +262,12 @@ def run(args):
     # Persist every trace and cell order before any outcome exists.
     blocks = []
     for seed in args.seeds:
-        labels = list(ctx['rates'])
+        # A block runs at one constant rate, or under one time-varying schedule when --schedules is given.
+        labels = list(ctx['schedules'] or ctx['rates'])
         random.Random(f'{seed}:rates').shuffle(labels)
         for label in labels:
-            trace = make_trace(ctx['questions'], ctx['background'], ctx['lengths'][str(ctx['budget'])], ctx['budget'], seed, ctx['rates'][label],
-                               args.warmup, ctx['duration'])
+            trace = make_trace(ctx['questions'], ctx['background'], ctx['lengths'][str(ctx['budget'])], ctx['budget'], seed, ctx['rates'].get(label),
+                               args.warmup, ctx['duration'], ctx['schedules'].get(label))
             order = cell_order(ctx['actions'] + list(ctx['by_name']), f'{seed}:{label}:order')  # a policy cell is listed by its name
             name = f'seed-{seed}-{label}'
             (out / name).mkdir()
@@ -208,7 +283,7 @@ def run(args):
         rates_rps=ctx['rates'], target_rate_rps=ctx['target_rate'], window_s=ctx['duration'], reference_budget=ctx['budget'],
         latency_targets_s=ctx['targets'], questions=len(ctx['questions']), background_prompts=len(ctx['background']),
         lengths_sha256=digest(ctx['lengths']), blocks=[name for name, *_ in blocks], completed=[], skipped=[], started_unix_s=time.time(),
-        policies=ctx['policy_specs'], segments=[], discarded=[], current_cell=None,
+        policies=ctx['policy_specs'], schedules=ctx['schedules'], segments=[], discarded=[], current_cell=None,
         control_definition='(0,0): background only; target jobs retained but not offered',
         segment_definition='one harness process against one server process; a block resumed in a later segment first repeats its control')
     write_json(out / 'manifest.json', manifest)
@@ -234,7 +309,8 @@ def resume(args):
     checks = dict(plan_sha256=(digest(ctx['plan']), digest(stored), manifest['plan_sha256']),
                   calibration_sha256=(digest(ctx['calibration']), manifest['calibration_sha256']),
                   lengths_sha256=(digest(ctx['lengths']), manifest['lengths_sha256']), rates_rps=(ctx['rates'], manifest['rates_rps']),
-                  window_s=(ctx['duration'], manifest['window_s']), policies=(ctx['policy_specs'], manifest['policies']))
+                  window_s=(ctx['duration'], manifest['window_s']), policies=(ctx['policy_specs'], manifest['policies']),
+                  schedules=(ctx['schedules'], manifest.get('schedules', {})))
     changed = [key for key, values in checks.items() if any(v != values[0] for v in values[1:])]
     if changed:
         sys.exit(f'inputs changed since the run started ({", ".join(changed)}); refusing to resume')
@@ -325,6 +401,7 @@ def execute(args, ctx, out, manifest, blocks, kind):
                 write_rows(out / name / f'{cell}-gpu.jsonl', sampler.device)
                 seen = [s for s in sampler.server if TOKENS in s.get('metrics', {})]
                 cells.append(dict(cell=cell, block=name, seed=seed, rate_label=label, background_rate_rps=rates.get(label),
+                                  schedule=label if label in ctx['schedules'] else None,
                                   n=None if policy else n, budget=None if policy else b, control=n == 0,
                                   policy=policy.name if policy else None, segment=segment,
                                   cell_wall_s=seen[-1]['at_s'] - seen[0]['at_s'] if len(seen) > 1 else None,
@@ -522,9 +599,15 @@ def assemble(args):
         for key in MUST_MATCH:
             if key != 'rates_rps' and manifest.get(key) != first.get(key):
                 sys.exit(f'{run} differs from {next(iter(sources))} in {key}; blocks of different protocols cannot be assembled')
-    rates = {}
+    rates, schedules = {}, {}
     for run, block in blocks:
-        label = block.split('-', 2)[2]  # blocks are named seed-<seed>-<rate label>
+        label = block.split('-', 2)[2]  # blocks are named seed-<seed>-<rate label or schedule>
+        if label in (sources[run].get('schedules') or {}):
+            # A schedule block needs the same phases, and so the same frozen rates, in every source that ran it.
+            value = sources[run]['schedules'][label]
+            if schedules.setdefault(label, value) != value or sources[run]['rates_rps'] != first['rates_rps']:
+                sys.exit(f'{run} differs from the other runs in the {label} schedule; blocks of different protocols cannot be assembled')
+            continue
         value = sources[run]['rates_rps'].get(label)
         if value is None:
             sys.exit(f'{run} has no rate {label} for block {block}')
@@ -535,7 +618,7 @@ def assemble(args):
         shutil.copytree(Path(run) / block, out / block)
     shutil.copy(Path(next(iter(sources))) / 'plan.json', out / 'plan.json')
     write_json(out / 'manifest.json', dict(
-        {k: first.get(k) for k in SHARED}, rates_rps=rates, status='complete', completed=[b for _, b in blocks], skipped=[],
+        {k: first.get(k) for k in SHARED}, rates_rps=dict(first['rates_rps']) if schedules else rates, schedules=schedules, status='complete', completed=[b for _, b in blocks], skipped=[],
         experiment=first['experiment'] + '; assembled from the complete blocks of several runs',
         environment=dict(assembled_at_unix_s=time.time(), **{k: v for k, v in environment('').items() if not k.startswith('server')}),
         assembled_from=[dict(run=run, block=block, git_commit=sources[run]['environment'].get('git_commit'),
@@ -565,13 +648,17 @@ def score(args, verifier=None):
                 records.append(dict(
                     rate=cell['rate_label'], n=cell['n'], budget=cell['budget'], policy=cell.get('policy'),
                     chosen=f'{r["n"]}:{r["budget"]}' if 'n' in r else None, policy_reason=r.get('policy_reason'),
-                    seed=cell['seed'], question=r['question_id'],
+                    seed=cell['seed'], question=r['question_id'], phase=r.get('phase'), phase_rate=r.get('phase_rate'),
                     status=r['status'], job=1, correct=int(correct), latency_s=r.get('latency_s'),
                     correct_tight=int(correct and r['latency_s'] <= tight), correct_loose=int(correct and r['latency_s'] <= loose),
                     tokens=tokens,
                     # Share of this cell's GPU time attributed to the job by its share of generated tokens.
                     gpu_s=cell['cell_wall_s'] * tokens / cell['generation_tokens'] if cell['generation_tokens'] else 0.))
-            good = lambda limit: sum(r['status'] == 'completed' and r['latency_s'] <= limit for r in background)
+            good = lambda limit, rows=background: sum(r['status'] == 'completed' and r['latency_s'] <= limit for r in rows)
+            phased = {}
+            for r in background:
+                if r.get('phase_rate'):
+                    phased.setdefault(r['phase_rate'], []).append(r)
             mine = [r for r in records if (r['rate'], r['n'], r['budget'], r['policy'], r['seed']) == (
                 cell['rate_label'], cell['n'], cell['budget'], cell.get('policy'), cell['seed'])] if jobs else []
             cells.append(dict(
@@ -584,6 +671,10 @@ def score(args, verifier=None):
                 target_tokens=sum(r['tokens'] for r in mine), target_gpu_s=sum(r['gpu_s'] for r in mine),
                 background_jobs=len(background), background_within_tight=good(tight), background_within_loose=good(loose),
                 background_p95_s=cell['streams']['background']['latency_s']['p95'],
+                # Under a schedule: background requests by the load level of the phase they arrived in (p95 over completed requests).
+                background_by_phase={k: dict(jobs=len(v), within_tight=good(tight, v), within_loose=good(loose, v),
+                                             p95_s=percentile([r['latency_s'] for r in v if r['status'] == 'completed']))
+                                     for k, v in sorted(phased.items())} or None,
                 cell_wall_s=cell['cell_wall_s'], generation_tokens=cell['generation_tokens'],
                 # Everything the server delivered on time, per second of GPU wall time in the cell.
                 goodput_tight_per_gpu_s=(sum(r['correct_tight'] for r in mine) + good(tight)) / cell['cell_wall_s'] if cell['cell_wall_s'] else None,
@@ -596,13 +687,13 @@ def score(args, verifier=None):
                 gpu_power_limit_w=((cell.get('gpu') or {}).get('power.limit') or {}).get('mean'),
                 gpu_sm_clock_mean_mhz=((cell.get('gpu') or {}).get('clocks.sm') or {}).get('mean'),
                 gpu_throttle=(cell.get('gpu') or {}).get('throttle'), segment=cell.get('segment', 0)))
-    actions, differences = [], []
-    for rate in sorted({r['rate'] for r in records}, key=lambda label: (manifest['rates_rps'][label], label)):
+    def entries(subset, rate, seed_label):
+        """Entries and paired differences of the records of one rate, or of one load level of a schedule. `seed_label` seeds the intervals."""
         groups = {}
-        for r in records:
-            if r['rate'] == rate:
-                # Fixed actions sort first, by (N, B); policies follow by name.
-                groups.setdefault((r['policy'] or '', r['n'] or 0, r['budget'] or 0), {}).setdefault(r['question'], []).append(r)
+        for r in subset:
+            # Fixed actions sort first, by (N, B); policies follow by name.
+            groups.setdefault((r['policy'] or '', r['n'] or 0, r['budget'] or 0), {}).setdefault(r['question'], []).append(r)
+        found = []
         for (policy, n, b), by_question in sorted(groups.items()):
             everything = list(by_question.values())
             entry = dict(rate=rate, n=None if policy else n, budget=None if policy else b, policy=policy or None, jobs=sum(len(g) for g in everything), questions=len(by_question),
@@ -621,11 +712,27 @@ def score(args, verifier=None):
                                      ('correct_within_tight_per_gpu_s', 'correct_tight', 'gpu_s'),
                                      ('correct_within_loose_per_gpu_s', 'correct_loose', 'gpu_s')):
                 entry[key] = dict(value=ratio(everything, top, bottom),
-                                  ci95=bootstrap(by_question, lambda g, t=top, b_=bottom: ratio(g, t, b_), args.draws, f'{rate}:{policy}:{n}:{b}:{key}' if policy else f'{rate}:{n}:{b}:{key}'))
-            actions.append(entry)
+                                  ci95=bootstrap(by_question, lambda g, t=top, b_=bottom: ratio(g, t, b_), args.draws,
+                                                 f'{seed_label}:{policy}:{n}:{b}:{key}' if policy else f'{seed_label}:{n}:{b}:{key}'))
+            found.append(entry)
         name = lambda k: k[0] or list(k[1:])
         label = lambda k: str(k[1:] if not k[0] else k)
-        differences += paired_differences(rate, groups, args.draws, name, label)
+        gaps = paired_differences(seed_label, groups, args.draws, name, label)
+        for gap in gaps:
+            gap['rate'] = rate
+        return found, gaps
+
+    actions, differences, phase_actions, phase_differences = [], [], [], []
+    # Constant rates sort by rate; schedules, which have no single rate, follow by name.
+    for rate in sorted({r['rate'] for r in records}, key=lambda label: (manifest['rates_rps'].get(label, float('inf')), label)):
+        subset = [r for r in records if r['rate'] == rate]
+        found, gaps = entries(subset, rate, rate)
+        actions += found
+        differences += gaps
+        for level in sorted({r['phase_rate'] for r in subset if r['phase_rate']}, key=lambda label: (manifest['rates_rps'].get(label, float('inf')), label)):
+            found, gaps = entries([r for r in subset if r['phase_rate'] == level], rate, f'{rate}:{level}')
+            phase_actions += [dict(e, phase_rate=level) for e in found]
+            phase_differences += [dict(d, phase_rate=level) for d in gaps]
     tolerance = (manifest.get('configuration') or {}).get('power_tolerance')
     check = power_check(cells, DEFAULT_POWER_TOLERANCE if tolerance is None else tolerance)
     check['tolerance_source'] = 'default; the run predates the setting' if tolerance is None else 'run configuration'
@@ -634,6 +741,9 @@ def score(args, verifier=None):
         status=manifest['status'], blocks_scored=manifest['completed'], blocks_skipped=manifest.get('skipped', []),
         latency_targets_s=dict(tight=tight, loose=loose), cells=cells, actions=actions, paired_differences=differences,
         power_check=check, warnings=check['warnings'],
+        phases=dict(actions=phase_actions, paired_differences=phase_differences, schedules=manifest.get('schedules', {}),
+                    definition='target jobs of each schedule grouped by the load level of the phase they arrived in; a job may finish in the next phase; '
+                               'GPU seconds are attributed over the whole cell, so per-GPU-second values by phase are approximate') if phase_actions else None,
         definitions=dict(
             correct_within_target='target job completed, majority answer verified correct, and job latency (scheduled arrival to last sample) within the target; every scheduled job is in the denominator',
             per_gpu_s='correct-within-target jobs divided by the GPU seconds attributed to target jobs: cell wall time (one GPU) times the job share of all tokens generated in the cell; prompt processing is not attributed separately',
@@ -668,6 +778,9 @@ def build_parser():
     p.add_argument('--policies', default=None, help='JSON list of per-job policies (load_policy.py); each gets its own cell')
     p.add_argument('--rates', nargs='+', default=None, metavar='LABEL=RPS',
                    help='background rates to run instead of the frozen pair, for example between them')
+    p.add_argument('--schedules', nargs='+', default=None, choices=SCHEDULES,
+                   help='time-varying background: one block per schedule instead of one per constant rate (frozen light and contended rates)')
+    p.add_argument('--phase-s', type=float, default=300, help='phase length of the square schedule, seconds')
     p.add_argument('--warmup', type=float, default=60)
     p.add_argument('--timeout', type=float, default=300, help='per-job observation limit, also the drain limit')
     p.add_argument('--idle-timeout', type=float, default=900)

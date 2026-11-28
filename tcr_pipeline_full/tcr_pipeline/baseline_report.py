@@ -151,6 +151,29 @@ def power_lines(summary):
     return lines + [f'> **Warning:** {w}' for w in check['warnings']] + ([''] if check['warnings'] else [])
 
 
+def phase_lines(summary):
+    """Under a time-varying schedule: results by the load level of the phase in which each target job arrived."""
+    phases = summary.get('phases')
+    if not phases:
+        return []
+    rows = [[a['rate'], a['phase_rate'], action_name(row_key(a)), chosen(a), a['jobs'], interval(a['correct_within_loose']), interval(a['correct_within_tight']),
+             interval(a['correct_within_loose_per_gpu_s'], 4)] for a in phases['actions']]
+    gaps = [[d['rate'], d['phase_rate'], d['metric'], action_name(d['action']), action_name(d['minus']), d['questions'],
+             '-' if d['value'] is None else f'{d["value"]:+.4f}', '-' if not d['ci95'] else f'[{d["ci95"][0]:+.4f}, {d["ci95"][1]:+.4f}]',
+             '-' if not d['ci95'] else 'no' if d['ci95'][0] <= 0 <= d['ci95'][1] else 'yes']
+            for d in phases['paired_differences'] if d['metric'] in ('correct_within_loose', 'correct_within_tight')]
+    background = [[c['block'], action_name(row_key(c)), *[fmt((c['background_by_phase'] or {}).get(level, {}).get('p95_s')) for level in ('light', 'contended')]]
+                  for c in summary['cells'] if c.get('background_by_phase')]
+    schedules = [f'`{kind}`: ' + ', '.join(f'{p["phase"]} {fmt(p["start_s"], 0)} to {fmt(p["end_s"], 0)} s at {fmt(p["rate_rps"], 3)} req/s' for p in phases_)
+                 for kind, phases_ in sorted((phases.get('schedules') or {}).items())]
+    return ['By load phase under the time-varying schedules. ' + phases['definition'] + '.', '', *[f'- {line}' for line in schedules], '',
+            table(['Schedule', 'Load level', 'Action', 'Chosen actions', 'Jobs', 'Correct within loose', 'Correct within tight', 'Correct within loose per GPU-s'], rows), '',
+            'Paired differences by load phase (first minus second):', '',
+            table(['Schedule', 'Load level', 'Metric', 'Action', 'Minus', 'Questions', 'Difference', '95% interval', 'Interval excludes zero'], gaps), '',
+            'Background p95 latency (s) by load phase, per cell:', '',
+            table(['Block', 'Action', 'Light phases', 'Contended phases'], background), '']
+
+
 def matched_section(directory, sources):
     summary = sources.load(Path(directory) / 'summary.json')
     manifest = sources.load(Path(directory) / 'manifest.json')
@@ -179,6 +202,7 @@ def matched_section(directory, sources):
                    'Goodput tight per GPU-s', 'Goodput loose per GPU-s'], cells), '',
             'Paired differences between actions at the same rate (first minus second):', '',
             table(['Rate', 'Metric', 'Action', 'Minus', 'Questions', 'Difference', '95% interval', 'Interval excludes zero'], gaps), '',
+            *phase_lines(summary),
             *power_lines(summary),
             'Definitions: ' + ' '.join(f'**{k}**: {v}.' for k, v in summary['definitions'].items())]
     return '\n'.join(text), dict(summary=summary, rates=manifest.get('rates_rps', {}), name=Path(directory).name)
@@ -298,7 +322,7 @@ def make_figures(out, calibrations, profile, matched):
                     ax.bar(x, value, width=width * .88, color=colour.get(a, CONTROL), label=action_name(a) if j == 0 else None)
                     if ci:
                         ax.plot([x, x], ci, color=INK, linewidth=1.2)
-            ax.set_xticks(range(len(labels)), [f'{label} rate' for label in labels])
+            ax.set_xticks(range(len(labels)), [f'{label} rate' if label in run['rates'] else f'{label} schedule' for label in labels])
             style(ax, title, '', unit)
         axes[0].legend(frameon=False, fontsize=8, labelcolor=MUTED, loc='upper right', ncols=2)
         save(fig, 'matched-actions.png' if not index else f'matched-actions-{index + 1}.png',

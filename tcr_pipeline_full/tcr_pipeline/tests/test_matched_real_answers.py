@@ -347,3 +347,92 @@ def test_a_cell_that_ran_across_a_server_restart_is_never_recorded(fake_server, 
     manifest = json.loads((out / 'manifest.json').read_text())
     assert manifest['status'] == 'complete' and [(d['block'], d['files']) for d in manifest['discarded']] == [(first, [])]
     assert [s['server_process_start'] for s in manifest['segments']] == [1., 3.]
+
+
+def test_schedules_split_the_window_into_light_and_contended_phases():
+    rates = dict(light=1., contended=4.)
+    step = m.schedule_phases('step', rates, 60., 900., 300.)
+    assert [(p['phase'], p['rate_rps'], p['start_s'], p['end_s']) for p in step] == [
+        ('warmup', 1., 0., 60.), ('1-light', 1., 60., 360.), ('2-contended', 4., 360., 660.), ('3-light', 1., 660., 960.)]
+    square = m.schedule_phases('square', rates, 60., 1000., 300.)
+    assert [(p['phase'], p['start_s'], p['end_s']) for p in square] == [
+        ('warmup', 0., 60.), ('1-light', 60., 360.), ('2-contended', 360., 660.), ('3-light', 660., 960.), ('4-contended', 960., 1060.)]
+    assert [p['phase'] for p in m.schedule_phases('square', rates, 0., 600., 300.)] == ['1-light', '2-contended']  # no warm-up phase
+    assert m.phase_of(square, 59.9)['phase'] == 'warmup' and m.phase_of(square, 360.)['phase'] == '2-contended'
+    assert m.phase_of(square, 1060.)['phase'] == '4-contended'
+    with pytest.raises(ValueError, match='unknown schedule'):
+        m.schedule_phases('ramp', rates, 60., 900., 300.)
+
+
+def test_piecewise_background_is_poisson_at_each_phase_rate_and_matches_a_constant_trace():
+    background = [dict(id=f'b{i}', thinking=f'bg {i}', nothinking=f'bg {i}') for i in range(4)]
+    phases = [dict(phase='1-light', rate_label='light', rate_rps=2., start_s=0., end_s=1000.),
+              dict(phase='2-contended', rate_label='contended', rate_rps=8., start_s=1000., end_s=2000.)]
+    trace = m.piecewise_background([20, 30], background, 8, 3, phases)
+    times = [e['at_s'] for e in trace['events']]
+    assert times == sorted(times) and 0 <= times[0] and times[-1] < 2000
+    light, heavy = sum(t < 1000 for t in times), sum(t >= 1000 for t in times)
+    assert abs(light - 2000) < 150 and abs(heavy - 8000) < 300  # within about 3.5 standard deviations of the Poisson counts
+    # One phase at a constant rate gives the same events as the constant-rate generator, up to rounding of the times.
+    one = [dict(phase='warmup', rate_label='light', rate_rps=3., start_s=0., end_s=1.), dict(phase='1-light', rate_label='light', rate_rps=3., start_s=1., end_s=11.)]
+    scheduled = m.make_trace(questions(), background, [20, 30], 8, 3, None, 1., 10., one)
+    constant = m.make_trace(questions(), background, [20, 30], 8, 3, 3., 1., 10.)
+    strip = lambda trace: [(e['id'], e['stream'], e.get('prompt_index'), e.get('lengths'), e.get('question_id'), e['measured']) for e in trace['events']]
+    assert strip(scheduled) == strip(constant)
+    assert [e['at_s'] for e in scheduled['events']] == pytest.approx([e['at_s'] for e in constant['events']], abs=1e-9)
+    assert (scheduled['warmup_s'], scheduled['duration_s'], scheduled['background_rate']) == (1., 10., None)
+    assert {e['phase'] for e in scheduled['events'] if not e['measured']} <= {'warmup'} and 'phase' not in constant['events'][0]
+
+
+def test_scheduled_run_keeps_traces_identical_labels_phases_and_scores_them(fake_server, tmp_path, monkeypatch):  # noqa: F811
+    import time
+    monkeypatch.setattr(m, 'load_tokenizer', lambda: Tokenizer())
+    common = run_inputs(tmp_path, fake_server) + ['--schedules', 'step', 'square', '--phase-s', '.4']
+    with pytest.raises(SystemExit, match='cannot be combined'):
+        m.main(['run', '--out', str(tmp_path / 'x'), '--rates', 'mid=6'] + common)
+    out = tmp_path / 'run'
+    m.main(['run', '--out', str(out), '--deadline-epoch', str(time.time() + 1)] + common)  # stopped before any cell, then resumed
+    m.main(['resume', '--out', str(out)])
+    manifest = json.loads((out / 'manifest.json').read_text())
+    assert manifest['status'] == 'complete' and sorted(manifest['completed']) == ['seed-5-square', 'seed-5-step']
+    assert manifest['rates_rps'] == dict(light=3., contended=10.) and set(manifest['schedules']) == {'step', 'square'}
+    assert [p['phase'] for p in manifest['schedules']['square']] == ['warmup', '1-light', '2-contended', '3-light']
+    expected = dict(step=dict(light=4, contended=1), square=dict(light=3, contended=2))  # targets at 0.4, 0.6, 0.8, 1.0 and 1.2 s
+    for block in manifest['completed']:
+        kind = block.split('-', 2)[2]
+        cells = json.loads((out / block / 'cells.json').read_text())
+        assert [c['schedule'] for c in cells] == [kind] * 3 and all(c['background_rate_rps'] is None for c in cells)
+        traces = []
+        for c in cells:
+            rows = [json.loads(line) for line in (out / block / f'{c["cell"]}.jsonl').read_text().splitlines()]
+            traces.append([(r['id'], r['at_s'], r['prompt_index'], r['phase'], r['phase_rate']) for r in rows if r['stream'] == 'background'])
+            targets = [r for r in rows if r['stream'] == 'target']
+            assert {level: sum(r['phase_rate'] == level for r in targets) for level in ('light', 'contended')} == expected[kind]
+        assert traces[0] == traces[1] == traces[2] and {t[4] for t in traces[0]} == {'light', 'contended'}  # the same background in every cell
+    m.score(types.SimpleNamespace(out=str(out), gold=str(tmp_path / 'gold.json'), draws=50), verifier=lambda gold, pred: gold == pred)
+    summary = json.loads((out / 'summary.json').read_text())
+    assert sorted((a['rate'], a['n'], a['jobs']) for a in summary['actions']) == [('square', 1, 5), ('square', 2, 5), ('step', 1, 5), ('step', 2, 5)]
+    phases = summary['phases']
+    assert sorted((a['rate'], a['phase_rate'], a['n'], a['jobs']) for a in phases['actions']) == sorted(
+        (kind, level, n, count) for kind, levels in expected.items() for level, count in levels.items() for n in (1, 2))
+    assert all(a['accuracy']['value'] == 1 for a in phases['actions'])
+    assert {(d['rate'], d['phase_rate']) for d in phases['paired_differences']} == {(k, level) for k in expected for level in ('light', 'contended')}
+    scored = [json.loads(line) for line in (out / 'scored.jsonl').read_text().splitlines()]
+    assert all(r['phase'] in ('1-light', '2-contended', '3-light') and r['phase_rate'] in ('light', 'contended') for r in scored)
+    assert all(set(c['background_by_phase']) == {'light', 'contended'} for c in summary['cells'])
+    import experiment_tracking
+    final = list(experiment_tracking.matched_runs(out))[-1]  # what the W&B uploader would send for the scored run
+    assert final['summary']['step/contended/(1,0)/accuracy'] == 1 and final['summary']['power_cells_unknown'] == 4
+    assert len(final['tables']['phase_actions'][1]) == 8 and final['config']['schedules'] == manifest['schedules']
+    assembled = tmp_path / 'assembled'
+    m.main(['assemble', '--out', str(assembled), '--blocks', f'{out}/seed-5-step', f'{out}/seed-5-square'])
+    assert json.loads((assembled / 'manifest.json').read_text())['schedules'] == manifest['schedules']
+    m.score(types.SimpleNamespace(out=str(assembled), gold=str(tmp_path / 'gold.json'), draws=50), verifier=lambda gold, pred: gold == pred)
+    assert json.loads((assembled / 'summary.json').read_text())['actions'] == summary['actions']
+    other = tmp_path / 'other'
+    other.mkdir()
+    changed = dict(manifest, completed=['seed-6-step'], schedules=dict(manifest['schedules'], step=manifest['schedules']['square']))
+    (other / 'manifest.json').write_text(json.dumps(changed))
+    with pytest.raises(SystemExit, match='step schedule'):
+        m.main(['assemble', '--out', str(tmp_path / 'z'), '--blocks', f'{out}/seed-5-step', f'{other}/seed-6-step'])
+    assert not (tmp_path / 'z').exists()
