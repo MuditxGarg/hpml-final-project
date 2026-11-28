@@ -228,8 +228,13 @@ def run(args):
                                   **summarize_cell(rows, sampler.server, sampler.device, trace, targets)))
                 write_json(out / name / 'cells.json', cells)
                 target = cells[-1]['streams']['target']
+                power = cells[-1]['gpu']['power.draw']['mean']
+                control = [c['gpu']['power.draw']['mean'] for c in cells if c['control']]
+                drift = power / control[0] - 1 if power is not None and control and control[0] else None
                 print(f'CELL_COMPLETE {name} {cell} target={target["statuses"]} '
-                      f'background_p95={cells[-1]["streams"]["background"]["latency_s"]["p95"]}', flush=True)
+                      f'background_p95={cells[-1]["streams"]["background"]["latency_s"]["p95"]} power_w={power} '
+                      f'power_vs_control={"-" if drift is None else f"{drift:+.1%}"}'
+                      + (' POWER_WARNING' if drift is not None and abs(drift) > args.power_tolerance else ''), flush=True)
                 idle_wait()
             manifest['completed'].append(name)
             write_json(out / 'manifest.json', manifest)
@@ -242,6 +247,40 @@ def run(args):
         manifest['finished_unix_s'] = time.time()
         write_json(out / 'manifest.json', manifest)
     print(out / 'manifest.json')
+
+
+DEFAULT_POWER_TOLERANCE = .10  # relative gap in mean GPU power against the block control; set per run with --power-tolerance
+
+
+def power_check(cells, tolerance):
+    """Each cell's mean GPU power against the background-only control of its block segment (scored cell dicts).
+
+    The control carries the same background as every other cell of its block and keeps the GPU busy, so on one machine
+    state their mean power is close; a larger gap means the machine ran at a different power state (power mode, heat,
+    a changed limit) and latency comparisons across those cells are not like for like. Missing power is reported, never assumed."""
+    rows = []
+    for cell in cells:
+        if cell['n'] == 0:
+            continue
+        segment = (cell['block'], cell.get('segment', 0))
+        controls = [c for c in cells if (c['block'], c.get('segment', 0)) == segment and c['n'] == 0]
+        reference = controls[0]['gpu_power_mean_w'] if len(controls) == 1 else None
+        power = cell['gpu_power_mean_w']
+        gap = power / reference - 1 if power is not None and reference else None
+        rows.append(dict(block=cell['block'], segment=segment[1], cell=cell['cell'], entry=cell['policy'] or f'{cell["n"]}:{cell["budget"]}',
+                         power_w=power, control_power_w=reference, relative_gap=gap,
+                         status='unknown' if gap is None else 'flagged' if abs(gap) > tolerance else 'ok'))
+    flagged, unknown = [r for r in rows if r['status'] == 'flagged'], [r for r in rows if r['status'] == 'unknown']
+    warnings = []
+    if flagged:
+        warnings.append(f'{len(flagged)} of {len(rows)} cells differ from their block control by more than {tolerance:.0%} in mean GPU power: '
+                        + ', '.join(f'{r["block"]} {r["entry"]} {r["relative_gap"]:+.1%}' for r in flagged)
+                        + '. Latency comparisons involving these cells mix machine power states.')
+    if unknown:
+        warnings.append(f'{len(unknown)} of {len(rows)} cells have no mean GPU power for the cell or its control: '
+                        + ', '.join(f'{r["block"]} {r["entry"]}' for r in unknown) + '. Their power state is not verified.')
+    return dict(tolerance=tolerance, rule='flag a cell whose mean GPU power differs from the control of its block segment by more than the tolerance (relative)',
+                cells=rows, flagged=len(flagged), unknown=len(unknown), warnings=warnings)
 
 
 def bootstrap(by_question, statistic, draws, seed):
@@ -317,9 +356,30 @@ def compare(args):
                 unpaired.append(dict(rate=rate, entry=key, seeds=seeds[key], not_compared_with=others))
         for same in {tuple(v): [k for k in by_key if seeds[k] == v] for v in seeds.values()}.values():
             differences += paired_differences(rate, {k: by_key[k] for k in same}, args.draws, str, str)
+    # Entries from different runs may have run at different machine power states: compare their mean cell power.
+    power = {}
+    for summary in summaries:
+        for c in summary.get('cells', []):
+            if c['n'] != 0 and c.get('gpu_power_mean_w') is not None:
+                power.setdefault((c['rate'], c.get('policy') or f'{c["n"]}:{c["budget"]}'), []).append(c['gpu_power_mean_w'])
+    power = {key: sum(v) / len(v) for key, v in power.items()}
+    for entry in entries:
+        entry['gpu_power_mean_w'] = power.get((entry['rate'], entry['entry']))
+    tolerance = max((s.get('power_check') or {}).get('tolerance', DEFAULT_POWER_TOLERANCE) for s in summaries)
+    warnings = []
+    for d in differences:
+        if d['metric'] != 'accuracy':
+            continue
+        a, b = power.get((d['rate'], d['action'])), power.get((d['rate'], d['minus']))
+        if a is None or b is None:
+            warnings.append(f'{d["rate"]}: {d["action"]} vs {d["minus"]}: mean GPU power unknown for at least one entry')
+        elif abs(a / b - 1) > tolerance:
+            warnings.append(f'{d["rate"]}: {d["action"]} ran at {a:.1f} W and {d["minus"]} at {b:.1f} W, a gap above {tolerance:.0%}; '
+                            'their latency metrics mix machine power states')
+    warnings += [w for s, r in zip(summaries, runs) for w in (f'{r.name}: {x}' for x in s.get('warnings', []))]
     write_json(Path(args.output), dict(
         runs=[str(r) for r in runs], latency_targets_s=summaries[0]['latency_targets_s'], entries=entries, paired_differences=differences,
-        not_compared=unpaired,
+        not_compared=unpaired, power_tolerance=tolerance, warnings=warnings,
         definitions=dict(ci95=f'percentile bootstrap, {args.draws} resamples of questions with replacement; seeds of a question are kept together; '
                          'paired differences resample the same questions for both entries and are computed only between entries run on the same seeds',
                          caveat='entries from different runs share questions, seeds and background traces but were run at different times on the same machine')))
@@ -423,7 +483,11 @@ def score(args, verifier=None):
                 waiting_max=cell['server']['waiting']['max'], kv_cache_max=cell['server']['kv_cache']['max'],
                 preemptions=cell['server']['counters']['preemptions'],
                 # Mean GPU power in the cell: a drop against other cells means the machine itself ran slower.
-                gpu_power_mean_w=((cell.get('gpu') or {}).get('power.draw') or {}).get('mean')))
+                gpu_power_mean_w=((cell.get('gpu') or {}).get('power.draw') or {}).get('mean'),
+                gpu_samples=(cell.get('gpu') or {}).get('samples'),
+                gpu_power_limit_w=((cell.get('gpu') or {}).get('power.limit') or {}).get('mean'),
+                gpu_sm_clock_mean_mhz=((cell.get('gpu') or {}).get('clocks.sm') or {}).get('mean'),
+                gpu_throttle=(cell.get('gpu') or {}).get('throttle'), segment=cell.get('segment', 0)))
     actions, differences = [], []
     for rate in sorted({r['rate'] for r in records}, key=lambda label: (manifest['rates_rps'][label], label)):
         groups = {}
@@ -437,6 +501,9 @@ def score(args, verifier=None):
                          seeds=sorted({r['seed'] for g in everything for r in g}),
                          statuses={s: sum(r['status'] == s for g in everything for r in g) for s in ('completed', 'no_answer') + FAILED},
                          target_gpu_s=sum(r['gpu_s'] for g in everything for r in g))
+            powers = [c['gpu_power_mean_w'] for c in cells if c['rate'] == rate and (c['policy'] or '', c['n'] or 0, c['budget'] or 0) == (policy, n, b)
+                      and c['gpu_power_mean_w'] is not None]
+            entry['gpu_power_mean_w'] = sum(powers) / len(powers) if powers else None  # mean over the entry's cells that have power samples
             if policy:  # what the policy actually did, and why
                 done = [r for g in everything for r in g]
                 entry['chosen'] = {c: sum(str(r['chosen']) == c for r in done) for c in sorted({str(r['chosen']) for r in done})}
@@ -451,10 +518,14 @@ def score(args, verifier=None):
         name = lambda k: k[0] or list(k[1:])
         label = lambda k: str(k[1:] if not k[0] else k)
         differences += paired_differences(rate, groups, args.draws, name, label)
+    tolerance = (manifest.get('configuration') or {}).get('power_tolerance')
+    check = power_check(cells, DEFAULT_POWER_TOLERANCE if tolerance is None else tolerance)
+    check['tolerance_source'] = 'default; the run predates the setting' if tolerance is None else 'run configuration'
     write_rows(out / 'scored.jsonl', records)
     write_json(out / 'summary.json', dict(
         status=manifest['status'], blocks_scored=manifest['completed'], blocks_skipped=manifest.get('skipped', []),
         latency_targets_s=dict(tight=tight, loose=loose), cells=cells, actions=actions, paired_differences=differences,
+        power_check=check, warnings=check['warnings'],
         definitions=dict(
             correct_within_target='target job completed, majority answer verified correct, and job latency (scheduled arrival to last sample) within the target; every scheduled job is in the denominator',
             per_gpu_s='correct-within-target jobs divided by the GPU seconds attributed to target jobs: cell wall time (one GPU) times the job share of all tokens generated in the cell; prompt processing is not attributed separately',
@@ -495,6 +566,8 @@ def main(argv=None):
     p.add_argument('--metrics-interval', type=float, default=1)
     p.add_argument('--deadline-epoch', type=float, default=None, help='do not start a block that cannot finish before this time')
     p.add_argument('--no-gpu', action='store_true')
+    p.add_argument('--power-tolerance', type=float, default=DEFAULT_POWER_TOLERANCE,
+                   help='flag a cell whose mean GPU power differs from its block control by more than this fraction')
     p.set_defaults(fn=run)
     p = sub.add_parser('assemble', help='gather complete blocks of several runs of one protocol into a new directory for score')
     p.add_argument('--blocks', nargs='+', required=True, metavar='RUN_DIR/BLOCK')

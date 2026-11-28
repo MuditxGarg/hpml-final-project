@@ -94,3 +94,28 @@ def test_several_matched_runs_share_one_load_curve(tmp_path):
     text = (out / 'README.md').read_text()
     assert '### Matched real-answer comparison\n' in text and '### Matched real-answer comparison (ladder)' in text
     assert {'matched-actions.png', 'matched-actions-2.png', 'matched-load-curve.png'} <= {p.name for p in (out / 'figures').iterdir()}
+
+
+def test_power_check_and_its_warnings_are_shown(tmp_path):
+    run = matched_run(tmp_path)
+    summary = json.loads((run / 'summary.json').read_text())
+    warning = '1 of 2 cells differ from their block control by more than 10% in mean GPU power: seed-1-light ladder +15%.'
+    summary['power_check'] = dict(tolerance=.1, tolerance_source='run configuration', rule='as logged', flagged=1, unknown=0, warnings=[warning],
+                                  cells=[dict(block='seed-1-light', segment=0, entry='1:0', power_w=101., control_power_w=100., relative_gap=.01, status='ok'),
+                                         dict(block='seed-1-light', segment=0, entry='ladder', power_w=115., control_power_w=100., relative_gap=.15, status='flagged')])
+    summary['warnings'] = [warning]
+    (run / 'summary.json').write_text(json.dumps(summary))
+    out = tmp_path / 'report'
+    br.main(['--matched', str(run), '--hardware', 'test machine', '--output', str(out), '--no-plots'])
+    text = (out / 'README.md').read_text()
+    assert text.count(warning) == 2  # once at the top of the report, once next to the run's power table
+    assert text.index(warning) < text.index('## What was measured')
+    assert '| seed-1-light | 0 | (1,0) | 101.0 | 100.0 | +1.0% | ok |' in text and '| seed-1-light | 0 | ladder | 115.0 | 100.0 | +15.0% | flagged |' in text
+    assert '1 flagged and 0 unknown of 2 cells' in text
+
+
+def test_a_summary_without_the_power_check_is_marked_unchecked(tmp_path):
+    out = tmp_path / 'report'
+    br.main(['--matched', str(matched_run(tmp_path)), '--hardware', 'test machine', '--output', str(out), '--no-plots'])
+    text = (out / 'README.md').read_text()
+    assert '`matched` was scored before the power-state check existed' in text and 'rescore it to show one' in text

@@ -107,6 +107,11 @@ def test_run_and_score_against_fake_server(fake_server, tmp_path, monkeypatch): 
     assert len(gaps) == 2 and all(d['value'] == 0 and d['questions'] == 5 for d in gaps)
     assert sum(d['metric'] == 'accuracy' for d in summary['paired_differences']) == 2
     assert all(c['gpu_power_mean_w'] is None for c in summary['cells'])  # the run used --no-gpu
+    check = summary['power_check']  # without GPU samples every cell is reported as unverified, never as matched
+    assert check['tolerance'] == .1 and check['tolerance_source'] == 'run configuration'
+    assert (check['flagged'], check['unknown'], len(check['cells'])) == (0, 4, 4) and summary['warnings'] == check['warnings']
+    assert len(summary['warnings']) == 1 and 'not verified' in summary['warnings'][0]
+    assert all(a['gpu_power_mean_w'] is None for a in summary['actions'])
     with pytest.raises(FileExistsError):
         m.main(argv)
 
@@ -190,3 +195,42 @@ def test_assemble_gathers_blocks_of_several_runs_for_one_score(fake_server, tmp_
     with pytest.raises(SystemExit, match='rates_rps for mid'):
         m.main(['assemble', '--out', str(tmp_path / 'z'), '--blocks', f'{tmp_path}/first/seed-5-mid', f'{tmp_path}/second/seed-6-mid'])
     assert not (tmp_path / 'z').exists()
+
+
+def test_power_check_flags_cells_against_the_control_of_their_block_segment():
+    cell = lambda block, n, power, segment=0, policy=None: dict(block=block, cell=f'{block}-{n}-{policy}-{segment}', n=n, budget=0, policy=policy,
+                                                                gpu_power_mean_w=power, segment=segment)
+    cells = [cell('a', 0, 100.), cell('a', 1, 105.), cell('a', None, 115., policy='ladder'), cell('a', 4, 89.),
+             cell('a', 0, 120., segment=1), cell('a', 1, 118., segment=1),  # a resumed segment has its own control
+             cell('b', 0, None), cell('b', 1, 100.), cell('c', 1, None)]
+    check = m.power_check(cells, .1)
+    status = {(r['block'], r['segment'], r['entry']): (r['status'], r['relative_gap']) for r in check['cells']}
+    assert status[('a', 0, '1:0')] == ('ok', pytest.approx(.05)) and status[('a', 0, 'ladder')] == ('flagged', pytest.approx(.15))
+    assert status[('a', 0, '4:0')][0] == 'flagged' and status[('a', 1, '1:0')] == ('ok', pytest.approx(118 / 120 - 1))
+    assert status[('b', 0, '1:0')] == ('unknown', None) and status[('c', 0, '1:0')] == ('unknown', None)  # no control power, no control
+    assert (check['flagged'], check['unknown'], len(check['cells'])) == (2, 2, 6)
+    assert len(check['warnings']) == 2 and 'a ladder +15.0%' in check['warnings'][0] and 'b 1:0, c 1:0' in check['warnings'][1]
+    assert m.power_check([cell('a', 0, 100.), cell('a', 1, 109.)], .1)['warnings'] == []
+
+
+def test_compare_warns_when_entries_of_separate_runs_ran_at_different_power(tmp_path):
+    def run(name, entry, power, warnings=()):
+        n, budget = map(int, entry.split(':'))
+        d = tmp_path / name
+        d.mkdir()
+        cells = [dict(rate='light', n=0, budget=0, policy=None, gpu_power_mean_w=power),
+                 dict(rate='light', n=n, budget=budget, policy=None, gpu_power_mean_w=power)]
+        (d / 'summary.json').write_text(json.dumps(dict(latency_targets_s=dict(tight=1., loose=2.), cells=cells, warnings=list(warnings),
+                                                        power_check=dict(tolerance=.1))))
+        rows = [dict(rate='light', n=n, budget=budget, policy=None, seed=1, question=f'q{i}', status='completed', job=1, correct=1,
+                     correct_tight=1, correct_loose=1, tokens=10, gpu_s=1.) for i in range(3)]
+        (d / 'scored.jsonl').write_text('\n'.join(json.dumps(r) for r in rows) + '\n')
+        return d
+    out = tmp_path / 'comparison.json'
+    m.main(['compare', '--runs', str(run('a', '1:0', 100.)), str(run('b', '4:0', 125., ['cell x flagged'])), '--output', str(out), '--draws', '20'])
+    comparison = json.loads(out.read_text())
+    assert [e['gpu_power_mean_w'] for e in comparison['entries']] == [100., 125.] and comparison['power_tolerance'] == .1
+    assert len(comparison['warnings']) == 2 and '1:0 ran at 100.0 W and 4:0 at 125.0 W' in comparison['warnings'][0]
+    assert comparison['warnings'][1] == 'b: cell x flagged'
+    m.main(['compare', '--runs', str(run('c', '1:0', 100.)), str(run('d', '4:0', 105.)), '--output', str(tmp_path / 'ok.json'), '--draws', '20'])
+    assert json.loads((tmp_path / 'ok.json').read_text())['warnings'] == []

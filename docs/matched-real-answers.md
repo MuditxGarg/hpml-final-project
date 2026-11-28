@@ -28,6 +28,15 @@ Scoring is offline and requires `math_verify`, the grader used for the labels.
 - Both are reported at the tight and the loose target (2x and 4x idle p95 from the calibration).
 - **Intervals:** percentile bootstrap over questions. All seeds of a question are resampled together. Differences between two actions resample the same questions for both.
 
+### Power-state check
+
+A laptop GPU changes its power limit with the power mode, heat and reboots, and a cell at a lower power state is slower for reasons outside the experiment. The run therefore logs the machine state next to every GPU sample, and `score` checks it.
+
+- **Logged per sample:** utilisation, memory, power draw, temperature, the enforced power limit, SM and memory clocks, and the active clock-event (throttle) reasons. These are read in-process through NVML (`pynvml`, which vLLM installs). The run falls back to `nvidia-smi` only when NVML does not load. On a loaded WSL machine, `nvidia-smi` stalled for seconds at a time, and in earlier 4080 runs whole cells lost their power samples that way. A field that the GPU or driver does not report is logged as null, never guessed. The cell summary reports the fraction of samples throttled by the power cap, by thermal limits and by hardware slowdown.
+- **Rule:** a cell is **flagged** when its mean GPU power differs from the background-only control of its block segment by more than `--power-tolerance` (default 10%, relative), and **unknown** when either value is missing. The control carries the same background as every other cell in its block and keeps the GPU busy, so on one machine state the means are close. For example, the matched-power 4080 run had gaps of 1 to 3% within a stable block, and 10 to 25% for the light-rate cells known to have run at a lower power mode.
+- **Where it shows:** `summary.json` holds `power_check`, with one row per cell, and `warnings`. The generated report prints every warning at the top, plus the per-cell table next to each run. `compare` lists the mean power of each entry and warns about each pair of entries whose means differ by more than the tolerance, so entries from different power states cannot be compared without a warning. A flagged cell is still scored; whether to repeat its block is decided and written down before the repeat, as in [Repeating blocks](#repeating-blocks).
+- Fixed actions and policies that are meant to be compared run in the same randomised block: give `--actions` and `--policies` together.
+
 `summary.json` holds per-cell counts and the mean GPU power of each cell, per-rate and per-action results with intervals, and all pairwise action differences per rate. `scored.jsonl` holds one record per target job.
 
 ## Commands
@@ -55,7 +64,7 @@ A block that ran while the machine was in a different state (for example at redu
 
 ## Limitations
 
-- A cell that ran at lower GPU power than the others (laptop power state, thermal limits) is slower for reasons outside the experiment. Check the power column before using latency results.
+- A cell that ran at lower GPU power than the others (laptop power state, thermal limits) is slower for reasons outside the experiment. The power-state check flags it, but the check only detects a power gap; it cannot correct for one.
 - One machine. Intervals come from resampling questions; with three seeds they say little about run-to-run variation of the server itself.
 - The background is synthetic, so the comparison says how an action behaves next to calibrated traffic, not next to other users' real answers.
 - The GPU-second attribution is by generated tokens. Two actions with the same token count but different batch shapes are charged the same.

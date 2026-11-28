@@ -60,10 +60,94 @@ def parse_metrics(text):
     return values
 
 
+# Machine state next to each power sample: the enforced power limit, clocks and the active clock-event (throttle) reasons.
+STATE_FIELDS = ('power.limit', 'clocks.sm', 'clocks.mem', 'throttle_reasons')
+SMI_STATE_QUERY = ('enforced.power.limit', 'clocks.sm', 'clocks.mem', 'clocks_throttle_reasons.active')
+# NVML clock-event reason bits, grouped by what slowed the GPU. Idle (0x1) and application-clock (0x2) settings are not slowdowns.
+THROTTLE_GROUPS = dict(power_cap=0x4, hardware_slowdown=0x8 | 0x80, thermal=0x20 | 0x40)
+_nvml = dict(handle=None, failed=False, smi_fields=None)
+_nvml_lock = threading.Lock()
+
+
+def _smi_value(text):
+    """One nvidia-smi CSV value: a number, an integer from a hex bitmask, or None for [N/A] and similar."""
+    text = text.strip()
+    if text.lower().startswith('0x'):
+        return int(text, 16)
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+def _nvml_sample():
+    """All fields from NVML in this process, with no subprocess. None when NVML is not available."""
+    with _nvml_lock:
+        if _nvml['failed']:
+            return None
+        if _nvml['handle'] is None:
+            try:
+                import pynvml
+                pynvml.nvmlInit()
+                _nvml.update(handle=pynvml.nvmlDeviceGetHandleByIndex(0), module=pynvml)
+            except Exception:
+                _nvml['failed'] = True
+                return None
+    nv, handle = _nvml['module'], _nvml['handle']
+
+    def read(fn, scale=1.):
+        try:
+            return fn() / scale
+        except Exception:  # a field this GPU or driver does not support is null, not a failed sample
+            return None
+    # The call was renamed across NVML bindings; with neither name the field is null.
+    reasons = getattr(nv, 'nvmlDeviceGetCurrentClocksEventReasons', None) or getattr(nv, 'nvmlDeviceGetCurrentClocksThrottleReasons', None)
+    sample = {'utilization.gpu': read(lambda: nv.nvmlDeviceGetUtilizationRates(handle).gpu),
+              'memory.used': read(lambda: nv.nvmlDeviceGetMemoryInfo(handle).used, 2 ** 20),
+              'power.draw': read(lambda: nv.nvmlDeviceGetPowerUsage(handle), 1000.),
+              'temperature.gpu': read(lambda: nv.nvmlDeviceGetTemperature(handle, nv.NVML_TEMPERATURE_GPU)),
+              'power.limit': read(lambda: nv.nvmlDeviceGetEnforcedPowerLimit(handle), 1000.),
+              'clocks.sm': read(lambda: nv.nvmlDeviceGetClockInfo(handle, nv.NVML_CLOCK_SM)),
+              'clocks.mem': read(lambda: nv.nvmlDeviceGetClockInfo(handle, nv.NVML_CLOCK_MEM)),
+              'throttle_reasons': read(lambda: reasons(handle))}
+    if sample['throttle_reasons'] is not None:
+        sample['throttle_reasons'] = int(sample['throttle_reasons'])
+    sample['source'] = 'nvml'
+    return sample
+
+
+def _smi_sample():
+    """Fallback: one nvidia-smi call. The state fields are dropped for good if this driver rejects them."""
+    if _nvml['smi_fields'] is None:
+        _nvml['smi_fields'] = GPU_FIELDS + SMI_STATE_QUERY
+    fields = _nvml['smi_fields']
+    try:
+        out = subprocess.check_output(['nvidia-smi', '--query-gpu=' + ','.join(fields), '--format=csv,noheader,nounits'],
+                                      text=True, stderr=subprocess.DEVNULL, timeout=5)
+    except subprocess.CalledProcessError:
+        if fields == GPU_FIELDS:
+            raise
+        _nvml['smi_fields'] = GPU_FIELDS
+        return _smi_sample()
+    values = [_smi_value(v) for v in out.strip().splitlines()[0].split(',')]
+    sample = dict(zip(GPU_FIELDS + STATE_FIELDS, values + [None] * (len(GPU_FIELDS + STATE_FIELDS) - len(values))))
+    sample['source'] = 'nvidia-smi'
+    return sample
+
+
 def gpu_sample():
-    line = subprocess.check_output(['nvidia-smi', '--query-gpu=' + ','.join(GPU_FIELDS), '--format=csv,noheader,nounits'],
-                                   text=True, stderr=subprocess.DEVNULL, timeout=5).strip().splitlines()[0]
-    return {field: float(value) for field, value in zip(GPU_FIELDS, line.split(','))}
+    """GPU 0: utilisation, memory, power, temperature and machine state. NVML in-process when it loads, else nvidia-smi.
+
+    nvidia-smi can stall for seconds on a loaded WSL machine, and whole cells lost their power samples that way."""
+    return _nvml_sample() or _smi_sample()
+
+
+def throttle_summary(samples):
+    """Per throttle group, the fraction of samples with that reason active; None when no sample reported reasons."""
+    masks = [s['throttle_reasons'] for s in samples if s.get('throttle_reasons') is not None]
+    if not masks:
+        return None
+    return dict(samples=len(masks), **{name: sum(bool(m & bits) for m in masks) / len(masks) for name, bits in THROTTLE_GROUPS.items()})
 
 
 class Sampler:
@@ -223,6 +307,7 @@ def summarize_cell(rows, server, device, trace, targets_s):
         histograms[key] = dict(observations=count, mean=total / count if count else None)
     counters = {key: delta(name) for key, name in COUNTERS.items()}
     gpu = [s['gpu'] for s in device if warm <= s['at_s'] < end and 'gpu' in s]
+    known = lambda field: [g[field] for g in gpu if g.get(field) is not None]
     return dict(
         streams=streams,
         server=dict(samples=len(window), scrape_errors=sum('error' in s for s in window),
@@ -235,7 +320,8 @@ def summarize_cell(rows, server, device, trace, targets_s):
                     histogram_means=histograms, decode_by_concurrency=decode_by_concurrency(samples),
                     note='measurement window only; histogram means cover requests or tokens observed in the window, all streams together'),
         gpu=dict(samples=len(gpu), errors=sum('error' in s for s in device if warm <= s['at_s'] < end),
-                 **{field: stat([g[field] for g in gpu]) for field in GPU_FIELDS}))
+                 **{field: stat(known(field)) for field in GPU_FIELDS + STATE_FIELDS[:3]},
+                 throttle=throttle_summary(gpu), source=sorted({g.get('source', 'nvidia-smi') for g in gpu})))
 
 
 def parse_args(argv=None):
