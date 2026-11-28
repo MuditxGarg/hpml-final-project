@@ -437,23 +437,32 @@ def execute(args, ctx, out, manifest, blocks, kind):
 DEFAULT_POWER_TOLERANCE = .10  # relative gap in mean GPU power against the block control; set per run with --power-tolerance
 
 
-def power_check(cells, tolerance):
+def power_check(cells, tolerance, segments=None):
     """Each cell's mean GPU power against the background-only control of its block segment (scored cell dicts).
 
     The control carries the same background as every other cell of its block and keeps the GPU busy, so on one machine
     state their mean power is close; a larger gap means the machine ran at a different power state (power mode, heat,
-    a changed limit) and latency comparisons across those cells are not like for like. Missing power is reported, never assumed."""
+    a changed limit) and latency comparisons across those cells are not like for like. Missing power is reported, never assumed.
+
+    A segment without its own control (its cells ran before a stop, and the block's control after it) is compared with the
+    block's control of a segment on the same server process, when `segments` (from the manifest) shows one; the row says so."""
+    server = {s['index']: s.get('server_process_start') for s in segments or [] if 'index' in s}
     rows = []
     for cell in cells:
         if cell['n'] == 0:
             continue
-        segment = (cell['block'], cell.get('segment', 0))
-        controls = [c for c in cells if (c['block'], c.get('segment', 0)) == segment and c['n'] == 0]
-        reference = controls[0]['gpu_power_mean_w'] if len(controls) == 1 else None
+        block, segment = cell['block'], cell.get('segment', 0)
+        controls = [c for c in cells if c['block'] == block and c.get('segment', 0) == segment and c['n'] == 0]
+        source = 'control of the same segment'
+        if not controls and server.get(segment) is not None:
+            controls = [c for c in cells if c['block'] == block and c['n'] == 0 and server.get(c.get('segment', 0)) == server[segment]]
+            source = 'control of another segment on the same server process'
+        powers = [c['gpu_power_mean_w'] for c in controls if c['gpu_power_mean_w'] is not None]
+        reference = sum(powers) / len(powers) if powers and len(powers) == len(controls) else None
         power = cell['gpu_power_mean_w']
         gap = power / reference - 1 if power is not None and reference else None
-        rows.append(dict(block=cell['block'], segment=segment[1], cell=cell['cell'], entry=cell['policy'] or f'{cell["n"]}:{cell["budget"]}',
-                         power_w=power, control_power_w=reference, relative_gap=gap,
+        rows.append(dict(block=block, segment=segment, cell=cell['cell'], entry=cell['policy'] or f'{cell["n"]}:{cell["budget"]}',
+                         power_w=power, control_power_w=reference, relative_gap=gap, reference=source if reference else None,
                          status='unknown' if gap is None else 'flagged' if abs(gap) > tolerance else 'ok'))
     flagged, unknown = [r for r in rows if r['status'] == 'flagged'], [r for r in rows if r['status'] == 'unknown']
     warnings = []
@@ -464,7 +473,8 @@ def power_check(cells, tolerance):
     if unknown:
         warnings.append(f'{len(unknown)} of {len(rows)} cells have no mean GPU power for the cell or its control: '
                         + ', '.join(f'{r["block"]} {r["entry"]}' for r in unknown) + '. Their power state is not verified.')
-    return dict(tolerance=tolerance, rule='flag a cell whose mean GPU power differs from the control of its block segment by more than the tolerance (relative)',
+    return dict(tolerance=tolerance, rule='flag a cell whose mean GPU power differs from the control of its block segment by more than the tolerance (relative); '
+                'a segment without a control uses the block control of a segment on the same server process',
                 cells=rows, flagged=len(flagged), unknown=len(unknown), warnings=warnings)
 
 
@@ -734,7 +744,7 @@ def score(args, verifier=None):
             phase_actions += [dict(e, phase_rate=level) for e in found]
             phase_differences += [dict(d, phase_rate=level) for d in gaps]
     tolerance = (manifest.get('configuration') or {}).get('power_tolerance')
-    check = power_check(cells, DEFAULT_POWER_TOLERANCE if tolerance is None else tolerance)
+    check = power_check(cells, DEFAULT_POWER_TOLERANCE if tolerance is None else tolerance, manifest.get('segments'))
     check['tolerance_source'] = 'default; the run predates the setting' if tolerance is None else 'run configuration'
     write_rows(out / 'scored.jsonl', records)
     write_json(out / 'summary.json', dict(

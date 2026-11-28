@@ -211,6 +211,13 @@ def test_power_check_flags_cells_against_the_control_of_their_block_segment():
     assert (check['flagged'], check['unknown'], len(check['cells'])) == (2, 2, 6)
     assert len(check['warnings']) == 2 and 'a ladder +15.0%' in check['warnings'][0] and 'b 1:0, c 1:0' in check['warnings'][1]
     assert m.power_check([cell('a', 0, 100.), cell('a', 1, 109.)], .1)['warnings'] == []
+    # A segment without its own control borrows the block control of a segment on the same server process, never of another.
+    stopped = [cell('a', 1, 101., segment=0), cell('a', 0, 100., segment=1), cell('a', 4, 150., segment=2)]
+    rows = m.power_check(stopped, .1, [dict(index=0, server_process_start=7.), dict(index=1, server_process_start=7.), dict(index=2, server_process_start=8.)])['cells']
+    assert [(r['segment'], r['status'], r['reference']) for r in rows] == [
+        (0, 'ok', 'control of another segment on the same server process'), (2, 'unknown', None)]
+    assert [r['status'] for r in m.power_check(stopped, .1)['cells']] == ['unknown', 'unknown']  # without segment records nothing is borrowed
+    assert m.power_check([cell('a', 0, 100.), cell('a', 0, 110.), cell('a', 1, 105.)], .1)['cells'][0]['control_power_w'] == 105.  # two controls: their mean
 
 
 def test_compare_warns_when_entries_of_separate_runs_ran_at_different_power(tmp_path):
