@@ -12,7 +12,7 @@ The logic is in `matched_real_answers.py`. It reuses the trace generator, cell o
 - **Blocks and cells.** A block is one seed at one rate. It holds a background-only control and every action, in a seeded random order. The order of the two rates is also shuffled per seed. Target jobs are evenly spaced over the window in a seeded question order, and that schedule is the same at both rates. The window length is the number of questions divided by the target rate (`--target-fraction`, default 0.05, of the contended rate).
 - **Sample seeds** depend on the block seed, the question and the sample index only, so sample 0 of `(4,0)` uses the same seed as the single sample of `(1,0)`. Batching can still change sampled tokens.
 - **Other background rates.** `run --rates LABEL=RPS ...` replaces the frozen pair with the named rates, for example two rates between them, to locate where an action stops being affordable. The target schedule still follows the calibrated contended rate, so it is identical to the schedule of a run at the frozen pair. Rates given this way are chosen by hand and must be reported as such.
-- All traces and cell orders are written before the first cell runs. The server must be idle before and after every cell. `--deadline-epoch` stops the run before a block that could not finish; only complete blocks are scored.
+- All traces and cell orders are written before the first cell runs. The server must be idle before and after every cell. `--deadline-epoch` stops the run before a cell that could not finish (see [Resuming](#resuming-an-interrupted-run)); only complete blocks are scored.
 
 ## Per-job policies
 
@@ -57,6 +57,21 @@ python 15_matched_real_answers.py run \
 python 15_matched_real_answers.py score \
   --out /absolute/path/run-directory --gold /absolute/path/plan-directory/gold.json
 ```
+
+## Resuming an interrupted run
+
+A cell takes about 22 minutes on the 4080, so a six-entry block takes over two hours. That is longer than a 2-hour cluster job, and a spot VM can be reclaimed at any time. `resume` continues a run at its next unfinished cell:
+
+```sh
+python 15_matched_real_answers.py resume --out /absolute/path/run-directory [--deadline-epoch EPOCH] [--url URL]
+```
+
+- **Same protocol only.** Resume rebuilds the run from its stored configuration and refuses to continue if the plan, calibration, lengths, rates, window or policies have changed. It also refuses code at a different commit unless `--allow-new-commit` is given; in that case the new commit is recorded for the segment. Traces and cell orders are read from disk, never regenerated.
+- **Completed cells are never touched.** A cell counts as complete once it is listed in its block's `cells.json`. Every JSON file is written to a temporary file and then renamed, so a stop mid-write leaves the old file in place.
+- **Partial cells are discarded, never scored.** The manifest names the cell in progress before it starts. On resume, that cell and any of its files that are not in `cells.json` are moved to `BLOCK/discarded/segment-K/` and listed under `discarded`. The cell then reruns from the start on the same trace.
+- **Segments.** A segment is one harness process against one server process, and `segments` in the manifest records the start, commit, process id and server start time of each. When a block continues in a new segment after its control already ran, it first runs an extra control, `cell-sK-control-N0-B0`, so that every segment has its own machine-state check. The power-state check compares each cell with the control of its own segment. If the block's own control has not run yet, it simply runs in the new segment.
+- **Server restarts.** The server start time comes from `process_start_time_seconds` in `/metrics`. If it changes during a cell, the cell is not recorded and the run stops with status `failed`, so it can be resumed in a new segment. A server that has stopped responding fails the run the same way.
+- **Stops.** SIGTERM (a Slurm time limit, or a spot shutdown) and Ctrl-C mark the run `interrupted`. `--deadline-epoch` stops before a *cell* that could not finish in time and marks the run `partial_deadline`. In both cases the run is resumed later. Only blocks listed under `completed` are scored.
 
 ## Repeating blocks
 

@@ -9,6 +9,7 @@ MAXSEQ = int(os.environ.get('FAKE_VLLM_MAXSEQ', 128))
 lock = threading.Lock()
 running, waiting, gen_total = [], [], [0.0]
 queue_time, token_time = [0.0, 0], [0.0, 0.0]   # [sum, count] for the queue-time and inter-token histograms
+START = round(time.time(), 2)   # exported like the process collector of a real server, to detect restarts
 
 
 class R:
@@ -63,6 +64,7 @@ class H(BaseHTTPRequestHandler):
             txt = (f'vllm:num_requests_running {len(running)}\nvllm:num_requests_waiting {len(waiting)}\n'
                    f'vllm:kv_cache_usage_perc {len(running) / MAXSEQ}\nvllm:generation_tokens_total {gen_total[0]}\n'
                    f'vllm:num_preemptions_total 0\n'
+                   f'process_start_time_seconds {START}\n'
                    f'vllm:request_queue_time_seconds_sum {queue_time[0]}\nvllm:request_queue_time_seconds_count {queue_time[1]}\n'
                    f'vllm:inter_token_latency_seconds_sum {token_time[0]}\nvllm:inter_token_latency_seconds_count {token_time[1]}\n')
         self.send_response(200); self.end_headers(); self.wfile.write(txt.encode())

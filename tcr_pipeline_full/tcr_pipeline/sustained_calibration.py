@@ -12,6 +12,7 @@ quality). Standard library only; never launches a server. See docs/sustained-cal
 import argparse
 import json
 import math
+import os
 from pathlib import Path
 import platform
 import random
@@ -28,14 +29,24 @@ TOKENS = 'vllm:generation_tokens_total'
 MIN_TELEMETRY = 5  # fewer in-window samples than this cannot verify a rung
 
 
+def _replace(path, lines):
+    """Write to a temporary file next to `path`, then rename it over `path`: a process stopped mid-write leaves the old file or none."""
+    path = Path(path)
+    temporary = path.with_name(f'.{path.name}.partial')
+    with temporary.open('w') as f:
+        for line in lines:
+            f.write(line)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(temporary, path)
+
+
 def write_json(path, value):
-    Path(path).write_text(json.dumps(value, indent=2) + '\n')
+    _replace(path, [json.dumps(value, indent=2) + '\n'])
 
 
 def write_rows(path, rows):
-    with Path(path).open('w') as f:
-        for row in rows:
-            f.write(json.dumps(row) + '\n')
+    _replace(path, (json.dumps(row) + '\n' for row in rows))
 
 
 def slope(points):

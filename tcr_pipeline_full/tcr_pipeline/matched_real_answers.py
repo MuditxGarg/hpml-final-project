@@ -14,9 +14,12 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
+import os
 from pathlib import Path
 import random
+import re
 import shutil
+import signal
 import socket
 import sys
 import time
@@ -139,14 +142,13 @@ def policy_runner(runner, policy, sampler, seed):
     return choose
 
 
-def run(args):
-    url = args.url.rstrip('/')
+def context(args):
+    """Everything a run needs from its inputs. `run` and `resume` both build it, so a resumed run reads the same protocol."""
     calibration = json.loads(Path(args.calibration).read_text())
     if calibration.get('status') != 'complete':
         raise SystemExit(f'calibration is not complete ({calibration.get("status")}); refusing to run without frozen rates')
     plan = json.loads(Path(args.plan).read_text())
     questions = plan['questions']
-    budget, targets = calibration['reference_budget'], calibration['latency_targets_s']
     rates = dict(light=calibration['light_rate_rps'], contended=calibration['contended_rate_rps'])
     # The target schedule always follows the calibrated contended rate, so it is the same for any background rate.
     target_rate = args.target_fraction * rates['contended']
@@ -154,60 +156,159 @@ def run(args):
         rates = {label: float(value) for label, value in (item.split('=') for item in args.rates)}
         if len(rates) != len(args.rates) or min(rates.values()) <= 0:
             raise SystemExit('--rates needs distinct labels and positive rates')
-    duration = len(questions) / target_rate
     lengths = json.loads(Path(args.lengths).read_text())
     chosen = {q['id'] for q in questions}
-    background = [p for p in json.loads(Path(args.prompts).read_text()) if p['id'] not in chosen]
-    actions = [tuple(map(int, a.split(':'))) for a in args.actions]
     policy_specs, policies = load_policies(args.policies) if args.policies else ([], [])
+    actions = [tuple(map(int, a.split(':'))) for a in args.actions]
     if not actions and not policies:
         sys.exit('nothing to run: give at least one action or a policy file')
-    by_name = {p.name: p for p in policies}
+    return dict(url=args.url.rstrip('/'), calibration=calibration, plan=plan, questions=questions, budget=calibration['reference_budget'],
+                targets=calibration['latency_targets_s'], rates=rates, target_rate=target_rate, duration=len(questions) / target_rate,
+                lengths=lengths, background=[p for p in json.loads(Path(args.prompts).read_text()) if p['id'] not in chosen],
+                actions=actions, policy_specs=policy_specs, by_name={p.name: p for p in policies})
+
+
+def cell_name(position, item, by_name):
+    policy = by_name.get(item) if isinstance(item, str) else None
+    return f'cell-{position}-P-{policy.name}' if policy else f'cell-{position}-N{item[0]}-B{item[1]}'
+
+
+def server_process_start(url):
+    """Start time of the server process from its /metrics, or None when it does not export one. Raises when the server is unreachable."""
+    match = re.search(r'^process_start_time_seconds\s+(\S+)', http(url + '/metrics', timeout=10), re.M)
+    return float(match.group(1)) if match else None
+
+
+def run(args):
+    ctx = context(args)
     hardware = json.loads(Path(args.hardware_json).read_text())
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=False)
-    write_json(out / 'plan.json', plan)
-    tokenizer = load_tokenizer()
-    idle_wait = lambda: wait_idle(url, args.idle_timeout, args.idle_stable)
+    write_json(out / 'plan.json', ctx['plan'])
     # Persist every trace and cell order before any outcome exists.
     blocks = []
     for seed in args.seeds:
-        labels = list(rates)
+        labels = list(ctx['rates'])
         random.Random(f'{seed}:rates').shuffle(labels)
         for label in labels:
-            trace = make_trace(questions, background, lengths[str(budget)], budget, seed, rates[label], args.warmup, duration)
-            order = cell_order(actions + list(by_name), f'{seed}:{label}:order')  # a policy cell is listed by its name
+            trace = make_trace(ctx['questions'], ctx['background'], ctx['lengths'][str(ctx['budget'])], ctx['budget'], seed, ctx['rates'][label],
+                               args.warmup, ctx['duration'])
+            order = cell_order(ctx['actions'] + list(ctx['by_name']), f'{seed}:{label}:order')  # a policy cell is listed by its name
             name = f'seed-{seed}-{label}'
             (out / name).mkdir()
             write_json(out / name / 'trace.json', trace)
             write_json(out / name / 'order.json', order)
             blocks.append((name, seed, label, trace, order))
-    block_bound = (len(actions) + len(policies) + 1) * (args.warmup + duration + args.timeout + 60)
     manifest = dict(
-        experiment='matched real-answer comparison of fixed actions' + (' and per-job policies' if policies else '')
-        + '; synthetic background, real target answers' + ('' if policies else '; no router'),
+        experiment='matched real-answer comparison of fixed actions' + (' and per-job policies' if ctx['by_name'] else '')
+        + '; synthetic background, real target answers' + ('' if ctx['by_name'] else '; no router'),
         status='running', configuration={k: v for k, v in vars(args).items() if k != 'fn'},
-        hardware_user_supplied=hardware, environment=environment(url), plan_sha256=digest(plan),
-        calibration_sha256=digest(calibration), calibration_source=str(Path(args.calibration).resolve()),
-        rates_rps=rates, target_rate_rps=target_rate, window_s=duration, reference_budget=budget, latency_targets_s=targets,
-        questions=len(questions), background_prompts=len(background), lengths_sha256=digest(lengths),
-        blocks=[name for name, *_ in blocks], completed=[], skipped=[], started_unix_s=time.time(),
-        policies=policy_specs,
-        control_definition='(0,0): background only; target jobs retained but not offered')
+        hardware_user_supplied=hardware, environment=environment(ctx['url']), plan_sha256=digest(ctx['plan']),
+        calibration_sha256=digest(ctx['calibration']), calibration_source=str(Path(args.calibration).resolve()),
+        rates_rps=ctx['rates'], target_rate_rps=ctx['target_rate'], window_s=ctx['duration'], reference_budget=ctx['budget'],
+        latency_targets_s=ctx['targets'], questions=len(ctx['questions']), background_prompts=len(ctx['background']),
+        lengths_sha256=digest(ctx['lengths']), blocks=[name for name, *_ in blocks], completed=[], skipped=[], started_unix_s=time.time(),
+        policies=ctx['policy_specs'], segments=[], discarded=[], current_cell=None,
+        control_definition='(0,0): background only; target jobs retained but not offered',
+        segment_definition='one harness process against one server process; a block resumed in a later segment first repeats its control')
     write_json(out / 'manifest.json', manifest)
+    execute(args, ctx, out, manifest, blocks, 'start')
+
+
+def resume(args):
+    """Continue an interrupted run at its next unfinished cell; completed cells are never touched or rerun."""
+    out = Path(args.out)
+    manifest = json.loads((out / 'manifest.json').read_text())
+    if manifest['status'] == 'complete':
+        sys.exit(f'{out} is already complete')
+    # Settings added after the run started take their defaults; the run's own settings win; only the URL and deadline may change.
+    settings = {a.dest: a.default for a in build_parser()[1]['run']._actions if a.dest != 'help'}
+    settings.update(manifest['configuration'])
+    settings['deadline_epoch'] = args.deadline_epoch
+    if args.url:
+        settings['url'] = args.url
+    run_args = argparse.Namespace(**settings)
+    ctx = context(run_args)
+    # The protocol must be the one the run started with: same inputs, same window, same rates, same policies.
+    stored = json.loads((out / 'plan.json').read_text())
+    checks = dict(plan_sha256=(digest(ctx['plan']), digest(stored), manifest['plan_sha256']),
+                  calibration_sha256=(digest(ctx['calibration']), manifest['calibration_sha256']),
+                  lengths_sha256=(digest(ctx['lengths']), manifest['lengths_sha256']), rates_rps=(ctx['rates'], manifest['rates_rps']),
+                  window_s=(ctx['duration'], manifest['window_s']), policies=(ctx['policy_specs'], manifest['policies']))
+    changed = [key for key, values in checks.items() if any(v != values[0] for v in values[1:])]
+    if changed:
+        sys.exit(f'inputs changed since the run started ({", ".join(changed)}); refusing to resume')
+    commit = environment(ctx['url'])['git_commit']
+    if commit != manifest['environment']['git_commit'] and not args.allow_new_commit:
+        sys.exit(f'code is at {commit}, the run started at {manifest["environment"]["git_commit"]}; pass --allow-new-commit to resume anyway')
+    blocks = []
+    for name in manifest['blocks']:
+        trace = json.loads((out / name / 'trace.json').read_text())
+        order = [item if isinstance(item, str) else tuple(item) for item in json.loads((out / name / 'order.json').read_text())]
+        blocks.append((name, trace['seed'], name.split('-', 2)[2], trace, order))
+    if 'segments' not in manifest:  # a run started before segments were recorded: its cells all belong to segment 0
+        manifest['segments'] = [dict(index=0, kind='start', note='recorded before segments existed')]
+    manifest.setdefault('discarded', [])
+    manifest.setdefault('current_cell', None)
+    manifest['status'], manifest['skipped'] = 'running', []
+    execute(run_args, ctx, out, manifest, blocks, 'resume')
+
+
+def discard_partial(out, name, cells, manifest, segment):
+    """Move the files of any cell of a block that is not in its cells.json into discarded/, and record it. Partial cells are never scored."""
+    kept = {f'{c["cell"]}{suffix}.jsonl' for c in cells for suffix in ('', '-server', '-gpu')}
+    orphans = sorted(p for p in (out / name).glob('cell-*.jsonl') if p.name not in kept)
+    current = manifest.get('current_cell')
+    interrupted = current and current['block'] == name and current['cell'] not in {c['cell'] for c in cells}
+    if not orphans and not interrupted:
+        return
+    target = out / name / 'discarded' / f'segment-{segment}'
+    target.mkdir(parents=True, exist_ok=True)
+    for path in orphans:
+        path.rename(target / path.name)
+    manifest['discarded'].append(dict(block=name, cell=current['cell'] if interrupted else None, files=[p.name for p in orphans],
+                                      moved_to=str(target.relative_to(out)), found_in_segment=segment,
+                                      reason='cell started but never recorded in cells.json (process stopped mid-cell)'))
+    if interrupted:
+        manifest['current_cell'] = None
+
+
+def execute(args, ctx, out, manifest, blocks, kind):
+    url, questions, budget, targets, rates, by_name = (ctx[k] for k in ('url', 'questions', 'budget', 'targets', 'rates', 'by_name'))
+    tokenizer = load_tokenizer()
+    idle_wait = lambda: wait_idle(url, args.idle_timeout, args.idle_stable)
+    segment = len(manifest['segments'])
+    manifest['segments'].append(dict(index=segment, kind=kind, started_unix_s=time.time(), pid=os.getpid(), server_process_start=None,
+                                     git_commit=environment(url)['git_commit']))
+    cell_bound = args.warmup + ctx['duration'] + args.timeout + 60  # longest a cell can take before its idle check
+    previous = signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(143))  # a job limit or spot shutdown lands in the finally below
     try:
+        server_start = manifest['segments'][segment]['server_process_start'] = server_process_start(url)
+        write_json(out / 'manifest.json', manifest)
         for index, (name, seed, label, trace, order) in enumerate(blocks):
-            if args.deadline_epoch and args.deadline_epoch - time.time() < block_bound:
-                manifest['skipped'] = [n for n, *_ in blocks[index:]]
-                manifest['status'] = 'partial_deadline'
-                break
-            cells = []
-            for position, item in enumerate(order):
+            if name in manifest['completed']:
+                continue
+            cells = json.loads((out / name / 'cells.json').read_text()) if (out / name / 'cells.json').exists() else []
+            discard_partial(out, name, cells, manifest, segment)
+            done = {c['cell'] for c in cells}
+            pending = [(cell_name(position, item, by_name), item) for position, item in enumerate(order) if cell_name(position, item, by_name) not in done]
+            if pending and cells and not any(item == (0, 0) for _, item in pending):
+                # The block continues in a new process and its control already ran in an earlier one: repeat the control first,
+                # so this segment has its own machine-state check. A control still pending runs in this segment anyway.
+                pending.insert(0, (f'cell-s{segment}-control-N0-B0', (0, 0)))
+            for cell, item in pending:
+                if args.deadline_epoch and args.deadline_epoch - time.time() < cell_bound:
+                    manifest['skipped'] = [n for n, *_ in blocks[index:] if n not in manifest['completed']]
+                    manifest['status'] = 'partial_deadline'
+                    return
                 policy = by_name.get(item) if isinstance(item, str) else None
                 n, b = (1, 0) if policy else item  # a policy cell offers every target job; the policy sets its action
-                cell = f'cell-{position}-P-{policy.name}' if policy else f'cell-{position}-N{n}-B{b}'
                 print(f'CELL_START {name} {cell}', flush=True)
+                manifest['current_cell'] = dict(block=name, cell=cell, segment=segment, started_unix_s=time.time())
+                write_json(out / 'manifest.json', manifest)
                 idle_wait()
+                if server_process_start(url) != server_start:
+                    raise RuntimeError('the server process changed since this segment started; resume the run to start a new segment')
                 sampler = Sampler(url, args.metrics_interval, gpu=not args.no_gpu)
                 sampler.start()
                 runner = make_runner(trace, questions, tokenizer, url, args.model)
@@ -216,20 +317,25 @@ def run(args):
                 rows = run_cell(trace, url, args.model, n, b, budget, timeout_s=args.timeout, drain_s=args.timeout,
                                 max_inflight=args.max_inflight, job_runner=runner)
                 sampler.stop()
+                # A cell that ran across a server restart or crash is not a measurement of this protocol: never record it.
+                if server_process_start(url) != server_start:
+                    raise RuntimeError(f'the server process changed during {name} {cell}; the cell is discarded')
                 write_rows(out / name / f'{cell}.jsonl', rows)
                 write_rows(out / name / f'{cell}-server.jsonl', sampler.server)
                 write_rows(out / name / f'{cell}-gpu.jsonl', sampler.device)
                 seen = [s for s in sampler.server if TOKENS in s.get('metrics', {})]
-                cells.append(dict(cell=cell, block=name, seed=seed, rate_label=label, background_rate_rps=rates[label],
+                cells.append(dict(cell=cell, block=name, seed=seed, rate_label=label, background_rate_rps=rates.get(label),
                                   n=None if policy else n, budget=None if policy else b, control=n == 0,
-                                  policy=policy.name if policy else None,
+                                  policy=policy.name if policy else None, segment=segment,
                                   cell_wall_s=seen[-1]['at_s'] - seen[0]['at_s'] if len(seen) > 1 else None,
                                   generation_tokens=seen[-1]['metrics'][TOKENS] - seen[0]['metrics'][TOKENS] if len(seen) > 1 else None,
                                   **summarize_cell(rows, sampler.server, sampler.device, trace, targets)))
                 write_json(out / name / 'cells.json', cells)
+                manifest['current_cell'] = None
+                write_json(out / 'manifest.json', manifest)
                 target = cells[-1]['streams']['target']
                 power = cells[-1]['gpu']['power.draw']['mean']
-                control = [c['gpu']['power.draw']['mean'] for c in cells if c['control']]
+                control = [c['gpu']['power.draw']['mean'] for c in cells if c['control'] and c.get('segment', 0) == segment]
                 drift = power / control[0] - 1 if power is not None and control and control[0] else None
                 print(f'CELL_COMPLETE {name} {cell} target={target["statuses"]} '
                       f'background_p95={cells[-1]["streams"]["background"]["latency_s"]["p95"]} power_w={power} '
@@ -238,15 +344,17 @@ def run(args):
                 idle_wait()
             manifest['completed'].append(name)
             write_json(out / 'manifest.json', manifest)
-        else:
-            manifest['status'] = 'complete'
-    except Exception as exc:
-        manifest.update(status='failed', error=f'{type(exc).__name__}: {exc}')
+        manifest['status'] = 'complete'
+    except BaseException as exc:
+        interrupted = isinstance(exc, (KeyboardInterrupt, SystemExit))
+        manifest.update(status='interrupted' if interrupted else 'failed', error=f'{type(exc).__name__}: {exc}')
         raise
     finally:
-        manifest['finished_unix_s'] = time.time()
+        signal.signal(signal.SIGTERM, previous)
+        manifest['segments'][segment]['finished_unix_s'] = manifest['finished_unix_s'] = time.time()
+        manifest['segments'][segment]['status'] = manifest['status']
         write_json(out / 'manifest.json', manifest)
-    print(out / 'manifest.json')
+        print(out / 'manifest.json', flush=True)
 
 
 DEFAULT_POWER_TOLERANCE = .10  # relative gap in mean GPU power against the block control; set per run with --power-tolerance
@@ -536,17 +644,19 @@ def score(args, verifier=None):
     print(out / 'summary.json')
 
 
-def main(argv=None):
+def build_parser():
+    """The command line, and each subcommand's parser by name (resume reads the run defaults from it)."""
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest='command', required=True)
-    p = sub.add_parser('prepare')
+    commands = {}
+    p = commands['prepare'] = sub.add_parser('prepare')
     for name in ('prompts', 'labels', 'out'):
         p.add_argument('--' + name, required=True)
     p.add_argument('--questions', type=int, default=50)
     p.add_argument('--seed', type=int, default=20261115)
     p.add_argument('--proportional', action='store_true', help='keep the level mix of the full question set instead of equal counts')
     p.set_defaults(fn=prepare)
-    p = sub.add_parser('run')
+    p = commands['run'] = sub.add_parser('run')
     for name in ('plan', 'calibration', 'lengths', 'prompts', 'hardware-json', 'out'):
         p.add_argument('--' + name, required=True)
     p.add_argument('--url', default='http://127.0.0.1:8001')
@@ -564,26 +674,36 @@ def main(argv=None):
     p.add_argument('--idle-stable', type=float, default=1)
     p.add_argument('--max-inflight', type=int, default=512)
     p.add_argument('--metrics-interval', type=float, default=1)
-    p.add_argument('--deadline-epoch', type=float, default=None, help='do not start a block that cannot finish before this time')
+    p.add_argument('--deadline-epoch', type=float, default=None, help='do not start a cell that cannot finish before this time; resume later')
     p.add_argument('--no-gpu', action='store_true')
     p.add_argument('--power-tolerance', type=float, default=DEFAULT_POWER_TOLERANCE,
                    help='flag a cell whose mean GPU power differs from its block control by more than this fraction')
     p.set_defaults(fn=run)
-    p = sub.add_parser('assemble', help='gather complete blocks of several runs of one protocol into a new directory for score')
+    p = commands['resume'] = sub.add_parser('resume', help='continue an interrupted run at its next unfinished cell')
+    p.add_argument('--out', required=True, help='the run directory to continue')
+    p.add_argument('--url', default=None, help='server URL, when it differs from the one the run started with')
+    p.add_argument('--deadline-epoch', type=float, default=None, help='do not start a cell that cannot finish before this time')
+    p.add_argument('--allow-new-commit', action='store_true', help='resume with code at a different commit than the run started with (recorded)')
+    p.set_defaults(fn=resume)
+    p = commands['assemble'] = sub.add_parser('assemble', help='gather complete blocks of several runs of one protocol into a new directory for score')
     p.add_argument('--blocks', nargs='+', required=True, metavar='RUN_DIR/BLOCK')
     p.add_argument('--out', required=True)
     p.set_defaults(fn=assemble)
-    p = sub.add_parser('score')
+    p = commands['score'] = sub.add_parser('score')
     p.add_argument('--out', required=True)
     p.add_argument('--gold', required=True)
     p.add_argument('--draws', type=int, default=2000)
     p.set_defaults(fn=score)
-    p = sub.add_parser('compare', help='paired differences between entries of several scored runs on the same seeds')
+    p = commands['compare'] = sub.add_parser('compare', help='paired differences between entries of several scored runs on the same seeds')
     p.add_argument('--runs', nargs='+', required=True, metavar='DIR')
     p.add_argument('--output', required=True, help='JSON file to write')
     p.add_argument('--draws', type=int, default=2000)
     p.set_defaults(fn=compare)
-    args = parser.parse_args(argv)
+    return parser, commands
+
+
+def main(argv=None):
+    args = build_parser()[0].parse_args(argv)
     args.fn(args)
 
 

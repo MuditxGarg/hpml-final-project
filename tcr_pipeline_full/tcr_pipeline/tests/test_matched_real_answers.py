@@ -234,3 +234,116 @@ def test_compare_warns_when_entries_of_separate_runs_ran_at_different_power(tmp_
     assert comparison['warnings'][1] == 'b: cell x flagged'
     m.main(['compare', '--runs', str(run('c', '1:0', 100.)), str(run('d', '4:0', 105.)), '--output', str(tmp_path / 'ok.json'), '--draws', '20'])
     assert json.loads((tmp_path / 'ok.json').read_text())['warnings'] == []
+
+
+def run_inputs(tmp_path, url):
+    """Input files and the common `run` arguments of a small two-block run (seed 5 at the frozen light and contended rates)."""
+    cohort = questions()
+    files = dict(plan=dict(questions=cohort), prompts=cohort + [dict(id=f'b{i}', thinking='bg', nothinking='bg') for i in range(3)],
+                 lengths={'200': [200]}, hardware={'device': 'fake CPU HTTP server'},
+                 calibration=dict(status='complete', reference_budget=200, latency_targets_s=[.4, 8.], light_rate_rps=3., contended_rate_rps=10.),
+                 gold={q['id']: '1' for q in cohort})
+    for name, value in files.items():
+        (tmp_path / f'{name}.json').write_text(json.dumps(value))
+    argv = ['--url', url, '--model', 'fake', '--no-gpu', '--seeds', '5', '--actions', '1:0', '2:400', '--target-fraction', '.5', '--warmup', '.3',
+            '--timeout', '30', '--idle-timeout', '30', '--idle-stable', '.1', '--metrics-interval', '.05', '--hardware-json', str(tmp_path / 'hardware.json')]
+    for name in ('plan', 'calibration', 'lengths', 'prompts'):
+        argv += ['--' + name, str(tmp_path / f'{name}.json')]
+    return argv
+
+
+def block_cells(out):
+    manifest = json.loads((out / 'manifest.json').read_text())
+    return {name: json.loads((out / name / 'cells.json').read_text()) for name in manifest['blocks'] if (out / name / 'cells.json').exists()}
+
+
+@pytest.mark.parametrize('stop_at', [5, 6])  # the second or the third cell of the second block
+def test_a_run_stopped_mid_cell_resumes_with_the_same_cells(fake_server, tmp_path, monkeypatch, stop_at):  # noqa: F811
+    import os
+    import signal
+    monkeypatch.setattr(m, 'load_tokenizer', lambda: Tokenizer())
+    common = run_inputs(tmp_path, fake_server)
+    whole, cut = tmp_path / 'whole', tmp_path / 'cut'
+    m.main(['run', '--out', str(whole)] + common)
+    real, calls = m.run_cell, []
+
+    def stopped(*args, **kwargs):  # the cell is stopped as a job limit or a spot shutdown would stop it
+        calls.append(1)
+        if len(calls) == stop_at:
+            os.kill(os.getpid(), signal.SIGTERM)
+        return real(*args, **kwargs)
+    monkeypatch.setattr(m, 'run_cell', stopped)
+    with pytest.raises(SystemExit):
+        m.main(['run', '--out', str(cut)] + common)
+    manifest = json.loads((cut / 'manifest.json').read_text())
+    first, second = manifest['blocks']
+    kept = stop_at - 4  # cells of the second block recorded before the stop
+    assert manifest['status'] == 'interrupted' and manifest['completed'] == [first] and manifest['segments'][0]['status'] == 'interrupted'
+    stopped_cell = manifest['current_cell']['cell']
+    assert manifest['current_cell']['block'] == second and len(block_cells(cut)[second]) == kept
+    (cut / second / f'{stopped_cell}.jsonl').write_text('{"partial": true}\n')  # a write the stop cut short
+    monkeypatch.setattr(m, 'run_cell', real)
+    m.main(['resume', '--out', str(cut)])
+
+    manifest = json.loads((cut / 'manifest.json').read_text())
+    assert manifest['status'] == 'complete' and manifest['completed'] == [first, second] and manifest['current_cell'] is None
+    assert [(s['index'], s['kind'], s['status']) for s in manifest['segments']] == [(0, 'start', 'interrupted'), (1, 'resume', 'complete')]
+    assert [(d['block'], d['cell'], d['files']) for d in manifest['discarded']] == [(second, stopped_cell, [f'{stopped_cell}.jsonl'])]
+    assert (cut / second / 'discarded' / 'segment-1' / f'{stopped_cell}.jsonl').read_text() == '{"partial": true}\n'
+    assert 'partial' not in (cut / second / f'{stopped_cell}.jsonl').read_text()  # rerun from the start, not continued
+    original, resumed = block_cells(whole), block_cells(cut)
+    assert [(c['cell'], c['segment']) for c in resumed[first]] == [(c['cell'], 0) for c in original[first]]
+    names = [c['cell'] for c in original[second]]
+    control_pending = any(c['control'] for c in original[second][kept:])
+    # A block that continues in a new segment gets its own control there: the original one if it had not run yet, else a repeat first.
+    expected = [(n, 0) for n in names[:kept]] + ([] if control_pending else [('cell-s1-control-N0-B0', 1)]) + [(n, 1) for n in names[kept:]]
+    assert [(c['cell'], c['segment']) for c in resumed[second]] == expected
+    assert sum(c['control'] and c['segment'] == 1 for c in resumed[second]) == 1
+    for out in (whole, cut):
+        m.score(types.SimpleNamespace(out=str(out), gold=str(tmp_path / 'gold.json'), draws=50), verifier=lambda gold, pred: gold == pred)
+    jobs = lambda out: sorted((a['rate'], a['n'], a['budget'], a['jobs'], a['accuracy']['value']) for a in json.loads((out / 'summary.json').read_text())['actions'])
+    assert jobs(cut) == jobs(whole)  # the same scored jobs: the discarded partial cell is never scored
+    check = json.loads((cut / 'summary.json').read_text())['power_check']
+    assert sorted(r['segment'] for r in check['cells'] if r['block'] == second) == [0] * (kept - (not control_pending)) + [1] * (2 - kept + (not control_pending))
+    with pytest.raises(SystemExit, match='already complete'):
+        m.main(['resume', '--out', str(cut)])
+
+
+def test_resume_after_a_deadline_refuses_changed_inputs_and_new_code(fake_server, tmp_path, monkeypatch):  # noqa: F811
+    import time
+    monkeypatch.setattr(m, 'load_tokenizer', lambda: Tokenizer())
+    out = tmp_path / 'run'
+    m.main(['run', '--out', str(out), '--deadline-epoch', str(time.time() + 1)] + run_inputs(tmp_path, fake_server))
+    manifest = json.loads((out / 'manifest.json').read_text())
+    assert manifest['status'] == 'partial_deadline' and manifest['skipped'] == manifest['blocks'] and block_cells(out) == {}
+    calibration = (tmp_path / 'calibration.json').read_text()
+    (tmp_path / 'calibration.json').write_text(json.dumps(dict(json.loads(calibration), light_rate_rps=4.)))
+    with pytest.raises(SystemExit, match='inputs changed.*calibration_sha256.*rates_rps'):
+        m.main(['resume', '--out', str(out)])
+    (tmp_path / 'calibration.json').write_text(calibration)
+    real = m.environment
+    monkeypatch.setattr(m, 'environment', lambda url: dict(real(url), git_commit='0' * 40))
+    with pytest.raises(SystemExit, match='allow-new-commit'):
+        m.main(['resume', '--out', str(out)])
+    m.main(['resume', '--out', str(out), '--allow-new-commit'])
+    manifest = json.loads((out / 'manifest.json').read_text())
+    assert manifest['status'] == 'complete' and manifest['skipped'] == [] and manifest['segments'][-1]['git_commit'] == '0' * 40
+    # Nothing had run before the deadline, so no block needs a repeated control.
+    assert all(len(cells) == 3 and {c['segment'] for c in cells} == {len(manifest['segments']) - 1} for cells in block_cells(out).values())
+
+
+def test_a_cell_that_ran_across_a_server_restart_is_never_recorded(fake_server, tmp_path, monkeypatch):  # noqa: F811
+    monkeypatch.setattr(m, 'load_tokenizer', lambda: Tokenizer())
+    starts = iter([1., 1., 2.])  # segment start, before the first cell, after it: the server restarted during the cell
+    monkeypatch.setattr(m, 'server_process_start', lambda url: next(starts))
+    out = tmp_path / 'run'
+    with pytest.raises(RuntimeError, match='changed during'):
+        m.main(['run', '--out', str(out)] + run_inputs(tmp_path, fake_server))
+    manifest = json.loads((out / 'manifest.json').read_text())
+    first = manifest['blocks'][0]
+    assert manifest['status'] == 'failed' and block_cells(out) == {} and not list((out / first).glob('cell-*'))
+    monkeypatch.setattr(m, 'server_process_start', lambda url: 3.)
+    m.main(['resume', '--out', str(out)])
+    manifest = json.loads((out / 'manifest.json').read_text())
+    assert manifest['status'] == 'complete' and [(d['block'], d['files']) for d in manifest['discarded']] == [(first, [])]
+    assert [s['server_process_start'] for s in manifest['segments']] == [1., 3.]
